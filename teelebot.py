@@ -65,7 +65,7 @@ class Bot(object):
             return req.json().get("ok")
 
         elif common == "getUpdates": #接收
-            req = requests.post(self.url + addr)
+            req = requests.get(self.url + addr)
             req.keep_alive = False
             if self.debug is True:
                 print(req.text)
