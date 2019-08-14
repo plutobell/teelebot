@@ -47,7 +47,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Demo ##
 
-* Telegram群组： [TeeleBot体验群](t.m/isTeeleBot)
+* Telegram群组： [TeeleBot体验群](https://t.m/isTeeleBot)
 
 
 
@@ -88,7 +88,7 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 ## 联系我 ##
 
 * Email：hi@ojoll.com
-* Telegram群组：[TeeleBot体验群](t.m/isTeeleBot)
+* Telegram群组：[TeeleBot体验群](https://t.m/isTeeleBot)
 * 其他：本repo 的 Issue
 
 
