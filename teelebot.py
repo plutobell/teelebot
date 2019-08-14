@@ -81,10 +81,12 @@ class Bot(object):
                     message = result.get("message")
                     chat = message.get("chat")
                     fromm = message.get("from")
-                    chats.append(chat)
-                    froms.append(fromm)
-                    dates.append(message.get("date"))
-                    texts.append(message.get("text"))
+                    if message.get("text") != None:
+                        chats.append(chat)
+                        froms.append(fromm)
+                        dates.append(message.get("date"))
+                        texts.append(message.get("text"))
+                print(texts)
 
                 if len(update_ids) >=1:
                     self.offset = max(update_ids) + 1
