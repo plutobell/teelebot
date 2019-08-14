@@ -12,7 +12,7 @@ Python实现的Telegram Bot机器人框架
 本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，实现了基本的插件系统。目前自带插件有三个：
 
 * Menu  -   自动生成的插件菜单
-*   Chat  -   调用 [思知(OwnThink)](https://www.ownthink.com/)机器人开放API实现的对话功能
+*   Chat  -   调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
 *  Hello  -   Hello World插件例子
 
 
