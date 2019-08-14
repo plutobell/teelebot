@@ -3,6 +3,10 @@ Python实现的Telegram Bot机器人框架
 
 
 
+
+
+
+
 ## 说明 ##
 
 本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，实现了基本的插件系统。目前自带插件有三个：
@@ -14,6 +18,10 @@ Python实现的Telegram Bot机器人框架
 
 
 目前此项目在 Python 3.6 及以上版本测试通过，如果您发现有任何问题，欢迎给我提 Issue 或 Pull Request。
+
+
+
+
 
 
 
@@ -33,9 +41,17 @@ Python实现的Telegram Bot机器人框架
 
 
 
+
+
+
+
 ## Demo ##
 
 * Telegram群组： [TeeleBot体验群](t.m/isTeeleBot)
+
+
+
+
 
 
 
@@ -67,11 +83,17 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 
 
 
+
+
 ## 联系我 ##
 
 * Email：hi@ojoll.com
 * Telegram群组：[TeeleBot体验群](t.m/isTeeleBot)
 * 其他：本repo 的 Issue
+
+
+
+
 
 
 
