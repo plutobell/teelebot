@@ -1,2 +1,2 @@
 # TeeleBot
-TelegramBot powered by Python
+Python实现的Telegram Bot
