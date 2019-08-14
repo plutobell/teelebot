@@ -11,4 +11,4 @@ def Chat(fromm, chat, date, text):
     req.encoding = "utf-8"
 
     bot = teelebot.Bot()
-    status = bot.sendMessage(chat["id"], str(req.json().get("content"), "html")
+    status = bot.sendMessage(chat["id"], str(req.json().get("content")), "html")
