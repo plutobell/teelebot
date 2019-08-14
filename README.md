@@ -17,6 +17,22 @@ Python实现的Telegram Bot机器人框架
 
 
 
+## Telegram Bot API封装情况
+
+### 已实现 ###
+
+* getMe
+* getUpdates
+* sendMessage
+* sendPhoto
+* sendDocument
+
+
+
+目标是封装官方所有的Method，任重道远呀~
+
+
+
 ## Demo ##
 
 * Telegram群组： [TeeleBot体验群](t.m/isTeeleBot)
