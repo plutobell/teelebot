@@ -31,10 +31,10 @@ Python实现的Telegram Bot机器人框架
 
 * getMe
 * getUpdates
+* getFile & downloadFile
 * sendMessage
 * sendPhoto
 * sendDocument
-* getFile & downloadFile
 
 
 
