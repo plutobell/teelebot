@@ -1,2 +1,2 @@
-#/menu
+#/start
 #Robot menu
