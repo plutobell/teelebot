@@ -34,6 +34,7 @@ Python实现的Telegram Bot机器人框架
 * sendMessage
 * sendPhoto
 * sendDocument
+* getFile & downloadFile
 
 
 
@@ -98,6 +99,10 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 
 
 ## 更新历史 ##
+
+#### 2019-8-15 ####
+
+* v1.0.7 : 重构部分代码，添加下载图片的功能
 
 #### 2019-8-14 ####
 

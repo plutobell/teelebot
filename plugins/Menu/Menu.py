@@ -3,7 +3,7 @@ import sys, os
 sys.path.append("../")
 from TeeleBot import teelebot
 
-def Menu(fromm, chat, date, text):
+def Menu(message):
     plugin_list = []
     menu_str = ""
     plugin_lis = os.listdir(r"plugins/")
@@ -22,4 +22,4 @@ def Menu(fromm, chat, date, text):
             menu_str += line_1 + " - " + line_2 + "%0A%0A"
     menu_str = "===== Command Menu =====%0A%0A" + menu_str
     bot = teelebot.Bot()
-    status = bot.sendMessage(chat["id"], menu_str, "html")
+    status = bot.sendMessage(message["chat"]["id"], menu_str, "html")
