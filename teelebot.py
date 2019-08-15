@@ -2,8 +2,9 @@
 '''
 description:基于Telegram Bot Api 的机器人
 creation date: 2019-8-13
-last modify: 2019-8-14
+last modify: 2019-8-15
 author github: plutobell
+version: 1.0.7
 '''
 
 import requests, time, importlib, sys, threading
@@ -19,19 +20,17 @@ class Bot(object):
             self.key = key
         elif key == "":
             self.key = config["key"]
-        self.url = r"https://api.telegram.org/bot" + self.key + r"/"
+        self.basic_url = "https://api.telegram.org/"
+        self.url = self.basic_url + r"bot" + self.key + r"/"
         self.timeout = config["timeout"]
         self.offset = 0
         self.debug = config["debug"]
-
 
     def __import_module(self, plugin_name):
         sys.path.append(r"plugins/" + plugin_name + r"/")
         Module = importlib.import_module(plugin_name) #模块检测，待完善
 
         return Module
-
-
 
     def _run(self):
         print("机器人开始轮询", "version:" + config["version"])
@@ -41,101 +40,79 @@ class Bot(object):
         for key in plugin_bridge.keys():
             plugin_list.append(key)
         while(True):
-            froms, chats, dates, texts = self.getUpdates()
-            for i,chat in enumerate(chats):
-                if chat["id"] < 0:
-                    print("(" + str(froms[i]["id"]) + ") " + froms[i]["first_name"] + ":", texts[i], dates[i], "( [" + str(chat["id"]) + "] - " + chat["title"] + ")")
-                elif chat["id"] > 0:
-                    print("(" + str(froms[i]["id"]) + ") " + froms[i]["first_name"] + ":", texts[i], dates[i])
-
+            messages = self.getUpdates() #获取消息队列messages
+            if messages == None:
+                continue
+            for message in messages: #获取单条消息记录message
                 for plugin in plugin_list:
-                    if texts[i][:len(plugin)] == plugin:
+                    if message.get("text") != None:
+                        message_type = "text"
+                    elif message.get("text") != None:
+                        message_type = "caption"
+                    else:
+                        continue
+                    if message.get(message_type)[:len(plugin)] == plugin:
                         Module = self.__import_module(plugin_bridge[plugin])
-                        threadObj = threading.Thread(target=getattr(Module, plugin_bridge[plugin]), args=[froms[i], chat, dates[i], texts[i]])
+                        threadObj = threading.Thread(target=getattr(Module, plugin_bridge[plugin]), args=[message])
                         threadObj.start()
             time.sleep(0.2) #经测试，延时0.2s较为合理
-
-    def __push(self, common, addr, file="None"):
-        if common == "getMe": #获取机器人信息
-            req = requests.post(self.url + addr)
-            req.keep_alive = False
-            if self.debug is True:
-                print(req.text)
-
-            return req.json().get("ok")
-
-        elif common == "getUpdates": #接收
-            req = requests.get(self.url + addr)
-            req.keep_alive = False
-            if self.debug is True:
-                print(req.text)
-            if req.json().get("ok") == True:
-                update_ids = []
-                froms = []
-                chats = []
-                dates = []
-                texts = []
-                results = req.json().get("result")
-                for result in results:
-                    update_ids.append(result.get("update_id"))
-                    message = result.get("message")
-                    chat = message.get("chat")
-                    fromm = message.get("from")
-                    if message.get("text") != None:
-                        chats.append(chat)
-                        froms.append(fromm)
-                        dates.append(message.get("date"))
-                        texts.append(message.get("text"))
-                print(texts)
-
-                if len(update_ids) >=1:
-                    self.offset = max(update_ids) + 1
-                return froms, chats,dates,texts
-            elif req.json().get("ok") == False:
-                return False, False, False, False
-
-        elif common == "sendMessage":  #发送文本
-            req = requests.post(self.url + addr)
-            req.keep_alive = False
-            if self.debug is True:
-                print(req.text)
-
-            return req.json().get("ok")
-
-        elif common in ("sendPhoto","sendDocument") and file != "None": #发送文件
-            f_type = ""
-            if common == "sendPhoto": #发送图片
-                f_type = "photo"
-            elif common == "sendDocument": #发送其他文件
-                f_type = "document"
-            if file[:7] == "http://" or file[0:7] == "https:/":
-                req = requests.post(self.url + addr + file)
-                req.keep_alive = False
-            else:
-                uid = ""
-                for i in range(len(addr[len(common)+9:])):
-                    if addr[len(common)+9:][i] == '&':
-                        break
-                    uid += addr[len(common)+9:][i]
-                file_data = {f_type : open(file, 'rb')}
-                req = requests.post(self.url + common + "?chat_id=" + uid, files=file_data)
-
-            return req.json().get("ok")
-
 
     def getMe(self):
         common = "getMe"
         addr = common + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
-        status = self.__push(common,addr)
-
-        return status
+        req = requests.post(self.url + addr)
+        req.keep_alive = False
+        if self.debug is True:
+            print(req.text)
+        return req.json()
 
     def getUpdates(self):
         common = "getUpdates"
         addr = common + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
-        status = self.__push(common, addr)
+        req = requests.get(self.url + addr)
+        #req.keep_alive = False
+        if self.debug is True:
+            print(req.text)
+        if req.json().get("ok") == True:
+            update_ids = []
+            messages = []
+            results = req.json().get("result")
+            for result in results:
+                update_ids.append(result.get("update_id"))
+                messages.append(result.get("message"))
+            if len(update_ids) >= 1:
+                self.offset = max(update_ids) + 1
+                return messages
+            else:
+                return None
+        elif req.json().get("ok") == False:
+            return False
 
-        return status
+    def getFile(self, file_id):
+        common = "getFile"
+        addr = common + "?file_id=" + file_id
+        req = requests.get(self.url + addr)
+        req.keep_alive = False
+        if self.debug is True:
+            print(req.text)
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def downloadFile(self, file_path, save_path):
+        if file_path[:7] == "http://" or file_path[:7] == "https:/":
+            req = requests.get(file_path)
+        else:
+            url = self.basic_url + "file/bot" + self.key + r"/" + file_path
+            req = requests.get(url)
+        file_name = file_path.split('/')[len(file_path.split('/'))-1]
+        with open(save_path + '/' + file_name, "wb") as f:
+            f.write(req.content)
+        if  req.status_code == requests.codes.ok:
+            return True
+        else:
+            return False
 
     def sendMessage(self, uid, text, model="text"):
         common = "sendMessage"
@@ -143,23 +120,48 @@ class Bot(object):
             addr = common + "?parse_mode=" + model + "&chat_id=" + str(uid) + "&text=" + text
         elif model == "text":
             addr = common + "?chat_id=" + str(uid) + "&text=" + text
-        status = self.__push(common,addr)
+        req = requests.post(self.url + addr)
+        req.keep_alive = False
+        if self.debug is True:
+            print(req.text)
 
-        return status
+        return req.json().get("ok")
 
     def sendPhoto(self, uid, photo):
         common = "sendPhoto"
         addr = common + "?chat_id=" + str(uid) + "&photo="
-        status = self.__push(common, addr, photo)
+        if photo[:7] == "http://" or photo[:7] == "https:/":
+                req = requests.post(self.url + addr + photo)
+                req.keep_alive = False
+        else:
+            uid = ""
+            for i in range(len(addr[len(common)+9:])):
+                if addr[len(common)+9:][i] == '&':
+                    break
+                uid += addr[len(common)+9:][i]
+            file_data = {"photo" : open(photo, 'rb')}
+            req = requests.post(self.url + common + "?chat_id=" + uid, files=file_data)
 
-        return status
+        return req.json().get("ok")
+
 
     def sendDocument(self, uid, document):
         common = "sendDocument"
         addr = common + "?chat_id=" + str(uid) + "&document="
-        status = self.__push(common, addr, document)
+        if document[:7] == "http://" or document[:7] == "https:/":
+                req = requests.post(self.url + addr + document)
+                req.keep_alive = False
+        else:
+            uid = ""
+            for i in range(len(addr[len(common)+9:])):
+                if addr[len(common)+9:][i] == '&':
+                    break
+                uid += addr[len(common)+9:][i]
+            file_data = {"document" : open(document, 'rb')}
+            req = requests.post(self.url + common + "?chat_id=" + uid, files=file_data)
 
-        return status
+        return req.json().get("ok")
+
 
 if __name__ == "__main__":
     bot = Bot()
