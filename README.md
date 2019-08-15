@@ -89,6 +89,7 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 ## 联系我 ##
 
 * Email：hi@ojoll.com
+* Blog:    [北及](https://ojoll.com)
 * Telegram群组：[TeeleBot体验群](http://t.m/isTeeleBot)（t.me/isTeeleBot）
 * 其他：本repo 的 Issue
 
