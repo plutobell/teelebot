@@ -1,4 +1,3 @@
-# -*-  encoding: utf-8  -*-
 import sys
 sys.path.append("../")
 from TeeleBot import teelebot
@@ -6,8 +5,12 @@ import requests, lxml, hashlib
 from bs4 import BeautifulSoup
 
 def Firefoxmoniter(message):
-    with open("plugins/Firefoxmoniter/__init__.py") as f:
+    with open("plugins/Firefoxmoniter/__init__.py", encoding="utf-8") as f:
         h = f.readline()[1:]
+    if len(message["text"]) < len(h):
+        bot = teelebot.Bot()
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", "html")
+        return False
     email = message["text"][len(h)-1:]
     if all([ '@' in email, '.' in email.split('@')[1] ]):
         ehash = hashlib.sha1(email.encode("utf-8")) #经测试由sha1加密

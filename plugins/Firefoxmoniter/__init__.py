@@ -1,2 +1,2 @@
 #/scan
-#(¸ñÊ½:ÃüÁîºó½ÓemailµØÖ·)µ÷ÓÃFirefox Moniter,ËÑË÷×Ô2007ÄêÆðµÄ¹«¿ªÊý¾ÝÍâÐ¹ÊÂ¼þµ±ÖÐ,ÊÇ·ñ°üº¬ÄúµÄµç×ÓÓÊ¼þµØÖ·¡£
+#(æ ¼å¼:å‘½ä»¤åŽæŽ¥emailåœ°å€)è°ƒç”¨Firefox Moniter,æœç´¢è‡ª2007å¹´èµ·çš„å…¬å¼€æ•°æ®å¤–æ³„äº‹ä»¶å½“ä¸­,æ˜¯å¦åŒ…å«æ‚¨çš„ç”µå­é‚®ä»¶åœ°å€ã€‚
