@@ -23,10 +23,13 @@ def Firefoxmoniter(message):
     url = "https://monitor.firefox.com/"
     r_session = requests.Session()
     page = r_session.get(url)
+    if not page.status_code == requests.codes.ok:
+        bot = teelebot.Bot()
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A操作过于频繁，请稍后再试!", "text")
+        return False
     page.encoding = "utf-8"
-    soup = BeautifulSoup(page.text, "lxml")
-
     session = page.cookies["session"]
+    soup = BeautifulSoup(page.text, "lxml")
     csrf = soup.find_all("input")[0]["value"]
 
     url = "https://monitor.firefox.com/scan"
@@ -53,7 +56,7 @@ def Firefoxmoniter(message):
             source = section.find_all("span")[0].text + "%0A"
             date = "事件记录时间:%0A" + section.find_all("span")[2].text + "%0A"
             data = "泄露的数据:%0A" + section.find_all("span")[4].text + "%0A"
-            result += source + date + data + "%0A%0A"
+            result += source + date + data + "%0A"
 
         bot = teelebot.Bot()
         status = bot.sendMessage(message["chat"]["id"], result, "html")
