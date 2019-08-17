@@ -1,6 +1,7 @@
 import sys, os
 sys.path.append("../")
 from TeeleBot import teelebot
+from config import config
 
 def Menu(message):
     plugin_list = []
@@ -19,6 +20,6 @@ def Menu(message):
                 elif i == 1:
                     line_2 = f.readline().strip()[1:]
             menu_str += line_1 + " - " + line_2 + "%0A%0A"
-    menu_str = "===== Command Menu =====%0A%0A" + menu_str + "%0A%0Av1.0.7"
+    menu_str = "===== Command Menu =====%0A%0A" + menu_str + "%0A%0Av" + config["version"]
     bot = teelebot.Bot()
     status = bot.sendMessage(message["chat"]["id"], menu_str, "html")
