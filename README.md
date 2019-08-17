@@ -9,11 +9,12 @@ Python实现的Telegram Bot机器人框架
 
 ## 说明 ##
 
-本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，实现了基本的插件系统。目前自带插件有三个：
+本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，实现了基本的插件系统。目前自带插件有以下几个：
 
 * Menu  -   自动生成的插件菜单
 *   Chat  -   调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
 *  Hello  -   Hello World插件例子
+*  Firefoxmoniter -  调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件。
 
 
 
@@ -88,7 +89,7 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 
 ## 联系我 ##
 
-* Email：hi@ojoll.com
+* Email：hi#ojoll.com ( # == @ )
 * Blog:    [北及](https://ojoll.com)
 * Telegram群组：[TeeleBot体验群](http://t.m/isTeeleBot)（t.me/isTeeleBot）
 * 其他：本repo 的 Issue
