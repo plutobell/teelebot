@@ -1,3 +1,4 @@
+# -*-  encoding: utf-8  -*-
 import sys,requests
 sys.path.append("../")
 from TeeleBot import teelebot
