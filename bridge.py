@@ -1,4 +1,3 @@
-# -*-  encoding: utf-8  -*-
 import os
 
 def bridge():
@@ -11,7 +10,7 @@ def bridge():
 		if os.path.isdir("plugins/" + plugi):
 			plugin_list.append(plugi)
 	for plugin in plugin_list:
-		with open("plugins/" + plugin + r"/__init__.py") as f:
+		with open("plugins/" + plugin + r"/__init__.py", encoding="utf-8") as f:
 			plugin_bridge[f.readline().strip()[1:]] = plugin
 	#os.chdir(basic_dir)
 	return plugin_bridge
