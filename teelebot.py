@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 '''
 description:基于Telegram Bot Api 的机器人
 creation date: 2019-8-13

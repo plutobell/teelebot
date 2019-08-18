@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 config = {
     'key' : 'your key',
     'debug' : False,
