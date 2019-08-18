@@ -20,9 +20,14 @@ def Firefoxmoniter(message):
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", "html")
         return False
 
+    protocol, ip, port = get_ip()
+    proxies = {
+        protocol:protocol + '://' + ip + ':' + port
+    }
+
     url = "https://monitor.firefox.com/"
     r_session = requests.Session()
-    page = r_session.get(url)
+    page = r_session.get(url, proxies=proxies)
     if not page.status_code == requests.codes.ok:
         bot = teelebot.Bot()
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A操作过于频繁，请稍后再试!", "text")
@@ -45,7 +50,7 @@ def Firefoxmoniter(message):
         'referer': 'https://monitor.firefox.com/',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
     }
-    page = r_session.post(url, data=data, headers=headers)
+    page = r_session.post(url, data=data, headers=headers, proxies=proxies)
     page.encoding = "utf-8"
 
     result = ""
@@ -63,6 +68,17 @@ def Firefoxmoniter(message):
     else:
         bot = teelebot.Bot()
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检测命令格式!", "text")
+
+
+def get_ip():
+    url = u"http://ip.jiangxianli.com/api/proxy_ip"
+    req = requests.get(url)
+    status = req.json().get("msg")
+    if status == "成功":
+        protocol = req.json().get("data").get("protocol")
+        ip = req.json().get("data").get("ip")
+        port = req.json().get("data").get("port")
+        return protocol, ip, port
 
 
 if __name__ == "__main__":
