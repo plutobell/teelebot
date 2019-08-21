@@ -28,7 +28,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现 ###
+### 已实现（18/42） ###
 
 * getMe
 * getUpdates
@@ -36,6 +36,18 @@ Python实现的Telegram Bot机器人框架
 * sendMessage
 * sendPhoto
 * sendDocument
+* kickChatMember
+* unbanChatMember
+* leaveChat
+* getChat
+* getChatAdministrators
+* getChatMembersCount
+* getChatMember
+* setChatPermissions
+* restrictChatMember
+* promoteChatMember
+* pinChatMessage
+* unpinChatMessage
 
 
 
@@ -101,6 +113,10 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 
 
 ## 更新历史 ##
+
+#### 2019-8-21 ####
+
+* v1.1.0 : 一大波群管理相关接口的封装，代码优化
 
 #### 2019-8-17 ####
 
