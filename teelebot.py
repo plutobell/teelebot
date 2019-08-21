@@ -114,12 +114,11 @@ class Bot(object):
         else:
             return False
 
-    def sendMessage(self, uid, text, model="text"): #发送消息
+    def sendMessage(self, chat_id, text, parse_mode="text"): #发送消息
         command = "sendMessage"
-        if model in ("html","markdown"):
-            addr = command + "?parse_mode=" + model + "&chat_id=" + str(uid) + "&text=" + text
-        elif model == "text":
-            addr = command + "?chat_id=" + str(uid) + "&text=" + text
+        addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
+        if parse_mode in ("html","markdown"):
+            addr += "&parse_mode=" + parse_mode
         req = requests.post(self.url + addr)
         req.keep_alive = False
         if self.debug is True:
@@ -127,38 +126,50 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendPhoto(self, uid, photo): #发送图片
+    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="text"): #发送图片
         command = "sendPhoto"
-        addr = command + "?chat_id=" + str(uid) + "&photo="
         if photo[:7] == "http://" or photo[:7] == "https:/":
-                req = requests.post(self.url + addr + photo)
-                req.keep_alive = False
+            addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
+            if caption != None:
+                addr += "&caption=" + caption
+            if parse_mode in ("markdown","html"):
+                addr += "&parse_mode" + parse_mode
+
+            req = requests.post(self.url + addr)
+            req.keep_alive = False
         else:
-            uid = ""
-            for i in range(len(addr[len(command)+9:])):
-                if addr[len(command)+9:][i] == '&':
-                    break
-                uid += addr[len(command)+9:][i]
             file_data = {"photo" : open(photo, 'rb')}
-            addr = command + "?chat_id=" + str(uid)
+            addr = command + "?chat_id=" + str(chat_id)
+
+            if caption != None:
+                addr += "&caption=" + caption
+            if parse_mode in ("markdown","html"):
+                addr += "&parse_mode" + parse_mode
+
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
 
-    def sendDocument(self, uid, document): #发送文件
+    def sendDocument(self, chat_id, document, caption=None, parse_mode="text"): #发送文件
         command = "sendDocument"
-        addr = command + "?chat_id=" + str(uid) + "&document="
         if document[:7] == "http://" or document[:7] == "https:/":
-                req = requests.post(self.url + addr + document)
-                req.keep_alive = False
+            addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
+            if caption != None:
+                addr += "&caption=" + caption
+            if parse_mode in ("markdown","html"):
+                addr += "&parse_mode" + parse_mode
+
+            req = requests.post(self.url + addr)
+            req.keep_alive = False
         else:
-            uid = ""
-            for i in range(len(addr[len(command)+9:])):
-                if addr[len(command)+9:][i] == '&':
-                    break
-                uid += addr[len(command)+9:][i]
             file_data = {"document" : open(document, 'rb')}
-            addr = command + "?chat_id=" + str(uid)
+            addr = command + "?chat_id=" + str(chat_id)
+
+            if caption != None:
+                addr += "&caption=" + caption
+            if parse_mode in ("markdown","html"):
+                addr += "&parse_mode" + parse_mode
+
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
