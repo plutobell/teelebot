@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import sys,requests
+import sys, requests
 sys.path.append("../")
 from TeeleBot import teelebot
 import urllib.parse as ubp
