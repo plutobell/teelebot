@@ -44,7 +44,6 @@ class Bot(object):
             if messages == None:
                 continue
             for message in messages: #获取单条消息记录message
-                print(message)
                 for plugin in plugin_list:
                     if message.get("text") != None:
                         message_type = "text"
@@ -136,12 +135,12 @@ class Bot(object):
                 req.keep_alive = False
         else:
             uid = ""
-            addr = command + "?chat_id=" + str(uid)
             for i in range(len(addr[len(command)+9:])):
                 if addr[len(command)+9:][i] == '&':
                     break
                 uid += addr[len(command)+9:][i]
             file_data = {"photo" : open(photo, 'rb')}
+            addr = command + "?chat_id=" + str(uid)
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
@@ -154,12 +153,12 @@ class Bot(object):
                 req.keep_alive = False
         else:
             uid = ""
-            addr = command + "?chat_id=" + str(uid)
             for i in range(len(addr[len(command)+9:])):
                 if addr[len(command)+9:][i] == '&':
                     break
                 uid += addr[len(command)+9:][i]
             file_data = {"document" : open(document, 'rb')}
+            addr = command + "?chat_id=" + str(uid)
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
