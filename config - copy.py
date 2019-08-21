@@ -3,5 +3,5 @@ config = {
     'key' : 'your key',
     'debug' : False,
     'timeout' : 60,
-	'version' : '1.0.8',
+	'version' : '1.1.0',
 }
