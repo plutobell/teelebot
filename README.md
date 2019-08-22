@@ -86,7 +86,7 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 
 1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`；
 
-2.在TeeleBot目录下创建 `config.cfg` 配置文件，配置文件格式:
+2.在TeeleBot目录下创建`config.cfg`配置文件，配置文件格式:
 
 ```
 [config]
