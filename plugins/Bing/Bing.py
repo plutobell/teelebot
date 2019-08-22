@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys, requests, lxml, os, time
 sys.path.append("../")
-from TeeleBot import teelebot
+from TeeleBot import Bot
 from bs4 import BeautifulSoup
 
 def Bing(message):
@@ -34,5 +34,5 @@ def Bing(message):
         with open("plugins/Bing/status.db", "w") as f:
             f.write(str(date))
 
-    bot = teelebot.Bot()
+    bot = Bot()
     status = bot.sendPhoto(chat_id=message["chat"]["id"], photo="plugins/Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="html")

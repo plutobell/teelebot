@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys
 sys.path.append("../")
-from TeeleBot import teelebot
+from TeeleBot import Bot
 import requests, lxml, hashlib
 from bs4 import BeautifulSoup
 
@@ -9,7 +9,7 @@ def Firefoxmoniter(message):
     with open("plugins/Firefoxmoniter/__init__.py", encoding="utf-8") as f:
         h = f.readline()[1:]
     if len(message["text"]) < len(h):
-        bot = teelebot.Bot()
+        bot = Bot()
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", "html")
         return False
     email = message["text"][len(h)-1:]
@@ -17,7 +17,7 @@ def Firefoxmoniter(message):
         ehash = hashlib.sha1(email.encode("utf-8")) #经测试由sha1加密
         emailhash = ehash.hexdigest()
     else:
-        bot = teelebot.Bot()
+        bot = Bot()
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", "html")
         return False
 
@@ -30,7 +30,7 @@ def Firefoxmoniter(message):
     r_session = requests.Session()
     page = r_session.get(url, proxies=proxies)
     if not page.status_code == requests.codes.ok:
-        bot = teelebot.Bot()
+        bot = Bot()
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A操作过于频繁，请稍后再试!", "text")
         return False
     page.encoding = "utf-8"
@@ -64,10 +64,10 @@ def Firefoxmoniter(message):
             data = "泄露的数据:%0A" + section.find_all("span")[4].text + "%0A"
             result += source + date + data + "%0A"
 
-        bot = teelebot.Bot()
+        bot = Bot()
         status = bot.sendMessage(message["chat"]["id"], result, "html")
     else:
-        bot = teelebot.Bot()
+        bot = Bot()
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检测命令格式!", "text")
 
 
