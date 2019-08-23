@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys
 sys.path.append("../")
-from TeeleBot import Bot
+from teelebot import Bot
 
 def Hello(message):
     #print("你好,世界!")

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys, requests
 sys.path.append("../")
-from TeeleBot import Bot
+from teelebot import Bot
 import urllib.parse as ubp
 
 def Chat(message):

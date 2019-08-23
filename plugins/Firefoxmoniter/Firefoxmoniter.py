@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys
 sys.path.append("../")
-from TeeleBot import Bot
+from teelebot import Bot
 import requests, lxml, hashlib
 from bs4 import BeautifulSoup
 
