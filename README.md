@@ -1,4 +1,4 @@
-# TeeleBot 
+# teelebot
 Python实现的Telegram Bot机器人框架
 
 
@@ -62,7 +62,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Demo ##
 
-* Telegram群组： [TeeleBot体验群](http://t.m/isTeeleBot)（t.me/isTeeleBot）
+* Telegram群组： [teelebot体验群](http://t.m/isteelebot)（t.me/isteelebot）
 
 
 
@@ -76,7 +76,7 @@ Python实现的Telegram Bot机器人框架
 
 ### Python版本
 
-TeeleBot 只支持 Python3.x，不支持Python2.x。
+teelebot 只支持 Python3.x，不支持Python2.x。
 
 
 
@@ -86,7 +86,7 @@ TeeleBot 只支持 Python3.x，不支持Python2.x。
 
 1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`；
 
-2.在TeeleBot目录下创建`config.cfg`配置文件，配置文件格式:
+2.在teelebot目录下创建`config.cfg`配置文件，配置文件格式:
 
 ```
 [config]
@@ -97,7 +97,7 @@ timeout=60
 
 
 
-3.终端下进入项目文件夹所在目录，输入`python -m TeeleBot`回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+3.终端下进入teelebot文件夹所在目录，输入`python -m teelebot`回车,正常情况下你应该能看见屏幕提示机器人开始运行。
 
 
 
@@ -113,7 +113,7 @@ timeout=60
 
 * Email：hi#ojoll.com ( # == @ )
 * Blog:    [北及](https://ojoll.com)
-* Telegram群组：[TeeleBot体验群](http://t.m/isTeeleBot)（t.me/isTeeleBot）
+* Telegram群组：[teelebot体验群](http://t.m/isteelebot)（t.me/isteelebot）
 * 其他：本repo 的 Issue
 
 

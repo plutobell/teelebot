@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sys, requests, lxml, os, time
 sys.path.append("../")
-from TeeleBot import Bot
+from teelebot import Bot
 from bs4 import BeautifulSoup
 
 def Bing(message):
