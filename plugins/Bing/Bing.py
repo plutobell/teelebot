@@ -9,6 +9,8 @@ def Bing(message):
     Bing接口Github地址:https://github.com/xCss/bing
     '''
 
+    bot = Bot()
+
     url = "https://bing.ioliu.cn"
     req = requests.get(url)
     soup = BeautifulSoup(req.text,"lxml")
@@ -17,22 +19,21 @@ def Bing(message):
     date = item.find("em").text
     src = url + item.find("a", class_="ctrl download")["href"]
 
-    if not os.path.isfile("plugins/Bing/status.db"):
-        with open("plugins/Bing/status.db", "w") as f:
+    if not os.path.isfile(bot.plugin_dir + "Bing/status.db"):
+        with open(bot.plugin_dir + "Bing/status.db", "w") as f:
             f.write(str(time.strftime('%Y-%m-%d')))
-    if not os.path.isfile("plugins/Bing/today.jpg"):
-        with open("plugins/Bing/today.jpg", "wb") as p:
+    if not os.path.isfile(bot.plugin_dir + "Bing/today.jpg"):
+        with open(bot.plugin_dir + "Bing/today.jpg", "wb") as p:
             req = requests.get(src)
             p.write(req.content)
 
-    with open("plugins/Bing/status.db", "r") as f:
+    with open(bot.plugin_dir + "Bing/status.db", "r") as f:
         old = f.readline().strip()
     if date != old:
         req = requests.get(src)
-        with open("plugins/Bing/today.jpg", "wb") as p:
+        with open(bot.plugin_dir + "Bing/today.jpg", "wb") as p:
             p.write(req.content)
-        with open("plugins/Bing/status.db", "w") as f:
+        with open(bot.plugin_dir + "Bing/status.db", "w") as f:
             f.write(str(date))
 
-    bot = Bot()
-    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo="plugins/Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="html")
+    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=bot.plugin_dir + "Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="html")
