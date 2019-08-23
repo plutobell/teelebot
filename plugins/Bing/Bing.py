@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
-import sys, requests, lxml, os, time
-sys.path.append("../")
+import requests, lxml, os, time
 from teelebot import Bot
 from bs4 import BeautifulSoup
 

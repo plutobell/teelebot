@@ -84,20 +84,61 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 
 ## 使用 ##
 
+#### 源码运行 ####
+
 1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`；
 
-2.在teelebot目录下创建`config.cfg`配置文件，配置文件格式:
+
+
+2.`config.cfg` 配置文件
+
+配置文件格式:
 
 ```
 [config]
 key=your key
 debug=False
 timeout=60
+plugin_dir=your plugin dir   //[Optional]
 ```
 
+* Linux
+
+在 `/root` 目录下创建文件夹 `.teelebot` ,并在其内新建配置文件 `config.cfg` ,按照上面的格式填写配置文件
+
+* Windows
+
+在 `C:\Users\<username>`  目录下创建文件夹 `.teelebot` ,并在其内新建配置文件 `config.cfg` ,按照上面的格式填写配置文件
+
+* 指定配置文件
+
+Linux 和 Windows 都可在命令行通过参数手动指定配置文件路径，命令格式：
+
+```
+teelebot -c/-C <configure file path>
+```
+
+路径必须为绝对路径。
 
 
-3.终端下进入teelebot文件夹所在目录，输入`python -m teelebot`回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+
+3.运行
+
+终端下进入teelebot文件夹所在目录。
+
+* 对于使用程序配置文件默认路径的：
+
+  输入`python -m teelebot` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+
+* 对于命令行手动指定配置文件路径的：
+
+  输入`python -m teelebot -c/-C <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+
+
+
+
+
+
 
 
 
@@ -125,6 +166,8 @@ timeout=60
 ## 更新历史 ##
 
 #### 2019-8-23 ####
+
+* v1.1.8 : 项目包化；支持自定义插件文件夹路径；配置文件存储路径优化，支持命令行输入
 
 * v1.1.3 : 项目从TeeleBot更名为teelebot，文件路径和代码结构优化
 
