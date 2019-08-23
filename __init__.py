@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
-__all__ = ['config', 'bridge', 'Bot']
+__all__ = ['Bot']
 
-from config import config
-from bridge import bridge
-from teelebot import Bot
+from .teelebot import Bot
+
+def main():
+    bot = Bot()
+    bot._run()

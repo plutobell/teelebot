@@ -8,7 +8,7 @@ version: 1.1.2
 '''
 
 import requests, time, importlib, sys, threading
-from config import config
+from .config import config
 
 requests.adapters.DEFAULT_RETRIES = 5
 
@@ -25,16 +25,18 @@ class Bot(object):
         self.timeout = config["timeout"]
         self.offset = 0
         self.debug = config["debug"]
+        self.plugin_dir = config["plugin_dir"]
+        self.VERSION = config["version"]
 
     def __import_module(self, plugin_name):
-        sys.path.append(r"plugins/" + plugin_name + r"/")
+        sys.path.append(self.plugin_dir + plugin_name + r"/")
         Module = importlib.import_module(plugin_name) #模块检测，待完善
 
         return Module
 
     def _run(self):
-        print("机器人开始轮询", "version:" + config["version"])
-        from bridge import bridge
+        print("机器人开始轮询", "version:" + self.VERSION)
+        from .bridge import bridge
         plugin_list = []
         plugin_bridge = bridge()
         for key in plugin_bridge.keys():
@@ -335,8 +337,3 @@ class Bot(object):
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
-
-
-if __name__ == "__main__":
-    bot = Bot()
-    bot._run()
