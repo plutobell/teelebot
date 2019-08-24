@@ -84,7 +84,7 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 
 ## 使用 ##
 
-#### 源码运行 ####
+#### 一、源码运行 ####
 
 1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`；
 
@@ -115,7 +115,7 @@ plugin_dir=your plugin dir   //[Optional]
 Linux 和 Windows 都可在命令行通过参数手动指定配置文件路径，命令格式：
 
 ```
-teelebot -c/-C <configure file path>
+python -m teelebot -c/-C <configure file path>
 ```
 
 路径必须为绝对路径。
@@ -136,7 +136,37 @@ teelebot -c/-C <configure file path>
 
 
 
+#### 二、Pip安装运行
 
+##### 安装 #####
+
+* 确保本机Python环境拥有pip包管理工具。
+
+* 在本项目Release页面下载包文件。
+
+* 本机命令行进入包文件所在目录，执行：
+
+  ```
+  pip install <teelebot package file name>
+  
+  or
+  
+  pip3 install <teelebot package file name>
+  ```
+
+由于API未封装完毕，暂未上传至 `PyPI` ,故不能在线安装，忘谅解。
+
+##### 运行 #####
+
+任意路径打开终端，输入以下命令：
+
+- 对于使用程序配置文件默认路径的：
+
+  输入`teelebot` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+
+- 对于命令行手动指定配置文件路径的：
+
+  输入`teelebot -c/-C <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
 
 
 
