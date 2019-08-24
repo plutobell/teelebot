@@ -4,12 +4,13 @@ description:基于Telegram Bot Api 的机器人
 creation date: 2019-8-13
 last modify: 2019-8-22
 author github: plutobell
-version: 1.1.2
+version: 1.1.9
 '''
 
 import requests, time, importlib, sys, threading
-from .config import config
+from .handler import config
 
+config = config()
 requests.adapters.DEFAULT_RETRIES = 5
 
 class Bot(object):
@@ -26,6 +27,7 @@ class Bot(object):
         self.offset = 0
         self.debug = config["debug"]
         self.plugin_dir = config["plugin_dir"]
+        self.plugin_bridge = config["plugin_bridge"]
         self.VERSION = config["version"]
 
     def __import_module(self, plugin_name):
@@ -36,10 +38,8 @@ class Bot(object):
 
     def _run(self):
         print("机器人开始轮询", "version:" + self.VERSION)
-        from .bridge import bridge
         plugin_list = []
-        plugin_bridge = bridge()
-        for key in plugin_bridge.keys():
+        for key in self.plugin_bridge.keys():
             plugin_list.append(key)
         while(True):
             messages = self.getUpdates() #获取消息队列messages
@@ -54,8 +54,8 @@ class Bot(object):
                     else:
                         continue
                     if message.get(message_type)[:len(plugin)] == plugin:
-                        Module = self.__import_module(plugin_bridge[plugin])
-                        threadObj = threading.Thread(target=getattr(Module, plugin_bridge[plugin]), args=[message])
+                        Module = self.__import_module(self.plugin_bridge[plugin])
+                        threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
                         threadObj.start()
             time.sleep(0.2) #经测试，延时0.2s较为合理
 

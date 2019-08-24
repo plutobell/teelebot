@@ -4,12 +4,9 @@ from teelebot import Bot
 
 def Menu(message):
     bot = Bot()
-    plugin_list = []
+
+    plugin_list = bot.plugin_bridge.values()
     menu_str = ""
-    plugin_lis = os.listdir(bot.plugin_dir)
-    for plugi in plugin_lis:
-        if os.path.isdir(bot.plugin_dir + "/" + plugi):
-            plugin_list.append(plugi)
     for plugin in plugin_list:
         with open(bot.plugin_dir + plugin + r"/__init__.py", encoding="utf-8") as f:
             line_1 = ""
