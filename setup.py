@@ -26,10 +26,11 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     license='GPLv3',
-    packages=find_packages(exclude=['plugins', '*.plugins', '*.plugins.*', 'plugins.*']),
+    packages=find_packages(exclude=['plugins', 'plugins.*']),
     package_data={
         'teelebot':['README.md'],
         'teelebot':['LICENSE'],
+		'teelebot':['plugins/Hello/helloworld.png'],
     },
     install_requires=['requests'],
     entry_points={

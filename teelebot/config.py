@@ -8,7 +8,7 @@ config = {}
 
 if len(sys.argv) == 3 and sys.argv[1] in ("-c", "-C"):
     config_dir = os.path.abspath(sys.argv[2])
-elif len(sys.argv) == 1 or  len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel"):
+elif len(sys.argv) == 1 or  len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel", "bdist_rpm"):
     if not os.path.exists(os.path.abspath(os.path.expanduser('~')) + "/.teelebot"):
         os.mkdir(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")
     config_dir = os.path.abspath(os.path.expanduser('~')) + "/.teelebot/config.cfg"
