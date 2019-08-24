@@ -142,7 +142,7 @@ python -m teelebot -c/-C <configure file path>
 
 * 确保本机Python环境拥有pip包管理工具。
 
-* 在本项目Release页面下载包文件。
+* 在本项目Releases页面下载包文件。
 
 * 本机命令行进入包文件所在目录，执行：
 
@@ -197,7 +197,7 @@ python -m teelebot -c/-C <configure file path>
 
 #### 2019-8-24 ####
 
-* v1.1.9 : 项目代码结构优化，Bug修复
+* v1.1.9 : 项目代码结构优化，Bug修复，第一个 Release发布
 
 #### 2019-8-23 ####
 
