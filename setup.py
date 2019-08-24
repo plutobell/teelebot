@@ -1,6 +1,8 @@
 from setuptools import setup, find_packages, Extension
 from distutils.core import setup, Extension
-from teelebot.config import config
+from teelebot.handler import config
+
+config = config()
 
 # read the contents of the README
 with open('README.md', "r", encoding="utf-8") as README_md:
