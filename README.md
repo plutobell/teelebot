@@ -62,7 +62,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Demo ##
 
-* Telegram群组： [teelebot体验群](http://t.m/isteelebot)（t.me/isteelebot）
+* Telegram群组： [teelebot体验群](http://t.me/isteelebot)（t.me/isteelebot）
 
 
 
@@ -184,7 +184,7 @@ python -m teelebot -c/-C <configure file path>
 
 * Email：hi#ojoll.com ( # == @ )
 * Blog:    [北及](https://ojoll.com)
-* Telegram群组：[teelebot体验群](http://t.m/isteelebot)（t.me/isteelebot）
+* Telegram群组：[teelebot体验群](http://t.me/isteelebot)（t.me/isteelebot）
 * 其他：本repo 的 Issue
 
 
