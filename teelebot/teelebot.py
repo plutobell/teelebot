@@ -2,9 +2,9 @@
 '''
 description:基于Telegram Bot Api 的机器人
 creation date: 2019-8-13
-last modify: 2019-8-22
+last modify: 2019-8-25
 author github: plutobell
-version: 1.1.9
+version: 1.1.18
 '''
 
 import requests, time, importlib, sys, threading
@@ -132,53 +132,170 @@ class Bot(object):
 
         return req.json().get("ok")
 
+    def sendVoice(self, chat_id, voice, caption=None, parse_mode="text"): #发送音频消息 .ogg
+        command = "sendVoice"
+        if voice[:7] == "http://" or voice[:7] == "https:/":
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
+        else:
+            file_data = {"voice" : open(voice, 'rb')}
+            addr = command + "?chat_id=" + str(chat_id)
+
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
+
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
+            req = requests.post(self.url + addr, files=file_data)
+
+        return req.json().get("ok")
+
+    def sendAnimation(self, chat_id, animation, caption=None, parse_mode="text"):
+        '''
+        发送动画 gif/mp4
+        '''
+        command = "sendAnimation"
+        if animation[:7] == "http://" or animation[:7] == "https:/":
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
+        else:
+            file_data = {"animation" : open(animation, 'rb')}
+            addr = command + "?chat_id=" + str(chat_id)
+
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
+
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
+            req = requests.post(self.url + addr, files=file_data)
+
+        return req.json().get("ok")
+
+    def sendAudio(self, chat_id, audio, caption=None, parse_mode="text", title=None):
+        '''
+        发送音频 mp3
+        '''
+        command = "sendAudio"
+        if audio[:7] == "http://" or audio[:7] == "https:/":
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
+        else:
+            file_data = {"audio" : open(audio, 'rb')}
+            addr = command + "?chat_id=" + str(chat_id)
+
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
+        if title != None:
+            addr += "&title=" + title
+
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
+            req = requests.post(self.url + addr, files=file_data)
+
+        return req.json().get("ok")
+
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="text"): #发送图片
         command = "sendPhoto"
         if photo[:7] == "http://" or photo[:7] == "https:/":
+            file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
-            if caption != None:
-                addr += "&caption=" + caption
-            if parse_mode in ("markdown","html"):
-                addr += "&parse_mode" + parse_mode
-
-            req = requests.post(self.url + addr)
-            req.keep_alive = False
         else:
             file_data = {"photo" : open(photo, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
-            if caption != None:
-                addr += "&caption=" + caption
-            if parse_mode in ("markdown","html"):
-                addr += "&parse_mode" + parse_mode
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
 
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
+
+    def sendVideo(self, chat_id, video, caption=None, parse_mode="text"):
+        '''
+        发送视频
+        '''
+        command = "sendVideo"
+        if video[:7] == "http://" or video[:7] == "https:/":
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
+        else:
+            file_data = {"video" : open(video, 'rb')}
+            addr = command + "?chat_id=" + str(chat_id)
+
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
+
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
+            req = requests.post(self.url + addr, files=file_data)
+
+        return req.json().get("ok")
+
+    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="text"):
+        '''
+        发送圆形或方形视频？
+        '''
+        command = "sendVideoNote"
+        if video_note[:7] == "http://" or video_note[:7] == "https:/":
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
+        else:
+            file_data = {"video_note" : open(video_note, 'rb')}
+            addr = command + "?chat_id=" + str(chat_id)
+
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
+
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
+            req = requests.post(self.url + addr, files=file_data)
+
+        return req.json().get("ok")
+
+    def sendMediaGroup(self, chat_id, media): #暂未弄懂格式。
+        pass
 
     def sendDocument(self, chat_id, document, caption=None, parse_mode="text"): #发送文件
         command = "sendDocument"
         if document[:7] == "http://" or document[:7] == "https:/":
+            file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
-            if caption != None:
-                addr += "&caption=" + caption
-            if parse_mode in ("markdown","html"):
-                addr += "&parse_mode" + parse_mode
-
-            req = requests.post(self.url + addr)
-            req.keep_alive = False
         else:
             file_data = {"document" : open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
-            if caption != None:
-                addr += "&caption=" + caption
-            if parse_mode in ("markdown","html"):
-                addr += "&parse_mode" + parse_mode
+        if caption != None:
+            addr += "&caption=" + caption
+        if parse_mode in ("markdown","html"):
+            addr += "&parse_mode" + parse_mode
 
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
+
 
     def kickChatMember(self, uid, chat_id, until_date=0): #踢人
         command = "kickChatMember"
@@ -234,6 +351,22 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
+    def getUserProfilePhotos(self, user_id, offset=None, limit=None): #获取用户头像
+        command = "getUserProfilePhotos"
+        addr = command + "?user_id=" + str(user_id)
+
+        if offset != None:
+            addr += "&offset=" + str(offset)
+        if limit != None and limit in list(range(1,101)):
+            addr += "&limit=" + str(limit)
+
+        req = requests.get(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
     def getChatMember(self, uid, chat_id): #获取群组特定用户信息
         command = "getChatMember"
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
@@ -243,6 +376,37 @@ class Bot(object):
             return req.json().get("result")
         elif req.json().get("ok") == False:
             return req.json().get("ok")
+
+    def setChatTitle(self, chat_id, title): #设置群组标题
+        command = "setChatTitle"
+        addr = command + "?chat_id=" + str(chat_id) + "&title=" + str(title)
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
+
+    def setChatDescription(self, chat_id, description): #设置群组简介（测试好像无效。。）
+        command = "setChatDescription"
+        addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
+
+
+    def setChatPhoto(self, chat_id, photo): #设置群组头像
+        command = "setChatPhoto"
+        file_data = {"photo" : open(photo, 'rb')}
+        addr = command + "?chat_id=" + str(chat_id)
+
+        req = requests.post(self.url + addr, files=file_data)
+
+        return req.json().get("ok")
+
+    def deleteChatPhoto(self, chat_id): #删除群组头像
+        command = "deleteChatPhoto"
+        addr = command + "?chat_id=" + str(chat_id)
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
 
     def setChatPermissions(self, chat_id, permissions):
         '''
@@ -338,6 +502,54 @@ class Bot(object):
     def unpinChatMessage(self,chat_id): #取消置顶消息
         command = "unpinChatMessage"
         addr = command + "?chat_id=" + str(chat_id)
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
+
+    def sendLocation(self, chat_id, latitude, longitude): #发送地图定位，经纬度
+        command = "sendLocation"
+        addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude))
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
+
+    def sendContact(self, chat_id, phone_number, first_name, last_name=None):
+        '''
+        发送联系人信息
+        '''
+        command = "sendContact"
+        addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(first_name)
+        if last_name != None:
+            addr += "&last_name=" + str(last_name)
+
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
+
+    def sendVenue(self, chat_id, latitude, longitude, title, address):
+        '''
+        发送地点，显示在地图上
+        '''
+        command = "sendVenue"
+        addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude)) + \
+            "&title=" + str(title) + "&address=" + str(address)
+        req = requests.post(self.url + addr)
+
+        return req.json().get("ok")
+
+    def sendChatAction(self, chat_id, action):
+        '''
+        发送聊天状态，类似： 正在输入...
+        	typing :for text messages,
+            upload_photo :for photos,
+            record_video/upload_video :for videos,
+            record_audio/upload_audio :for audio files,
+            upload_document :for general files,
+            find_location :for location data,
+            record_video_note/upload_video_note :for video notes.
+        '''
+        command = "sendChatAction"
+        addr = command + "?chat_id=" + str(chat_id) + "&action=" + str(action)
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
