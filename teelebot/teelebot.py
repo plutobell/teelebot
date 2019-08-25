@@ -41,8 +41,8 @@ class Bot(object):
         plugin_list = []
         for key in self.plugin_bridge.keys():
             plugin_list.append(key)
-        try:
-            while(True):
+        while(True):
+            try:
                 messages = self.getUpdates() #获取消息队列messages
                 if messages == None:
                     continue
@@ -59,9 +59,9 @@ class Bot(object):
                             threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
                             threadObj.start()
                 time.sleep(0.2) #经测试，延时0.2s较为合理
-        except KeyboardInterrupt: #判断键盘输入，终止循环
-            print("程序终止")
-            sys.exit(0)
+            except KeyboardInterrupt: #判断键盘输入，终止循环
+                print("程序终止") #退出存在问题，待修复
+                sys.exit()
 
     def getMe(self): #获取机器人基本信息
         command = "getMe"
