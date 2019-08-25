@@ -215,7 +215,7 @@ python -m teelebot -c/-C <configure file path>
 
 #### 2019-8-24 ####
 
-* v1.1.9 : 项目代码结构优化，Bug修复，第一个 Release发布
+* v1.1.9 : 项目代码结构优化，Bug修复，第一个 Release发布(已删除)
 
 #### 2019-8-23 ####
 
