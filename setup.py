@@ -32,8 +32,9 @@ setup(
     package_data={
         'teelebot':['README.md'],
         'teelebot':['LICENSE'],
-		'teelebot':['plugins/Hello/helloworld.png'],
-		'teelebot':['plugin/Chat/hello.ogg']
+		'teelebot':['plugins/Chat/hello.ogg',
+					'plugins/Hello/helloworld.png'
+		],
     },
     install_requires=['requests'],
     entry_points={
