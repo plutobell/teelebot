@@ -44,9 +44,10 @@ class Bot(object):
         while(True):
             try:
                 messages = self.getUpdates() #获取消息队列messages
-                if messages == None:
+                if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
+                    print(message)
                     for plugin in plugin_list:
                         if message.get("text") != None:
                             message_type = "text"
@@ -553,3 +554,20 @@ class Bot(object):
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
+
+    def forwardMessage(self, chat_id, from_chat_id, message_id, disable_notification=None):
+        '''
+        转发消息
+        '''
+        command = "forwardMessage"
+        addr = command + "?chat_id=" + str(chat_id) + "&from_chat_id=" + str(from_chat_id) \
+            + "&message_id=" + str(message_id)
+        if disable_notification != None:
+            addr += "&disable_notification=" + str(disable_notification)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")

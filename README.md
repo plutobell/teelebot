@@ -29,7 +29,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现（32/42） ###
+### 已实现（33/41） ###
 
 * getMe
 * getUpdates
@@ -63,6 +63,7 @@ Python实现的Telegram Bot机器人框架
 * sendContact
 * sendVenue
 * sendChatAction
+* forwardMessage
 
 
 
