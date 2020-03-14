@@ -1,4 +1,3 @@
 config.cfg
-__pycache__/
+*/__pycache__
 info.txt
-test.py

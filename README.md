@@ -16,6 +16,7 @@ Python实现的Telegram Bot机器人框架
 *  Hello  -   Hello World插件例子
 *  Firefoxmoniter -  调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件。
 *  Bing - 调用第三方Bing壁纸接口 [bing](https://github.com/xCss/bing) 获取每日必应壁纸
+*  ID - 获取你的用户ID
 
 
 
@@ -29,7 +30,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现（33/41） ###
+### 已实现 41.5 个 ###
 
 * getMe
 * getUpdates
@@ -64,10 +65,19 @@ Python实现的Telegram Bot机器人框架
 * sendVenue
 * sendChatAction
 * forwardMessage
+* kickChatMember
+* unbanChatMember
+* restrictChatMember
+* setChatAdministratorCustomTitle
+* setChatPermissions
+* exportChatInviteLink
+* setChatStickerSet
+* deleteChatStickerSet
+* sendMediaGroup（undone）
 
 
 
-目标是封装官方所有的Method，任重道远呀~
+目标是封装官方所有的Method
 
 
 
@@ -109,9 +119,10 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 
 配置文件格式:
 
-```
+```python
 [config]
 key=your key
+root=your user id
 debug=False
 timeout=60
 plugin_dir=your plugin dir   //[Optional]
@@ -187,7 +198,7 @@ python -m teelebot -c/-C <configure file path>
 
 
 
-服务器端可配合`supervisor`使用。
+可配合`supervisor`使用。
 
 
 
@@ -209,6 +220,12 @@ python -m teelebot -c/-C <configure file path>
 
 
 ## 更新历史 ##
+
+#### 2020-3-14
+
+* v1.2.1 : 新增插件 ID
+
+* v1.2.0 : 封装8.5个接口，添加测试用例
 
 #### 2019-8-25 ####
 

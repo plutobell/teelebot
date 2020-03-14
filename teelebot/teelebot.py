@@ -1,13 +1,18 @@
 # -*- coding:utf-8 -*-
 '''
-description:基于Telegram Bot Api 的机器人
-creation date: 2019-8-13
-last modify: 2019-8-25
-author github: plutobell
-version: 1.1.18
+@description:基于Telegram Bot Api 的机器人
+@creation date: 2019-8-13
+@last modify: 2020-3-14
+@author github: plutobell
+@version: 1.2.1_dev
 '''
+import time
+import sys
+import json
+import importlib
+import threading
 
-import requests, time, importlib, sys, threading
+import requests
 from .handler import config
 
 config = config()
@@ -273,8 +278,51 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendMediaGroup(self, chat_id, media): #暂未弄懂格式。
-        pass
+    def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None): #暂未弄懂格式。
+        '''
+        以类似图集的方式发送图片或者视频(目前只支持http链接和文件id，暂不支持上传文件)
+        media的格式：（同时请求需要加入header头，指定传送参数为json类型，并且将data由字典转为json字符串传送）
+        medias ={
+            'caption': 'test',
+            'media': [
+            {
+            'type': 'photo',
+            'media': 'https://xxxx.com/sample/7kwx_2.jpg'
+            },
+            {
+            'type': 'photo',
+            'media': 'AgACAgQAAx0ETbyLwwADeF5s6QosSI_IW3rKir3PrMUX'
+            }
+            ]
+        }
+        InputMediaPhoto:
+        type
+        media
+        caption
+        parse_mode
+
+        InputMediaVideo:
+        type
+        media
+        thumb
+        caption
+        parse_mode
+        width
+        height
+        duration
+        supports_streaming
+        '''
+        command = "sendMediaGroup"
+        addr = command + "?chat_id=" + str(chat_id)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + str(disable_notification)
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+
+        headers = {'Content-Type': 'application/json'}
+        req = requests.post(self.url + addr, headers=headers, data=json.dumps(medias))
+
+        return req.json().get("ok")
 
     def sendDocument(self, chat_id, document, caption=None, parse_mode="text"): #发送文件
         command = "sendDocument"
@@ -296,7 +344,6 @@ class Bot(object):
             req = requests.post(self.url + addr, files=file_data)
 
         return req.json().get("ok")
-
 
     def kickChatMember(self, uid, chat_id, until_date=0): #踢人
         command = "kickChatMember"
@@ -391,7 +438,6 @@ class Bot(object):
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
-
 
     def setChatPhoto(self, chat_id, photo): #设置群组头像
         command = "setChatPhoto"
@@ -541,7 +587,7 @@ class Bot(object):
     def sendChatAction(self, chat_id, action):
         '''
         发送聊天状态，类似： 正在输入...
-        	typing :for text messages,
+            typing :for text messages,
             upload_photo :for photos,
             record_video/upload_video :for videos,
             record_audio/upload_audio :for audio files,
@@ -571,3 +617,167 @@ class Bot(object):
             return req.json().get("result")
         elif req.json().get("ok") == False:
             return req.json().get("ok")
+
+    def kickChatMember(self, chat_id, user_id, until_date=None):
+        '''
+        从Group、Supergroup或者Channel中踢人，被踢者在until_date期限内不可再次加入
+        '''
+
+        command = "kickChatMember"
+        if until_date is not None:
+            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
+        if until_date is None:
+            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def unbanChatMember(self, chat_id, user_id):
+        '''
+        解除user被设置的until_date
+        ChatPermissions:
+        can_send_messages
+        can_send_media_messages
+        can_send_polls
+        can_send_other_messages
+        can_add_web_page_previews
+        can_change_info
+        can_invite_users
+        can_pin_messages
+        '''
+
+        command = "unbanChatMember"
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def restrictChatMember(self, chat_id, user_id, can_change_info, can_post_messages, \
+                        can_edit_messages, can_delete_messages, can_invite_users, \
+                        can_restrict_members, can_pin_messages, can_promote_members, until_date=None):
+        '''
+        限制群组用户权限
+        '''
+        command = "restrictChatMember"
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+        addr += "&can_change_info=" + str(can_change_info)
+        addr += "&can_post_messages=" + str(can_post_messages)
+        addr += "&can_edit_messages=" + str(can_edit_messages)
+        addr += "&can_delete_messages=" + str(can_delete_messages)
+        addr += "&can_invite_users=" + str(can_invite_users)
+        addr += "&can_restrict_members=" + str(can_restrict_members)
+        addr += "&can_pin_messages=" + str(can_pin_messages)
+        addr += "&can_promote_members=" + str(can_promote_members)
+        if until_date is not None:
+            addr += "&until_date=" + str(until_date)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def setChatAdministratorCustomTitle(self, chat_id, user_id, custom_title):
+        '''
+        为群组的管理员设置自定义头衔
+        '''
+        command = "setChatAdministratorCustomTitle"
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + str(custom_title)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def setChatPermissions(self, chat_id, can_change_info, can_post_messages, \
+                        can_edit_messages, can_delete_messages, can_invite_users, \
+                        can_restrict_members, can_pin_messages, can_promote_members):
+        '''
+        设置群组全局用户默认权限
+        ChatPermissions:
+        can_send_messages
+        can_send_media_messages
+        can_send_polls
+        can_send_other_messages
+        can_add_web_page_previews
+        can_change_info
+        can_invite_users
+        can_pin_messages
+        '''
+
+        command = "setChatPermissions"
+        addr = command + "?chat_id=" + str(chat_id)
+        addr += "&can_change_info=" + str(can_change_info)
+        addr += "&can_post_messages=" + str(can_post_messages)
+        addr += "&can_edit_messages=" + str(can_edit_messages)
+        addr += "&can_delete_messages=" + str(can_delete_messages)
+        addr += "&can_invite_users=" + str(can_invite_users)
+        addr += "&can_restrict_members=" + str(can_restrict_members)
+        addr += "&can_pin_messages=" + str(can_pin_messages)
+        addr += "&can_promote_members=" + str(can_promote_members)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def exportChatInviteLink(self, chat_id):
+        '''
+        使用此方法生成新的群组分享链接，旧有分享链接全部失效,成功返回分享链接
+        '''
+        command = "exportChatInviteLink"
+        addr = command + "?chat_id=" + str(chat_id)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def setChatStickerSet(self, chat_id, sticker_set_name):
+        '''
+        为一个超级群组设置贴纸集
+        '''
+        command = "setChatStickerSet"
+        addr = command + "?chat_id=" + str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def deleteChatStickerSet(self, chat_id):
+        '''
+        删除超级群组的贴纸集
+        '''
+        command = "deleteChatStickerSet"
+        addr = command + "?chat_id=" + str(chat_id)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def answerCallbackQuery(self, callback_query_id, text, show_alert, url, cache_time):
+        pass
+
+
+
