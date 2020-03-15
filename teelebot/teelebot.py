@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-3-14
+@last modify: 2020-3-15
 @author github: plutobell
-@version: 1.2.1_dev
+@version: 1.2.2_dev
 '''
 import time
 import sys
@@ -69,15 +69,7 @@ class Bot(object):
                 print("程序终止") #退出存在问题，待修复
                 sys.exit()
 
-    def getMe(self): #获取机器人基本信息
-        command = "getMe"
-        addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
-        req = requests.post(self.url + addr)
-        req.keep_alive = False
-        if self.debug is True:
-            print(req.text)
-        return req.json()
-
+    #Getting updates
     def getUpdates(self): #获取消息队列
         command = "getUpdates"
         addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
@@ -99,6 +91,16 @@ class Bot(object):
                 return None
         elif req.json().get("ok") == False:
             return False
+
+    #Available methods
+    def getMe(self): #获取机器人基本信息
+        command = "getMe"
+        addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
+        req = requests.post(self.url + addr)
+        req.keep_alive = False
+        if self.debug is True:
+            print(req.text)
+        return req.json()
 
     def getFile(self, file_id): #获取文件id
         command = "getFile"
@@ -780,4 +782,59 @@ class Bot(object):
         pass
 
 
+    #Updating messages
+    def editMessageText(self, chat_id, text, message_id=None, inline_message_id=None, \
+            parse_mode=None, disable_web_page_preview=None, reply_markup=None):
+        '''
+        编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
+        '''
+        command = "editMessageText"
+        addr = command + "?chat_id=" + str(chat_id)
+        if message_id is not None:
+            addr += "&message_id=" + str(message_id)
+        if inline_message_id is not None:
+            addr += "&inline_message_id=" + str(inline_message_id)
+        addr += "&text=" + str(text)
+        if parse_mode in ("markdown", "html"):
+            addr += "&parse_mode=" + str(parse_mode)
+        if disable_web_page_preview is not None:
+            addr += "&disable_web_page_preview=" + str(disable_web_page_preview)
+        if reply_markup is not None:
+            addr += "&reply_markup=" + str(reply_markup)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
+
+    def editMessageCaption(self, chat_id, message_id, inline_message_id, text, parse_mode, reply_markup):
+        '''
+        编辑消息标题？成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
+        '''
+        pass
+
+    def editMessageMedia(self, chat_id, message_id, inline_message_id, media, reply_markup):
+        pass
+
+    def editMessageReplyMarkup(self, chat_id, message_id, inline_message_id, reply_markup):
+        pass
+
+    def stopPoll(self, chat_id, message_id, reply_markup):
+        pass
+
+    def deleteMessage(self, chat_id, message_id):
+        '''
+        删除一条消息，机器人必须具备恰当的权限
+        '''
+        command = "deleteMessage"
+        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
 
