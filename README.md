@@ -85,6 +85,10 @@ Python实现的Telegram Bot机器人框架
 * editMessageText
 * deleteMessage
 
+**Inline mode**
+
+* answerInlineQuery(undone)
+
 
 
 目标是封装官方所有的Method
@@ -232,6 +236,8 @@ python -m teelebot -c/-C <configure file path>
 ## 更新历史 ##
 
 #### 2020-3-15
+
+* v1.2.3 : 对Inline mode的初步支持
 
 * v1.2.2 : 封装2个接口，修复插件Bing
 
