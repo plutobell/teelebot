@@ -30,10 +30,15 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现 41.5 个 ###
+### 已实现 43.5 个 ###
+
+**Getting updates**
+
+* getUpdates
+
+**Available methods**
 
 * getMe
-* getUpdates
 * getFile & downloadFile
 * sendMessage
 * sendPhoto
@@ -74,6 +79,11 @@ Python实现的Telegram Bot机器人框架
 * setChatStickerSet
 * deleteChatStickerSet
 * sendMediaGroup（undone）
+
+**Updating messages**
+
+* editMessageText
+* deleteMessage
 
 
 
@@ -220,6 +230,10 @@ python -m teelebot -c/-C <configure file path>
 
 
 ## 更新历史 ##
+
+#### 2020-3-15
+
+* v1.2.2 : 封装2个接口，修复插件Bing
 
 #### 2020-3-14
 

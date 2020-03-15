@@ -8,16 +8,17 @@ from teelebot.handler import config
 config = config()
 bot = teelebot.Bot()
 user_id = config['root']
+chat_id = config['chat_id']
 
-bot.sendMessage(chat_id=chat_id, text="测试消息", parse_mode="text")
+#bot.sendMessage(chat_id=chat_id, text="测试消息", parse_mode="text")
 
 bot.restrictChatMember(chat_id=chat_id, user_id=user_id, can_change_info=False, can_post_messages=False, \
                         can_edit_messages=False, can_delete_messages=False, can_invite_users=False, \
                         can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
 
-bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=3600)
+#bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=3600)
 
-bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
+#bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
 
 medias ={
     'caption': 'test',
@@ -36,5 +37,13 @@ medias ={
         }
     ]
 }
-req = bot.sendMediaGroup(chat_id=chat_id, medias=medias)
-print(req)
+#req = bot.sendMediaGroup(chat_id=chat_id, medias=medias)
+#print(req)
+
+
+#r = bot.deleteMessage(chat_id=chat_id, message_id=190)
+#print(r)
+
+
+r = bot.editMessageText(chat_id=chat_id, message_id=198, text="测试修改消息")
+print(r)
