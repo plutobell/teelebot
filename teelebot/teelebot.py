@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-3-15
 @author github: plutobell
-@version: 1.2.2_dev
+@version: 1.2.3_dev
 '''
 import time
 import sys
@@ -30,7 +30,7 @@ class Bot(object):
         self.url = self.basic_url + r"bot" + self.key + r"/"
         self.timeout = config["timeout"]
         self.offset = 0
-        self.debug = config["debug"]
+        self.debug = bool(config["debug"])
         self.plugin_dir = config["plugin_dir"]
         self.plugin_bridge = config["plugin_bridge"]
         self.VERSION = config["version"]
@@ -52,12 +52,15 @@ class Bot(object):
                 if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
-                    print(message)
                     for plugin in plugin_list:
+                        if message == None:
+                            continue
                         if message.get("text") != None:
                             message_type = "text"
                         elif message.get("caption") != None:
                             message_type = "caption"
+                        elif message.get("query") != None:
+                            message_type = "query"
                         else:
                             continue
                         if message.get(message_type)[:len(plugin)] == plugin:
@@ -81,9 +84,16 @@ class Bot(object):
             update_ids = []
             messages = []
             results = req.json().get("result")
+            if len(results) < 1:
+                return None
             for result in results:
+                query_or_message = ""
+                if result.get("inline_query"):
+                    query_or_message = "inline_query"
+                elif result.get("message"):
+                    query_or_message = "message"
                 update_ids.append(result.get("update_id"))
-                messages.append(result.get("message"))
+                messages.append(result.get(query_or_message))
             if len(update_ids) >= 1:
                 self.offset = max(update_ids) + 1
                 return messages
@@ -838,3 +848,31 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
+
+
+    #Inline mode
+    def answerInlineQuery(self, inline_query_id, results, cache_time=None, \
+                is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
+        '''
+        使用此方法发送Inline mode的应答
+        '''
+        command = "answerInlineQuery"
+        addr = command + "?inline_query_id=" + str(inline_query_id)
+        if cache_time is not None:
+            addr += "&cache_time=" + str(cache_time)
+        if is_personal is not None:
+            addr += "&is_personal=" + str(is_personal)
+        if next_offset is not None:
+            addr += "&next_offset=" + str(next_offset)
+        if switch_pm_text is not None:
+            addr += "&switch_pm_text=" + str(switch_pm_text)
+        if switch_pm_parameter is not None:
+            addr += "&switch_pm_parameter=" + str(switch_pm_parameter)
+
+        headers = {'Content-Type':'application/json'}
+        req = requests.post(self.url + addr, headers=headers, data=json.dumps(results))
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()

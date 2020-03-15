@@ -45,5 +45,12 @@ medias ={
 #print(r)
 
 
-r = bot.editMessageText(chat_id=chat_id, message_id=198, text="测试修改消息")
+#r = bot.editMessageText(chat_id=chat_id, message_id=198, text="测试修改消息")
+#print(r)
+results = {
+    '1':'a',
+    '2':'b',
+    '3':'c'
+}
+r = bot.answerInlineQuery(inline_query_id="4193969412829691548", results=results)
 print(r)
