@@ -20,7 +20,7 @@ Python实现的Telegram Bot机器人框架
 
 
 
-目前此项目在 Python 3.6 及以上版本测试通过，如果您发现有任何问题，欢迎给我提 Issue 或 Pull Request。
+目前此项目在 Python 3.6 及以上版本测试通过。
 
 
 
