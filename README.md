@@ -17,6 +17,7 @@ Python实现的Telegram Bot机器人框架
 *  Firefoxmoniter -  调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
 *  Bing - 调用第三方Bing壁纸接口 [bing](https://github.com/xCss/bing) 获取每日必应壁纸
 *  ID - 获取你的用户ID
+*  Top - 调用top命令查看服务器状态
 
 
 
@@ -235,11 +236,15 @@ python -m teelebot -c/-C <configure file path>
 
 ## 更新历史 ##
 
+#### 2020-3-22
+
+* v1.2.3 : 增加插件 Top
+
 #### 2020-3-15
 
 * v1.2.3 : 对Inline mode的初步支持，bug修复
 
-* v1.2.2 : 封装2个接口，修复插件Bing
+* v1.2.2 : 封装2个接口，修复插件 Bing
 
 #### 2020-3-14
 

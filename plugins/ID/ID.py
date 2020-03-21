@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from teelebot import Bot
-from teelebot.handler import config\
+from teelebot.handler import config
 
 config = config()
 
