@@ -2,7 +2,7 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-3-15
+@last modify: 2020-3-22
 @author github: plutobell
 @version: 1.2.3_dev
 '''
@@ -138,10 +138,10 @@ class Bot(object):
         else:
             return False
 
-    def sendMessage(self, chat_id, text, parse_mode="text"): #发送消息
+    def sendMessage(self, chat_id, text, parse_mode="Text"): #发送消息
         command = "sendMessage"
         addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
-        if parse_mode in ("html","markdown"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
         req = requests.post(self.url + addr)
         req.keep_alive = False
@@ -150,7 +150,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendVoice(self, chat_id, voice, caption=None, parse_mode="text"): #发送音频消息 .ogg
+    def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text"): #发送音频消息 .ogg
         command = "sendVoice"
         if voice[:7] == "http://" or voice[:7] == "https:/":
             file_data = None
@@ -161,7 +161,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
 
         if file_data == None:
@@ -171,7 +171,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendAnimation(self, chat_id, animation, caption=None, parse_mode="text"):
+    def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text"):
         '''
         发送动画 gif/mp4
         '''
@@ -185,7 +185,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
 
         if file_data == None:
@@ -195,7 +195,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendAudio(self, chat_id, audio, caption=None, parse_mode="text", title=None):
+    def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None):
         '''
         发送音频 mp3
         '''
@@ -209,7 +209,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
         if title != None:
             addr += "&title=" + title
@@ -221,7 +221,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="text"): #发送图片
+    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text"): #发送图片
         command = "sendPhoto"
         if photo[:7] == "http://" or photo[:7] == "https:/":
             file_data = None
@@ -232,7 +232,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
 
         if file_data == None:
@@ -242,7 +242,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendVideo(self, chat_id, video, caption=None, parse_mode="text"):
+    def sendVideo(self, chat_id, video, caption=None, parse_mode="Text"):
         '''
         发送视频
         '''
@@ -256,7 +256,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
 
         if file_data == None:
@@ -266,7 +266,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="text"):
+    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text"):
         '''
         发送圆形或方形视频？
         '''
@@ -280,7 +280,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
 
         if file_data == None:
@@ -336,7 +336,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendDocument(self, chat_id, document, caption=None, parse_mode="text"): #发送文件
+    def sendDocument(self, chat_id, document, caption=None, parse_mode="Text"): #发送文件
         command = "sendDocument"
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
@@ -347,7 +347,7 @@ class Bot(object):
 
         if caption != None:
             addr += "&caption=" + caption
-        if parse_mode in ("markdown","html"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
 
         if file_data == None:
@@ -805,7 +805,7 @@ class Bot(object):
         if inline_message_id is not None:
             addr += "&inline_message_id=" + str(inline_message_id)
         addr += "&text=" + str(text)
-        if parse_mode in ("markdown", "html"):
+        if parse_mode in ("Markdown", "HTML"):
             addr += "&parse_mode=" + str(parse_mode)
         if disable_web_page_preview is not None:
             addr += "&disable_web_page_preview=" + str(disable_web_page_preview)

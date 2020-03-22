@@ -40,4 +40,4 @@ def Bing(message):
         with open(bot.plugin_dir + "Bing/status.db", "w") as f:
             f.write(str(date))
 
-    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=bot.plugin_dir + "Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="html")
+    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=bot.plugin_dir + "Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="HTML")
