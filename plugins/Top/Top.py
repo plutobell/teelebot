@@ -57,7 +57,7 @@ def Top(message):
                 "登入用户：<b>" + str(top_user) + "</b> 个%0A" + \
                 "运行时间：<b>" + str(top_up) + "</b>%0A" + \
                 "CPU温度：<b>" + str(Cpu_temperature) + " ℃</b>%0A" + \
-                "CPU用量：<b>" + str(round(100-float(cpu_id), 2)) + "</b> 已用，<b>" + str(round(float(cpu_id), 2)) + "</b> 空闲%0A" + \
+                "CPU用量：<b>" + str(round(100.0-float(cpu_id), 2)) + "</b> 已用，<b>" + str(round(float(cpu_id), 2)) + "</b> 空闲%0A" + \
                 "内存用量：<b>" + str(round((float(memory_total)-float(avail_memory))/1024, 2)) + "G</b> 已用，<b>" + str(round(float(avail_memory)/1024,2)) + "G</b> 空闲%0A" + \
                 "硬盘用量：<b>" + str(int(float(hd_total)-float(hd_avail))) + "G</b> 已用，<b>" + str(hd_avail) + "G</b> 空闲"
 
