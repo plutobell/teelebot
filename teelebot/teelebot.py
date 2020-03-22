@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-3-22
 @author github: plutobell
-@version: 1.2.3_dev
+@version: 1.2.5_dev
 '''
 import time
 import sys
@@ -30,7 +30,7 @@ class Bot(object):
         self.url = self.basic_url + r"bot" + self.key + r"/"
         self.timeout = config["timeout"]
         self.offset = 0
-        self.debug = bool(config["debug"])
+        self.debug = config["debug"]
         self.plugin_dir = config["plugin_dir"]
         self.plugin_bridge = config["plugin_bridge"]
         self.VERSION = config["version"]
@@ -43,6 +43,7 @@ class Bot(object):
 
     def _run(self):
         print("机器人开始轮询", "version:" + self.VERSION)
+        #print("debug=" + str(self.debug))
         plugin_list = []
         for key in self.plugin_bridge.keys():
             plugin_list.append(key)
