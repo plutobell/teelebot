@@ -9,14 +9,14 @@ def Firefoxmoniter(message):
     with open(bot.plugin_dir + "Firefoxmoniter/__init__.py", encoding="utf-8") as f:
         h = f.readline()[1:]
     if len(message["text"]) < len(h):
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", "html")
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", "HTML")
         return False
     email = message["text"][len(h)-1:]
     if all([ '@' in email, '.' in email.split('@')[1] ]):
         ehash = hashlib.sha1(email.encode("utf-8")) #经测试由sha1加密
         emailhash = ehash.hexdigest()
     else:
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", "html")
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", "HTML")
         return False
 
     protocol, ip, port = get_ip()

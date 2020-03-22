@@ -21,4 +21,4 @@ def Chat(message):
         req.keep_alive = False
         req.encoding = "utf-8"
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], str(req.json().get("content").replace("{br}", "%0A")), "html")
+        status = bot.sendMessage(message["chat"]["id"], str(req.json().get("content").replace("{br}", "%0A")), "HTML")

@@ -27,12 +27,12 @@ def Top(message):
             data["Key"] = sets[1].strip()
 
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "尊敬的主人，正在获取服务器信息，请稍等...", "html")
+        status = bot.sendMessage(message["chat"]["id"], "主人，正在获取服务器信息，请稍等...", "html")
         req = requests.post(url=url, data=data)
         if req.json().get("status") == False:
             req.close()
             status = bot.sendChatAction(message["chat"]["id"], "typing")
-            status = bot.sendMessage(message["chat"]["id"], "抱歉主人，获取服务器信息失败", "html")
+            status = bot.sendMessage(message["chat"]["id"], "抱歉主人，获取服务器信息失败", "HTML")
         elif req.json().get("status") == True:
             contents = req.json().get("contents")
             Top = contents.get("Top")
@@ -40,18 +40,26 @@ def Top(message):
             Memory = contents.get("Memory")
             Swap = contents.get("Swap")
 
+            Hostname = contents.get("Hostname")
             top_time = Top["top_time"]
             top_up = Top["top_up"]
+            top_user = Top["top_user"]
             cpu_id = Cpu["cpu_id"]
             memory_total = Memory["memory_total"]
             avail_memory = Swap["avail_memory"]
             Cpu_temperature = contents.get("Cpu_temperature")
+            Hard_disk = contents.get("Hard_disk")
+            hd_total = Hard_disk[0]
+            hd_avail = Hard_disk[1]
 
-            msg = "时间：" + str(top_time) + "%0A%0A" + \
-            "系统已运行：" + str(top_up) + "%0A%0A" + \
-            "CPU用量：" + "百分之" + str(round(100-float(cpu_id), 2)) + "已用，百分之" + str(float(cpu_id)) + "空闲%0A%0A" + \
-            "内存用量：" + str(round(float(memory_total)-float(avail_memory), 2)) + "MiB已用，" + str(avail_memory) + "MiB空闲%0A%0A" + \
-            "当前温度：" + str(Cpu_temperature) + "℃" + "%0A%0Av" + bot.VERSION
+            msg = "<b>服务器：" + str(Hostname) + "</b>%0A" + \
+                "查询时间：<i>" + str(top_time) + "</i>%0A%0A" + \
+                "登入用户：<i>" + str(top_user) + " 个</i>%0A" + \
+                "当前温度：<i>" + str(Cpu_temperature) + " ℃</i>%0A" + \
+                "系统已运行：<i>" + str(top_up) + "</i>%0A" + \
+                "CPU用量：<i>(" + str(round(100-float(cpu_id), 2)) + "%) 已用，(" + str(float(cpu_id)) + "%) 空闲</i>%0A" + \
+                "内存用量：<i>(" + str(round((float(memory_total)-float(avail_memory))/1024, 2)) + "G) 已用，(" + str(round(float(avail_memory)/1024,2)) + "G) 空闲</i>%0A" + \
+                "硬盘用量：<i>(" + str(int(float(hd_total)-float(hd_avail))) + "G) 已用，(" + str(hd_avail) + "G) 空闲</i>"
 
             status = bot.sendChatAction(message["chat"]["id"], "typing")
-            status = bot.sendMessage(message["chat"]["id"], msg, "html")
+            status = bot.sendMessage(message["chat"]["id"], msg, "HTML")

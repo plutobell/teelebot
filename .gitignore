@@ -1,4 +1,5 @@
 config.cfg
+*.cfg
 __pycache__/
 *.ini
 info.txt
