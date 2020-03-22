@@ -18,4 +18,5 @@ def Menu(message):
                     line_2 = f.readline().strip()[1:]
             menu_str += "<b>" + line_1 + "</b> - " + line_2 + "%0A%0A"
     menu_str = "<b>===== Command Menu =====</b>%0A%0A" + menu_str + "%0A%0Av" + bot.VERSION
+    status = bot.sendChatAction(message["chat"]["id"], "typing")
     status = bot.sendMessage(message["chat"]["id"], menu_str, "HTML")
