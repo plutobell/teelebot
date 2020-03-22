@@ -238,7 +238,7 @@ python -m teelebot -c/-C <configure file path>
 
 #### 2020-3-22
 
-* v1.2.5 : 修复debug模式控制失效的bug，部分插件的优化
+* v1.2.5 : 修复debug模式控制失效的bug，部分插件的优化，增加每个插件的功能演示截图
 
 * v1.2.4 : 增加插件 Top，bug修复
 
