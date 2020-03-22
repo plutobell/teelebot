@@ -3,7 +3,7 @@ import configparser, os, sys
 
 
 def config():
-    __version__ = "1.2.3_dev"
+    __version__ = "1.2.5_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -33,6 +33,11 @@ def config():
         plugin_dir = os.path.abspath(config["plugin_dir"]) + r'/'
     else:
         plugin_dir = os.path.dirname(os.path.abspath(__file__)) + "/plugins/"
+
+    if config["debug"] == "True":
+        config["debug"] = True
+    elif config["debug"] == "False":
+        config["debug"] = False
 
     config["author"] = __author__
     config["version"] = __version__
