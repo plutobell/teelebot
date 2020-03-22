@@ -238,7 +238,7 @@ python -m teelebot -c/-C <configure file path>
 
 #### 2020-3-22
 
-* v1.2.3 : 增加插件 Top
+* v1.2.3 : 增加插件 Top，bug修复
 
 #### 2020-3-15
 
