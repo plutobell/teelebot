@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-3-21
-last_modify: 2020-3-22
+last_modify: 2020-3-24
 '''
 import requests
 from teelebot import Bot
@@ -43,6 +43,7 @@ def Top(message):
             Hostname = contents.get("Hostname")
             top_time = Top["top_time"]
             top_up = Top["top_up"]
+            top_load_average = Top["top_load_average"]
             top_user = Top["top_user"]
             cpu_id = Cpu["cpu_id"]
             memory_total = Memory["memory_total"]
@@ -56,6 +57,7 @@ def Top(message):
                 "查询时间：<i>" + str(top_time) + "</i>%0A%0A" + \
                 "登入用户：<b>" + str(top_user) + "</b> 个%0A" + \
                 "运行时间：<b>" + str(top_up) + "</b>%0A" + \
+                "平均负载：<b>" + str(top_load_average[0]) + " " + str(top_load_average[1]) + " " + str(top_load_average[2]) + "</b>%0A" + \
                 "CPU温度：<b>" + str(Cpu_temperature) + " ℃</b>%0A" + \
                 "CPU用量：<b>" + str(round(100.0-float(cpu_id), 2)) + "</b> 已用，<b>" + str(round(float(cpu_id), 2)) + "</b> 空闲%0A" + \
                 "内存用量：<b>" + str(round((float(memory_total)-float(avail_memory))/1024, 2)) + "G</b> 已用，<b>" + str(round(float(avail_memory)/1024,2)) + "G</b> 空闲%0A" + \

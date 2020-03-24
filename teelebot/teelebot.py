@@ -2,7 +2,7 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-3-22
+@last modify: 2020-3-24
 @author github: plutobell
 @version: 1.2.5_dev
 '''
@@ -40,22 +40,21 @@ class Bot(object):
         Module = importlib.import_module(plugin_name) #模块检测，待完善
 
         return Module
-
     def _run(self):
         print("机器人开始轮询", "version:" + self.VERSION)
         #print("debug=" + str(self.debug))
         plugin_list = []
         for key in self.plugin_bridge.keys():
             plugin_list.append(key)
-        while(True):
+        while True:
             try:
                 messages = self.getUpdates() #获取消息队列messages
                 if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
-                    for plugin in plugin_list:
-                        if message == None:
+                    if message == None:
                             continue
+                    for plugin in plugin_list:
                         if message.get("text") != None:
                             message_type = "text"
                         elif message.get("caption") != None:
@@ -67,11 +66,11 @@ class Bot(object):
                         if message.get(message_type)[:len(plugin)] == plugin:
                             Module = self.__import_module(self.plugin_bridge[plugin])
                             threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
+                            threadObj.setDaemon(True)
                             threadObj.start()
                 time.sleep(0.2) #经测试，延时0.2s较为合理
             except KeyboardInterrupt: #判断键盘输入，终止循环
-                print("程序终止") #退出存在问题，待修复
-                sys.exit()
+                sys.exit("程序终止") #退出存在问题，待修复
 
     #Getting updates
     def getUpdates(self): #获取消息队列
@@ -111,6 +110,7 @@ class Bot(object):
         req.keep_alive = False
         if self.debug is True:
             print(req.text)
+
         return req.json()
 
     def getFile(self, file_id): #获取文件id
@@ -120,6 +120,7 @@ class Bot(object):
         req.keep_alive = False
         if self.debug is True:
             print(req.text)
+
         if req.json().get("ok") == True:
             return req.json().get("result")
         elif req.json().get("ok") == False:
