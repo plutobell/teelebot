@@ -222,6 +222,55 @@ python -m teelebot -c/-C <configure file path>
 
 
 
+## 插件开发指南 (以 Hello 插件为例) beta 0.5
+
+#### 一、插件结构
+
+一个完整的 `teelebot` 插件应当呈现为一个文件夹，即一个Python包，以 `Hello` 插件为例，最基本的目录结构如下：
+
+```Python
+Hello/
+  ./__init__.py
+  ./Hello.py
+  ./Hello_screenshot.png
+  ./readme.md
+```
+
+#### 二、规则
+
+在构建teelebot插件中应当遵守的规则是：每个插件目录下应当存在一个与插件同名的`.py` 文件，比如插件 `Hello ` 中的 `Hello.py` 文件，并且此文件中必须存在作为插件入口的同名函数，以插件 `Hello` 为例：
+
+```python
+#file Hello/Hello.py
+
+# -*- coding:utf-8 -*-
+from teelebot import Bot
+
+def Hello(message):
+    pass
+```
+
+函数 `Hello()` 即为插件的入口函数，参数 `message` 用于接收消息数据。
+
+#### 三、自定义触发指令
+
+插件的触发指令可不同于插件名，允许自定义。以插件 `Hello` 为例，触发指令为 `/helloworld` 而不是 `Hello`。
+
+修改插件目录下的 `__init__.py` 文件设置触发指令：
+
+```python
+#file /Hello/__init__.py
+
+#/helloworld
+#Hello World插件例子
+```
+
+第一行为触发指令，默认以 `/`  作为前缀；第二行为插件简介。
+
+
+
+
+
 
 
 ## 联系我 ##
@@ -241,9 +290,9 @@ python -m teelebot -c/-C <configure file path>
 
 #### 2020-5-26
 
-* v1.2.8 : 完善getUpdates函数，消息轮询增加对callback_query类型消息的识别
+* v1.2.8 : 完善 getUpdates 函数，消息轮询增加对 callback_query 类型消息的识别
 
-* v1.2.7 : 为消息发送类函数添加reply_markup按钮功能，新增接口函数answerCallbackQuery
+* v1.2.7 : 为消息发送类函数添加 reply_markup 按钮功能，新增接口函数answerCallbackQuery
 
 * v1.2.6 : 为消息发送类函数添加 reply_to_message_id 功能；插件适配reply_to_message_id 
 
