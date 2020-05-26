@@ -222,7 +222,7 @@ python -m teelebot -c/-C <configure file path>
 
 
 
-## 插件开发指南 (以 Hello 插件为例) beta 0.5
+## 插件开发指南 (以 Hello 插件为例) BETA 0.5
 
 #### 一、插件结构
 
@@ -290,7 +290,7 @@ def Hello(message):
 
 #### 2020-5-26
 
-* v1.2.8 : 完善 getUpdates 函数，消息轮询增加对 callback_query 类型消息的识别
+* v1.2.8 : 完善 getUpdates 函数，消息轮询增加对 callback_query 类型消息的识别，README增加插件开发指南(BETA 0.5)
 
 * v1.2.7 : 为消息发送类函数添加 reply_markup 按钮功能，新增接口函数answerCallbackQuery
 
