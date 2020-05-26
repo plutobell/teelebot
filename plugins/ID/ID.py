@@ -9,7 +9,7 @@ def ID(message):
     status = bot.sendChatAction(message["chat"]["id"], "typing")
     if str(message["from"]["id"]) == config["root"]:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        bot.sendMessage(message["chat"]["id"], "主人，" + "您的用户ID为：<b>" + str(message["from"]["id"]) + "</b>", "HTML")
+        bot.sendMessage(message["chat"]["id"], "主人，" + "您的用户ID为：<b>" + str(message["from"]["id"]) + "</b>", parse_mode="HTML", reply_to_message_id=message["message_id"])
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        bot.sendMessage(message["chat"]["id"], str(message["from"]["first_name"]) + "%0A您的用户ID为：<b>" + str(message["from"]["id"]) + "</b>", "HTML")
+        bot.sendMessage(message["chat"]["id"], str(message["from"]["first_name"]) + "%0A您的用户ID为：<b>" + str(message["from"]["id"]) + "</b>", parse_mode="HTML", reply_to_message_id=message["message_id"])

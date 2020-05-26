@@ -41,4 +41,4 @@ def Bing(message):
             f.write(str(date))
 
     status = bot.sendChatAction(message["chat"]["id"], "typing")
-    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=bot.plugin_dir + "Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="HTML")
+    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=bot.plugin_dir + "Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="HTML", reply_to_message_id=message["message_id"])

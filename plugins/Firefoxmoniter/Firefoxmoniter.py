@@ -13,7 +13,7 @@ def Firefoxmoniter(message):
         h = f.readline()[1:]
     if len(message["text"]) < len(h):
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", "HTML")
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", parse_mode="HTML", reply_to_message_id=message["message_id"])
         return False
     email = message["text"][len(h)-1:]
     if all([ '@' in email, '.' in email.split('@')[1] ]):
@@ -21,15 +21,15 @@ def Firefoxmoniter(message):
         emailhash = ehash.hexdigest()
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", "HTML")
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", parse_mode="HTML", reply_to_message_id=message["message_id"])
         return False
 
     if str(message["from"]["id"]) == config["root"]:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "主人，正在查询邮件地址[" + str(email) + "]，请稍等...", "HTML")
+        status = bot.sendMessage(message["chat"]["id"], "主人，正在查询邮件地址[" + str(email) + "]，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "正在查询邮件地址" + str(email) + "，请稍等...", "HTML")
+        status = bot.sendMessage(message["chat"]["id"], "正在查询邮件地址" + str(email) + "，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
 
     protocol, ip, port = get_ip()
     proxies = {
@@ -41,7 +41,7 @@ def Firefoxmoniter(message):
     page = r_session.get(url, proxies=proxies)
     if not page.status_code == requests.codes.ok:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A操作过于频繁，请稍后再试!", "text")
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A操作过于频繁，请稍后再试!", parse_mode="text", reply_to_message_id=message["message_id"])
         return False
     page.encoding = "utf-8"
     session = page.cookies["session"]
@@ -75,10 +75,10 @@ def Firefoxmoniter(message):
             result += source + date + data + "%0A"
 
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], result, "html")
+        status = bot.sendMessage(message["chat"]["id"], result, parse_mode="HTML", reply_to_message_id=message["message_id"])
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检测命令格式!", "text")
+        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检测命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
 
 
 def get_ip():

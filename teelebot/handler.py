@@ -3,18 +3,20 @@ import configparser, os, sys
 
 
 def config():
-    __version__ = "1.2.5_dev"
+    __version__ = "1.2.8_dev"
     __author__ = "github:plutobell"
 
     config = {}
 
     if len(sys.argv) == 3 and sys.argv[1] in ("-c", "-C"):
         config_dir = os.path.abspath(sys.argv[2])
+        #print(config_dir)
     elif len(sys.argv) == 1 or  len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel", "bdist_rpm"):
         if not os.path.exists(os.path.abspath(os.path.expanduser('~')) + "/.teelebot"):
             os.mkdir(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")
         config_dir = os.path.abspath(os.path.expanduser('~')) + "/.teelebot/config.cfg"
         #config_dir = os.path.dirname(os.path.abspath(__file__)) + "/config.cfg"
+        #print(config_dir)
     else:
         print("参数缺失或错误!")
         sys.exit(0)

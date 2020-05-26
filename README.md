@@ -29,9 +29,11 @@ Python实现的Telegram Bot机器人框架
 
 
 
+
+
 ## Telegram Bot API封装情况
 
-### 已实现 43 + 0.5 * 2 个 ###
+### 已实现 43 + 0.5 * 3 个 ###
 
 **Getting updates**
 
@@ -80,6 +82,7 @@ Python实现的Telegram Bot机器人框架
 * setChatStickerSet
 * deleteChatStickerSet
 * sendMediaGroup（undone）
+* answerCallbackQuery
 
 **Updating messages**
 
@@ -235,6 +238,14 @@ python -m teelebot -c/-C <configure file path>
 
 
 ## 更新历史 ##
+
+#### 2020-5-26
+
+* v1.2.8 : 完善getUpdates函数，消息轮询增加对callback_query类型消息的识别
+
+* v1.2.7 : 为消息发送类函数添加reply_markup按钮功能，新增接口函数answerCallbackQuery
+
+* v1.2.6 : 为消息发送类函数添加 reply_to_message_id 功能；插件适配reply_to_message_id 
 
 #### 2020-3-22
 
