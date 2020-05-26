@@ -33,7 +33,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现 43 + 0.5 * 3 个 ###
+### 已实现 44 + 0.5 * 2 个 ###
 
 **Getting updates**
 
