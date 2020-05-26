@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-3-24
+@last modify: 2020-5-26
 @author github: plutobell
-@version: 1.2.5_dev
+@version: 1.2.8_dev
 '''
 import time
 import sys
@@ -53,9 +53,11 @@ class Bot(object):
                     continue
                 for message in messages: #获取单条消息记录message
                     if message == None:
-                            continue
+                        continue
                     for plugin in plugin_list:
-                        if message.get("text") != None:
+                        if message.get("callback_query_id") != None: #callback query
+                            message_type = "callback_query_data"
+                        elif message.get("text") != None:
                             message_type = "text"
                         elif message.get("caption") != None:
                             message_type = "caption"
@@ -90,10 +92,18 @@ class Bot(object):
                 query_or_message = ""
                 if result.get("inline_query"):
                     query_or_message = "inline_query"
+                elif result.get("callback_query"):
+                    query_or_message = "callback_query"
                 elif result.get("message"):
                     query_or_message = "message"
                 update_ids.append(result.get("update_id"))
-                messages.append(result.get(query_or_message))
+                if query_or_message == "callback_query":
+                    callback_query = result.get(query_or_message).get("message")
+                    callback_query["callback_query_id"] = result.get(query_or_message).get("id")
+                    callback_query["callback_query_data"] = result.get(query_or_message).get("data")
+                    messages.append(callback_query)
+                else:
+                    messages.append(result.get(query_or_message))
             if len(update_ids) >= 1:
                 self.offset = max(update_ids) + 1
                 return messages
@@ -140,11 +150,16 @@ class Bot(object):
         else:
             return False
 
-    def sendMessage(self, chat_id, text, parse_mode="Text"): #发送消息
+    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送消息
         command = "sendMessage"
         addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
         req = requests.post(self.url + addr)
         req.keep_alive = False
         if self.debug is True:
@@ -152,7 +167,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text"): #发送音频消息 .ogg
+    def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送音频消息 .ogg
         command = "sendVoice"
         if voice[:7] == "http://" or voice[:7] == "https:/":
             file_data = None
@@ -165,6 +180,10 @@ class Bot(object):
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -173,7 +192,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text"):
+    def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         '''
         发送动画 gif/mp4
         '''
@@ -189,6 +208,10 @@ class Bot(object):
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -197,7 +220,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None):
+    def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None, reply_markup=None):
         '''
         发送音频 mp3
         '''
@@ -215,6 +238,10 @@ class Bot(object):
             addr += "&parse_mode" + parse_mode
         if title != None:
             addr += "&title=" + title
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -223,7 +250,10 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text"): #发送图片
+    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送图片
+        '''
+        发送图片
+        '''
         command = "sendPhoto"
         if photo[:7] == "http://" or photo[:7] == "https:/":
             file_data = None
@@ -236,6 +266,10 @@ class Bot(object):
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -244,7 +278,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendVideo(self, chat_id, video, caption=None, parse_mode="Text"):
+    def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         '''
         发送视频
         '''
@@ -260,6 +294,10 @@ class Bot(object):
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -268,7 +306,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text"):
+    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         '''
         发送圆形或方形视频？
         '''
@@ -284,6 +322,10 @@ class Bot(object):
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
+        if reply_to_message_id != None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -292,7 +334,7 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None): #暂未弄懂格式。
+    def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None, reply_markup=None): #暂未弄懂格式。
         '''
         以类似图集的方式发送图片或者视频(目前只支持http链接和文件id，暂不支持上传文件)
         media的格式：（同时请求需要加入header头，指定传送参数为json类型，并且将data由字典转为json字符串传送）
@@ -332,13 +374,15 @@ class Bot(object):
             addr += "&disable_notification=" + str(disable_notification)
         if reply_to_message_id is not None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         headers = {'Content-Type': 'application/json'}
         req = requests.post(self.url + addr, headers=headers, data=json.dumps(medias))
 
         return req.json().get("ok")
 
-    def sendDocument(self, chat_id, document, caption=None, parse_mode="Text"): #发送文件
+    def sendDocument(self, chat_id, document, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送文件
         command = "sendDocument"
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
@@ -351,6 +395,10 @@ class Bot(object):
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if file_data == None:
             req = requests.post(self.url + addr)
@@ -567,14 +615,19 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def sendLocation(self, chat_id, latitude, longitude): #发送地图定位，经纬度
+    def sendLocation(self, chat_id, latitude, longitude, reply_to_message_id=None, reply_markup=None): #发送地图定位，经纬度
         command = "sendLocation"
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude))
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
 
-    def sendContact(self, chat_id, phone_number, first_name, last_name=None):
+    def sendContact(self, chat_id, phone_number, first_name, last_name=None, reply_to_message_id=None, reply_markup=None):
         '''
         发送联系人信息
         '''
@@ -582,18 +635,27 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(first_name)
         if last_name != None:
             addr += "&last_name=" + str(last_name)
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
 
-    def sendVenue(self, chat_id, latitude, longitude, title, address):
+    def sendVenue(self, chat_id, latitude, longitude, title, address, reply_to_message_id=None, reply_markup=None):
         '''
         发送地点，显示在地图上
         '''
         command = "sendVenue"
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude)) + \
             "&title=" + str(title) + "&address=" + str(address)
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
@@ -790,10 +852,6 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def answerCallbackQuery(self, callback_query_id, text, show_alert, url, cache_time):
-        pass
-
-
     #Updating messages
     def editMessageText(self, chat_id, text, message_id=None, inline_message_id=None, \
             parse_mode=None, disable_web_page_preview=None, reply_markup=None):
@@ -873,6 +931,66 @@ class Bot(object):
 
         headers = {'Content-Type':'application/json'}
         req = requests.post(self.url + addr, headers=headers, data=json.dumps(results))
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
+
+    def answerCallbackQuery(self, callback_query_id, text=None, show_alert="false", url=None, cache_time=0):
+        '''
+        使用此方法发送CallbackQuery的应答
+        InlineKeyboardMarkup格式:
+        replyKeyboard = [
+        [
+            {  "text": "命令菜单","callback_data":"/start"},
+            {  "text": "一排之二","url":"https://google.com"}
+        ],
+        [
+            { "text": "二排之一","url":"https://google.com"},
+            { "text": "二排之二","url":"https://google.com"},
+            { "text": "二排之三","url":"https://google.com"}
+        ]
+        ]
+        reply_markup = {
+            "inline_keyboard": replyKeyboard
+        }
+        ReplyKeyboardMarkup格式(似乎不能用于群组):
+        replyKeyboard = [
+        [
+            {  "text": "命令菜单"},
+            {  "text": "一排之二"}
+        ],
+        [
+            { "text": "二排之一"},
+            { "text": "二排之二"},
+            { "text": "二排之三"}
+        ]
+        ]
+        reply_markup = {
+        "keyboard": replyKeyboard,
+        "resize_keyboard": bool("false"),
+        "one_time_keyboard": bool("false"),
+        "selective": bool("true")
+        }
+        ReplyKeyboardRemove格式:
+        reply_markup = {
+        "remove_keyboard": bool("true"),
+        "selective": bool("true")
+        }
+        '''
+        command = "answerCallbackQuery"
+        addr = command + "?callback_query_id=" + str(callback_query_id)
+        if text != None:
+            addr += "&text=" + str(text)
+        if show_alert == "true":
+            addr += "&show_alert=" + str(bool(show_alert))
+        if url != None:
+            addr += "&url=" + str(url)
+        if cache_time != 0:
+            addr += "&cache_time=" + str(cache_time)
+
+        req = requests.post(self.url + addr)
 
         if req.json().get("ok") == True:
             return req.json().get("result")

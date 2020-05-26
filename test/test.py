@@ -52,5 +52,26 @@ results = {
     '2':'b',
     '3':'c'
 }
-r = bot.answerInlineQuery(inline_query_id="4193969412829691548", results=results)
+# r = bot.answerInlineQuery(inline_query_id="4193969412829691548", results=results)
+# print(r)
+
+
+replyKeyboard = [
+  [
+    {  "text": "/start"},
+    {  "text": "/bing"}
+  ],
+  [
+    { "text": "/id"},
+    { "text": "/top"},
+    { "text": "/helloword"}
+  ]
+]
+reply_markup = {
+    "keyboard": replyKeyboard,
+    "resize_keyboard": bool("true"),
+    "one_time_keyboard": bool("true"),
+    "selective": bool("false")
+}
+r = bot.sendMessage(chat_id=user_id, text="测试keyboard", reply_markup=reply_markup)
 print(r)
