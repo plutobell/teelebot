@@ -6,7 +6,6 @@ import urllib.parse as ubp
 def Chat(message):
     bot = Bot()
     url = "http://api.qingyunke.com/api.php?key=free&appid=0&msg="
-    url1 = "https://api.ownthink.com/bot?spoken="
     requests.adapters.DEFAULT_RETRIES = 5
     hello = ("你好", "nihao", "hello", "Hello",
             "HELLO", "hi", "Hi", "HI",
@@ -15,7 +14,7 @@ def Chat(message):
              "Good afternoom", "good evening", "Good evening")
     if message["text"][1:] in hello:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendVoice(message["chat"]["id"], bot.plugin_dir + "Chat/hello.ogg")
+        status = bot.sendVoice(message["chat"]["id"], voice=bot.plugin_dir + "Chat/hello.ogg", reply_to_message_id=message["message_id"])
     else:
         req = requests.get(url + ubp.quote(message["text"][1:])) #urlencode编码
         req.keep_alive = False

@@ -21,7 +21,7 @@ Python实现的Telegram Bot机器人框架
 
 
 
-目前此项目在 Python 3.6 及以上版本测试通过。
+本项目在 Python 3.6 及以上版本测试通过。
 
 
 
@@ -95,7 +95,7 @@ Python实现的Telegram Bot机器人框架
 
 
 
-目标是封装官方所有的Method
+目标是封装官方所有的接口
 
 
 
@@ -259,7 +259,7 @@ def Hello(message):
 修改插件目录下的 `__init__.py` 文件设置触发指令：
 
 ```python
-#file /Hello/__init__.py
+#file Hello/__init__.py
 
 #/helloworld
 #Hello World插件例子
