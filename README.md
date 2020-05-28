@@ -291,6 +291,7 @@ def Hello(message):
 
 #### 2020-5-28
 
+* v1.3.0 : 新增插件 Guard，消息轮询增加对 new_chat_member 和 left_chat_participant 类型消息的识别
 * v1.2.9 : 修复插件 Firefoxmoniter 和 Top 的bug，新增插件 Translate
 
 #### 2020-5-26
