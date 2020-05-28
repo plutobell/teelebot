@@ -14,11 +14,11 @@ def Translate(message):
         h = f.readline()[1:]
     if len(message["text"]) < len(h)+1:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A要翻译的内容为空!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        status = bot.sendMessage(message["chat"]["id"], "翻译失败！%0A要翻译的内容为空!", parse_mode="HTML", reply_to_message_id=message["message_id"])
         return False
     elif message["text"][len(h)-1] != ':':
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查分隔符是否为' : '!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        status = bot.sendMessage(message["chat"]["id"], "翻译失败！%0A请检查分隔符是否为' : '!", parse_mode="HTML", reply_to_message_id=message["message_id"])
         return False
 
     url = "http://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i="
