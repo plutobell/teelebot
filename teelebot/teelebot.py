@@ -52,11 +52,15 @@ class Bot(object):
                 if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
+                    print(message)
                     if message == None:
                         continue
                     for plugin in plugin_list:
                         if message.get("callback_query_id") != None: #callback query
                             message_type = "callback_query_data"
+                        elif message.get("new_chat_members") != None or message.get("left_chat_member") != None:
+                            message_type = "text"
+                            message["text"] = "/" #default prefix of command
                         elif message.get("text") != None:
                             message_type = "text"
                         elif message.get("caption") != None:

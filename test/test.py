@@ -56,22 +56,24 @@ results = {
 # print(r)
 
 
-replyKeyboard = [
-  [
-    {  "text": "/start"},
-    {  "text": "/bing"}
-  ],
-  [
-    { "text": "/id"},
-    { "text": "/top"},
-    { "text": "/helloword"}
-  ]
-]
-reply_markup = {
-    "keyboard": replyKeyboard,
-    "resize_keyboard": bool("true"),
-    "one_time_keyboard": bool("true"),
-    "selective": bool("false")
-}
-r = bot.sendMessage(chat_id=user_id, text="测试keyboard", reply_markup=reply_markup)
+# replyKeyboard = [
+#   [
+#     {  "text": "/start"},
+#     {  "text": "/bing"}
+#   ],
+#   [
+#     { "text": "/id"},
+#     { "text": "/top"},
+#     { "text": "/helloword"}
+#   ]
+# ]
+# reply_markup = {
+#     "keyboard": replyKeyboard,
+#     "resize_keyboard": bool("true"),
+#     "one_time_keyboard": bool("true"),
+#     "selective": bool("false")
+# }
+# r = bot.sendMessage(chat_id=user_id, text="测试keyboard", reply_markup=reply_markup)
+# print(r)
+r = bot.unbanChatMember(chat_id=chat_id, user_id=)
 print(r)
