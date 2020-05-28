@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-3-21
-last_modify: 2020-5-26
+last_modify: 2020-5-28
 '''
 import requests
 from teelebot import Bot
@@ -13,12 +13,8 @@ config = config()
 requests.adapters.DEFAULT_RETRIES = 15
 
 def Top(message):
-    if str(message["from"]["id"]) != config["root"]:
-        status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "权限不足！", parse_mode="HTML", reply_to_message_id=message["message_id"])
-    elif str(message["from"]["id"]) == config["root"]:
-        bot = Bot()
-
+    bot = Bot()
+    if str(message["from"]["id"]) == config["root"]:
         url = ""
         data = {"Key" : ""}
         with open(bot.plugin_dir + "Top/key.ini", "r") as f:
@@ -27,12 +23,12 @@ def Top(message):
             data["Key"] = sets[1].strip()
 
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "主人，正在获取服务器信息，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        status = bot.sendMessage(message["chat"]["id"], text="主人，正在获取服务器信息，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
         req = requests.post(url=url, data=data)
         if req.json().get("status") == False:
             req.close()
             status = bot.sendChatAction(message["chat"]["id"], "typing")
-            status = bot.sendMessage(message["chat"]["id"], "抱歉主人，获取服务器信息失败", parse_mode="HTML", reply_to_message_id=message["message_id"])
+            status = bot.sendMessage(message["chat"]["id"], text="抱歉主人，获取服务器信息失败", parse_mode="HTML", reply_to_message_id=message["message_id"])
         elif req.json().get("status") == True:
             contents = req.json().get("contents")
             Top = contents.get("Top")
@@ -66,4 +62,7 @@ def Top(message):
                 "硬盘用量：<b>" + str(int(float(hd_total)-float(hd_avail))) + "G</b> 已用，<b>" + str(hd_avail) + "G</b> 空闲"
 
             status = bot.sendChatAction(message["chat"]["id"], "typing")
-            status = bot.sendMessage(message["chat"]["id"], msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
+            status = bot.sendMessage(message["chat"]["id"], text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
+    else:
+        status = bot.sendChatAction(message["chat"]["id"], "typing")
+        status = bot.sendMessage(message["chat"]["id"], text="您没有权限！", parse_mode="HTML", reply_to_message_id=message["message_id"])
