@@ -18,6 +18,7 @@ Python实现的Telegram Bot机器人框架
 *  Bing - 调用第三方Bing壁纸接口 [bing](https://github.com/xCss/bing) 获取每日必应壁纸
 *  ID - 获取你的用户ID
 *  Top - 调用top命令查看服务器状态
+*  Translate - 调用 [有道翻译](http://fanyi.youdao.com/)API 对文字进行翻译
 
 
 
@@ -198,7 +199,7 @@ python -m teelebot -c/-C <configure file path>
   pip3 install <teelebot package file name>
   ```
 
-由于API未封装完毕，暂未上传至 `PyPI` ,故不能在线安装，忘谅解。
+由于API未封装完毕，暂未上传至 `PyPI` ,故不能在线安装，望谅解。
 
 ##### 运行 #####
 
@@ -287,6 +288,10 @@ def Hello(message):
 
 
 ## 更新历史 ##
+
+#### 2020-5-28
+
+* v1.2.9 : 修复插件 Firefoxmoniter 和 Top 的bug，新增插件 Translate
 
 #### 2020-5-26
 
