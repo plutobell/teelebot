@@ -15,7 +15,7 @@ def Firefoxmoniter(message):
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", parse_mode="HTML", reply_to_message_id=message["message_id"])
         return False
-    email = message["text"][len(h)-1:]
+    email = message["text"].strip()[len(h)-1:]
     if all([ '@' in email, '.' in email.split('@')[1] ]):
         ehash = hashlib.sha1(email.encode("utf-8")) #经测试由sha1加密
         emailhash = ehash.hexdigest()
