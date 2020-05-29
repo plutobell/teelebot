@@ -25,15 +25,16 @@ def Guard(message):
             repl = "<*>"
             result = DFA.filter(first_name, repl)
             if repl in result or len(first_name) > 25:
-                msg = "由于用户：[" + user_id + "] 的名字过于优美，Ta永远地离开了我们。"
-                status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendMessage(chat_id, text=msg, parse_mode="HTML")
                 status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=30)
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-            else:
-                msg = "<b>" + first_name + "</b>，欢迎你，" + "%0A我是滥权Bot<b>小埋</b>，发送 /start 获取帮助"
+                msg = "由于用户 <b>" + user_id + "</b> 的名字过于优美，小埋无法识别%0A<b>Ta</b>永远地离开了我们。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id, text=msg, parse_mode="HTML")
+            else:
+                msg = "欢迎你，<b>" + first_name + "</b>%0A我是滥权Bot <b>小埋</b>，发送 <b>/start</b> 获取帮助。"
+                status = bot.sendChatAction(chat_id, "typing")
+                status = bot.sendMessage(chat_id, text=msg, parse_mode="HTML")
+            status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
     elif "left_chat_member" in message.keys():
         status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
 
