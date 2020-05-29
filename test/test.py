@@ -75,5 +75,14 @@ results = {
 # }
 # r = bot.sendMessage(chat_id=user_id, text="测试keyboard", reply_markup=reply_markup)
 # print(r)
-r = bot.unbanChatMember(chat_id=chat_id, user_id=)
-print(r)
+# r = bot.unbanChatMember(chat_id=chat_id, user_id=)
+# print(r)
+
+
+
+admins = [] #获取群组所有管理员id
+results = bot.getChatAdministrators(chat_id=-1001120578978)
+for result in results:
+    if str(result["user"]["is_bot"]) == "False":
+        admins.append(result["user"]["id"])
+print(admins)

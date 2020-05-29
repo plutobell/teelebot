@@ -300,7 +300,13 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-5-30
+
+* v1.3.3 : 插件 Guard 新增功能 guardadd,可通过Bot添加过滤关键词，代码优化
+
 #### 2020-5-29
+
+* v1.3.2 : 修复 kickMember 和 restrictChatMember 函数 until_date 时间问题，Guard 插件细节优化
 
 * v1.3.1 : 修复 Firefoxiremoniter 插件 email 地址bug，插件Guard部分细节优化
 
