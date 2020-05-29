@@ -19,6 +19,7 @@ Python实现的Telegram Bot机器人框架
 *  ID - 获取你的用户ID
 *  Top - 调用top命令查看服务器状态
 *  Translate - 调用 [有道翻译](http://fanyi.youdao.com/)API 对文字进行翻译
+*  Guard - 广告过滤插件， 使用 DFA 对消息进行过滤
 
 
 
@@ -239,6 +240,8 @@ Hello/
 
 #### 二、规则
 
+##### 命名
+
 在构建teelebot插件中应当遵守的规则是：每个插件目录下应当存在一个与插件同名的`.py` 文件，比如插件 `Hello ` 中的 `Hello.py` 文件，并且此文件中必须存在作为插件入口的同名函数，以插件 `Hello` 为例：
 
 ```python
@@ -252,6 +255,14 @@ def Hello(message):
 ```
 
 函数 `Hello()` 即为插件的入口函数，参数 `message` 用于接收消息数据。
+
+##### 资源路径
+
+若想在插件内进行打开文件等操作，需要使用的路径应当遵循以下的格式：
+
+```python
+bot.plugin_dir + "<plugin dir name>/<resource address>"
+```
 
 #### 三、自定义触发指令
 
@@ -289,10 +300,14 @@ def Hello(message):
 
 ## 更新历史 ##
 
+#### 2020-5-29
+
+* v1.3.1 : 修复 Firefoxiremoniter 插件 email 地址bug，插件Guard部分细节优化
+
 #### 2020-5-28
 
 * v1.3.0 : 新增插件 Guard，消息轮询增加对 new_chat_member 和 left_chat_participant 类型消息的识别
-* v1.2.9 : 修复插件 Firefoxmoniter 和 Top 的bug，新增插件 Translate
+* v1.2.9 : 修复插件 Firefoxiremoniter 和 Top 的bug，新增插件 Translate
 
 #### 2020-5-26
 

@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-5-28
+@last modify: 2020-5-29
 @author github: plutobell
-@version: 1.3.0_dev
+@version: 1.3.1_dev
 '''
 import time
 import sys
@@ -52,7 +52,6 @@ class Bot(object):
                 if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
-                    print(message)
                     if message == None:
                         continue
                     for plugin in plugin_list:
