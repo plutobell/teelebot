@@ -302,7 +302,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-5-30
 
-* v1.3.3 : 插件 Guard 新增功能 guardadd,可通过Bot添加过滤关键词，代码优化
+* v1.3.3 : 插件 Guard 新增功能 guardadd,可通过Bot添加过滤关键词；代码优化
 
 #### 2020-5-29
 
