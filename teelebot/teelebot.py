@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-5-29
 @author github: plutobell
-@version: 1.3.1_dev
+@version: 1.3.3_dev
 '''
 import time
 import sys
@@ -410,23 +410,6 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def kickChatMember(self, uid, chat_id, until_date=0): #踢人
-        command = "kickChatMember"
-        if until_date == 0:
-            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
-        else:
-            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid) + "&until_date=" + str(until_date)
-        req = requests.post(self.url + addr)
-
-        return req.json().get("ok")
-
-    def unbanChatMember(self, uid, chat_id): #解除踢人所带来的黑名单时间
-        command = "unbanChatMember"
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
-        req = requests.post(self.url + addr)
-
-        return req.json().get("ok")
-
     def leaveChat(self, chat_id): #退出群组
         command = "leaveChat"
         addr = command + "?chat_id=" + str(chat_id)
@@ -444,7 +427,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def getChatAdministrators(self, chat_id): #获取群组所有管理员信息
+    def getChatAdministrators(self, chat_id):
+        '''
+        获取群组所有管理员信息
+        '''
         command = "getChatAdministrators"
         addr = command + "?chat_id=" + str(chat_id)
         req = requests.get(self.url + addr)
@@ -454,7 +440,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def getChatMembersCount(self, chat_id): #获取群组成员总数
+    def getChatMembersCount(self, chat_id):
+        '''
+        获取群组成员总数
+        '''
         command = "getChatMembersCount"
         addr = command + "?chat_id=" + str(chat_id)
         req = requests.get(self.url + addr)
@@ -700,10 +689,13 @@ class Bot(object):
     def kickChatMember(self, chat_id, user_id, until_date=None):
         '''
         从Group、Supergroup或者Channel中踢人，被踢者在until_date期限内不可再次加入
+        until_date format:
+        timestamp + offset
         '''
 
         command = "kickChatMember"
         if until_date is not None:
+            until_date = int(time.time()) + int(until_date)
             addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
         if until_date is None:
             addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
@@ -744,6 +736,8 @@ class Bot(object):
                         can_restrict_members, can_pin_messages, can_promote_members, until_date=None):
         '''
         限制群组用户权限
+        until_date format:
+        timestamp + offset
         '''
         command = "restrictChatMember"
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
@@ -756,6 +750,7 @@ class Bot(object):
         addr += "&can_pin_messages=" + str(can_pin_messages)
         addr += "&can_promote_members=" + str(can_promote_members)
         if until_date is not None:
+            until_date = int(time.time()) + int(until_date)
             addr += "&until_date=" + str(until_date)
 
         req = requests.post(self.url + addr)

@@ -1,47 +1,151 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-5-29
+last_modify: 2020-5-30
 '''
 
 from teelebot import Bot
 from collections import defaultdict
 import re
+from teelebot.handler import config
+
+config = config()
+bot = Bot()
 
 def Guard(message):
-    bot = Bot()
+    repl = "<*>"
+    DFA = DFAFilter()
+    DFA.parse(bot.plugin_dir + "Guard/keywords")
     message_id = message["message_id"]
     chat_id = message["chat"]["id"]
 
     if "new_chat_members" in message.keys():
         new_chat_members = message["new_chat_members"]
 
-        DFA = DFAFilter()
-        DFA.parse(bot.plugin_dir + "Guard/keywords")
         for new_chat_member in new_chat_members:
             user_id = str(new_chat_member["id"])
             first_name = new_chat_member["first_name"].strip()
             #print("New Member：", user_id, first_name)
-            repl = "<*>"
             result = DFA.filter(first_name, repl)
-            if repl in result or len(first_name) > 25:
-                status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=30)
+            if (repl in result and len(first_name) > 9) or len(first_name) > 25:
+                status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=60)
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-                msg = "由于用户 <b>" + user_id + "</b> 的名字过于优美，小埋无法识别%0A<b>Ta</b>永远地离开了我们。"
+                msg = "由于用户 <b><a href=tg://user?id=" + str(user_id) + "'>" + str(user_id) + "</a></b> 的名字<b> 过于优美</b>，小埋无法识别，Ta永远地离开了我们。"
                 status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendMessage(chat_id, text=msg, parse_mode="HTML")
+                status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
             else:
-                msg = "欢迎你，<b>" + first_name + "</b>%0A我是滥权Bot <b>小埋</b>，发送 <b>/start</b> 获取帮助。"
+                msg = "<b><a href=tg://user?id=" + str(user_id) + "'>" + first_name + "</a></b> 欢迎你，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
                 status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendMessage(chat_id, text=msg, parse_mode="HTML")
+                status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
             status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
     elif "left_chat_member" in message.keys():
-        status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
+        result = DFA.filter(first_name, repl)
+        if (repl in result and len(first_name) > 9) or len(first_name) > 25:
+            user_id = message["left_chat_member"]["id"]
+            first_name = message["left_chat_member"]["first_name"]
+            status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
+        else:
+            msg = "用户 <b><a href='tg://user?id="+ str(user_id) + "'>"+ first_name +"</a></b> 离开了我们。"
+            status = bot.sendChatAction(chat_id, "typing")
+            status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
+    elif "text" in message.keys():
+        text = message["text"]
+        prefix = "guard"
+        if message["chat"]["type"] == 'private': #判断是否为私人对话
+            status = bot.sendChatAction(chat_id, "typing")
+            status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message["message_id"])
+            return False
+
+        admins = administrators(chat_id=chat_id)
+
+        if str(config["root"]) not in admins:
+            admins.append(str(config["root"])) #root permission
+
+        if text[1:] == prefix:
+            status = bot.sendChatAction(chat_id, "typing")
+            status = bot.sendMessage(chat_id=chat_id, text="<b>===== Guard 插件功能 =====</b>%0A%0A<b>/guardadd</b> - 添加过滤关键词。格式:命令加空格加关键词，多个关键词之间用英文逗号隔开%0A", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        elif str(message["from"]["id"]) not in admins: #判断有无权限操作
+            status = bot.sendChatAction(chat_id, "typing")
+            status = bot.sendMessage(chat_id, "抱歉，您没有权限!", parse_mode="text", reply_to_message_id=message["message_id"])
+        elif text[1:len(prefix)+1] == prefix:
+            if text[1:] == prefix + "add":
+                status = bot.sendChatAction(chat_id, "typing")
+                status = bot.sendMessage(chat_id, "添加失败！%0A关键字为空!", parse_mode="text", reply_to_message_id=message["message_id"])
+            elif " " not in text[1:] or "，" in text[1:]:
+                status = bot.sendChatAction(chat_id, "typing")
+                status = bot.sendMessage(chat_id, "添加失败！%0A请检查命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
+            elif text[1:len("guard")+5] == prefix + "add" + " ":
+                text_sp = text[1:].split(" ")
+                if len(text_sp) != 2:
+                    status = bot.sendChatAction(chat_id, "typing")
+                    status = bot.sendMessage(chat_id, "添加失败！%0A请检查命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
+                else:
+                    if "," in text_sp[1]:
+                        switch = 0
+                        keywords = text_sp[1].split(',')
+                        before_count = len(keywords)
+                        if len(keywords) > 5: #最多同时录入5个关键词
+                            status = bot.sendChatAction(chat_id, "typing")
+                            status = bot.sendMessage(chat_id, "添加失败！%0A最多只支持5个!", parse_mode="text", reply_to_message_id=message["message_id"])
+                            return False
+                    else:
+                        switch = 1
+                        keyword = text_sp[1].strip()
+                        before_count = 1
+
+                    if switch == 0: #判断要存入的关键词是否已经存在
+                        keywords_wash = []
+                        for keyw in keywords:
+                            result = DFA.filter(keyw, repl)
+                            if repl not in result:
+                                keywords_wash.append(keyw)
+                        if len(keywords_wash) == 0:
+                            keywords = None
+                            after_count = 0
+                        else:
+                            keywords = keywords_wash
+                            after_count = len(keywords)
+                    elif switch == 1:
+                        result = DFA.filter(keyword, repl)
+                        if repl not in result:
+                            keyword = None
+                            after_count = 0
+                        else:
+                            after_count = 1
+
+                    keys = "" #成功添加的关键字统计
+                    with open(bot.plugin_dir + "Guard/keywords", "a", encoding="utf-8") as k:
+                        if switch == 0:
+                            if keywords == None:
+                                status = bot.sendChatAction(chat_id, "typing")
+                                status = bot.sendMessage(chat_id, "您输入的 " + str(before_count) +" 个关键词已经存在于库中!", parse_mode="text", reply_to_message_id=message["message_id"])
+                                return False
+                            else:
+                                for keyw in keywords:
+                                    k.write("\n" + keyw.strip())
+                                    keys += keyw + "%0A"
+
+                        elif switch == 1:
+                            if keyword == None:
+                                status = bot.sendChatAction(chat_id, "typing")
+                                status = bot.sendMessage(chat_id, "您输入的 " + str(before_count) +" 个关键词已经存在于库中!", parse_mode="text", reply_to_message_id=message["message_id"])
+                                return False
+                            else:
+                                k.write("\n" + keyword)
+                                keys += keyword + "%0A"
+                    status = bot.sendChatAction(chat_id, "typing")
+                    status = bot.sendMessage(chat_id, "成功添加 " + str(after_count) +" 个关键词%0A剩余的 " + str(int(before_count)-int(after_count)) + " 个关键词已经存在于库中。%0A成功添加的关键词有：%0A%0A" + str(keys), parse_mode="text", reply_to_message_id=message["message_id"])
 
 
+def administrators(chat_id):
+    admins = []
+    results = bot.getChatAdministrators(chat_id=chat_id)
+    for result in results:
+        if str(result["user"]["is_bot"]) == "False":
+            admins.append(str(result["user"]["id"]))
+    #print(admins)
 
-
-
+    return admins
 
 
 class DFAFilter():
