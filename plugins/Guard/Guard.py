@@ -30,6 +30,7 @@ def Guard(message):
             if (repl in result and len(first_name) > 9) or len(first_name) > 25:
                 status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=60)
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
+                status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
                 msg = "由于用户 <b><a href=tg://user?id=" + str(user_id) + "'>" + str(user_id) + "</a></b> 的名字<b> 过于优美</b>，小埋无法识别，Ta永远地离开了我们。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
@@ -37,7 +38,6 @@ def Guard(message):
                 msg = "<b><a href=tg://user?id=" + str(user_id) + "'>" + first_name + "</a></b> 欢迎你，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-            status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
     elif "left_chat_member" in message.keys():
         result = DFA.filter(first_name, repl)
         if (repl in result and len(first_name) > 9) or len(first_name) > 25:
