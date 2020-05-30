@@ -44,7 +44,7 @@ def Guard(message):
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
             else:
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 欢迎你，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
+                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 欢迎加入，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
     elif "left_chat_member" in message.keys():
