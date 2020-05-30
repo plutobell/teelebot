@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-5-29
+@last modify: 2020-5-30
 @author github: plutobell
-@version: 1.3.3_dev
+@version: 1.3.4_dev
 '''
 import time
 import sys
@@ -57,7 +57,7 @@ class Bot(object):
                     for plugin in plugin_list:
                         if message.get("callback_query_id") != None: #callback query
                             message_type = "callback_query_data"
-                        elif message.get("new_chat_members") != None or message.get("left_chat_member") != None:
+                        elif (message.get("new_chat_members") != None) or (message.get("left_chat_member") != None):
                             message_type = "text"
                             message["text"] = "/" #default prefix of command
                         elif message.get("text") != None:
@@ -100,6 +100,7 @@ class Bot(object):
                 elif result.get("message"):
                     query_or_message = "message"
                 update_ids.append(result.get("update_id"))
+
                 if query_or_message == "callback_query":
                     callback_query = result.get(query_or_message).get("message")
                     callback_query["callback_query_id"] = result.get(query_or_message).get("id")
