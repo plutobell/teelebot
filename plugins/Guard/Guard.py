@@ -24,54 +24,73 @@ def Guard(message):
 
         for new_chat_member in new_chat_members:
             user_id = str(new_chat_member["id"])
-            first_name = new_chat_member["first_name"].strip()
+            if "first_name" in new_chat_member.keys(): #Optional (first_name or last_name)
+                first_name = new_chat_member["first_name"].strip()
+            else:
+                first_name = ""
+            if "last_name" in new_chat_member.keys():
+                last_name = new_chat_member["last_name"].strip()
+            else:
+                last_name = ""
+            name = str(first_name + last_name).strip()
             #print("New Member：", user_id, first_name)
-            result = DFA.filter(first_name, repl)
-            if (repl in result and len(first_name) > 9) or len(first_name) > 25:
+            result = DFA.filter(name, repl)
+            if (repl in result and len(name) > 9) or (len(name) > 25):
                 status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=60)
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
                 status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
-                msg = "由于用户 <b><a href=tg://user?id=" + str(user_id) + "'>" + str(user_id) + "</a></b> 的名字<b> 过于优美</b>，小埋无法识别，Ta永远地离开了我们。"
+                msg = "由于用户 <b><a href='tg://user?id=" + str(user_id) + "'>" + str(user_id) + "</a></b> 的名字<b> 过于优美</b>，小埋无法识别，Ta永远地离开了我们。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
             else:
-                msg = "<b><a href=tg://user?id=" + str(user_id) + "'>" + first_name + "</a></b> 欢迎你，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
+                status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
+                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 欢迎你，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
     elif "left_chat_member" in message.keys():
+        user_id = message["left_chat_member"]["id"]
+        if "first_name" in message["left_chat_member"]:
+            first_name = message["left_chat_member"]["first_name"].strip()
+        else:
+            first_name = ""
+        if "last_name" in message["left_chat_member"]:
+            last_name = message["left_chat_member"]["last_name"].strip()
+        else:
+            last_name = ""
+        name = str(first_name + last_name).strip()
+
         result = DFA.filter(first_name, repl)
-        if (repl in result and len(first_name) > 9) or len(first_name) > 25:
-            user_id = message["left_chat_member"]["id"]
-            first_name = message["left_chat_member"]["first_name"]
+        if (repl in result and len(name) > 9) or (len(name) > 25):
             status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
         else:
-            msg = "用户 <b><a href='tg://user?id="+ str(user_id) + "'>"+ first_name +"</a></b> 离开了我们。"
+            status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
+            msg = "用户 <b><a href='tg://user?id="+ str(user_id) + "'>"+ first_name + " " + last_name +"</a></b> 离开了我们。"
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
     elif "text" in message.keys():
         text = message["text"]
         prefix = "guard"
-        if message["chat"]["type"] == 'private': #判断是否为私人对话
+        admins = []
+        if (message["chat"]["type"] == "private") and (text[1:len(prefix)+1] == prefix): #判断是否为私人对话
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message["message_id"])
             return False
+        elif text[1:len(prefix)+1] == prefix:
+            admins = administrators(chat_id=chat_id)
+            if str(config["root"]) not in admins:
+                admins.append(str(config["root"])) #root permission
 
-        admins = administrators(chat_id=chat_id)
-
-        if str(config["root"]) not in admins:
-            admins.append(str(config["root"])) #root permission
-
-        if text[1:] == prefix:
+        if (text[1:] == prefix) or (text[1:len(prefix)+2] == prefix + '@'):
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text="<b>===== Guard 插件功能 =====</b>%0A%0A<b>/guardadd</b> - 添加过滤关键词。格式:命令加空格加关键词，多个关键词之间用英文逗号隔开%0A", parse_mode="HTML", reply_to_message_id=message["message_id"])
-        elif str(message["from"]["id"]) not in admins: #判断有无权限操作
+        elif (str(message["from"]["id"]) not in admins) and (text[1:len(prefix)+1] == prefix): #判断有无权限操作
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id, "抱歉，您没有权限!", parse_mode="text", reply_to_message_id=message["message_id"])
         elif text[1:len(prefix)+1] == prefix:
             if text[1:] == prefix + "add":
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id, "添加失败！%0A关键字为空!", parse_mode="text", reply_to_message_id=message["message_id"])
-            elif " " not in text[1:] or "，" in text[1:]:
+            elif ("，" in text[1:]) or (text[1:len(prefix + "add")+2] == prefix + "add" + '@'):
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id, "添加失败！%0A请检查命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
             elif text[1:len("guard")+5] == prefix + "add" + " ":
@@ -83,6 +102,14 @@ def Guard(message):
                     if "," in text_sp[1]:
                         switch = 0
                         keywords = text_sp[1].split(',')
+                        from collections import Counter
+                        keyword_count = Counter(keywords)
+                        for keyw_c in keyword_count.keys(): #关键词重复检测
+                            if keyword_count[keyw_c] != 1:
+                                status = bot.sendChatAction(chat_id, "typing")
+                                status = bot.sendMessage(chat_id, "添加失败！%0A存在重复的关键字!", parse_mode="text", reply_to_message_id=message["message_id"])
+                                return False
+
                         before_count = len(keywords)
                         if len(keywords) > 5: #最多同时录入5个关键词
                             status = bot.sendChatAction(chat_id, "typing")
@@ -140,10 +167,12 @@ def Guard(message):
 def administrators(chat_id):
     admins = []
     results = bot.getChatAdministrators(chat_id=chat_id)
-    for result in results:
-        if str(result["user"]["is_bot"]) == "False":
-            admins.append(str(result["user"]["id"]))
-    #print(admins)
+    if results != False:
+        for result in results:
+            if str(result["user"]["is_bot"]) == "False":
+                admins.append(str(result["user"]["id"]))
+    else:
+        admins = False
 
     return admins
 
