@@ -23,7 +23,7 @@ Python实现的Telegram Bot机器人框架
 
 
 
-本项目在 Python 3.6 及以上版本测试通过。
+本项目在 Python 3.5 及以上版本测试通过。
 
 
 
@@ -299,6 +299,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-1
+
+* v1.3.5 : 文件发送类函数支持直接发送 Bytes 流，完善send类函数返回值
 
 #### 2020-5-30
 

@@ -1,13 +1,17 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-5-30
+last_modify: 2020-6-1
 '''
 
 from teelebot import Bot
 from collections import defaultdict
 import re
+import string
 from teelebot.handler import config
+from captcha.image import ImageCaptcha
+from random import randint
+from io import BytesIO
 
 config = config()
 bot = Bot()
@@ -39,12 +43,12 @@ def Guard(message):
                 status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=60)
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
                 status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
-                msg = "由于用户 <b><a href='tg://user?id=" + str(user_id) + "'>" + str(user_id) + "</a></b> 的名字<b> 过于优美</b>，小埋无法识别，Ta永远地离开了我们。"
+                msg = "由于用户 <b><a href='tg://user?id=" + str(user_id) + "'>" + str(user_id) + "</a></b> 的名字<b> 过于优美</b>，无法识别，Ta永远地离开了我们。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
             else:
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 欢迎加入，我是滥权Bot<b> 小埋</b>，发送 <b>/start</b> 获取帮助。"
+                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 欢迎加入，发送 <b>/start</b> 获取帮助。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
     elif "left_chat_member" in message.keys():
@@ -175,6 +179,26 @@ def administrators(chat_id):
         admins = False
 
     return admins
+
+
+def captcha_img(width=320, height=120, font_sizes=(100, 110, 120, 200, 210, 220), fonts=None):
+
+    captcha_len = 5
+    captcha_range = string.digits + string.ascii_letters
+    captcha_range_len = len(captcha_range)
+    captcha_text = ""
+    for i in range(captcha_len):
+        captcha_text += captcha_range[randint(0, captcha_range_len-1)]
+
+    img = ImageCaptcha(width=width, height=height, font_sizes=font_sizes)
+    image = img.generate_image(captcha_text)
+
+    #save to bytes
+    bytes_image= BytesIO()
+    image.save(bytes_image, format='png')
+    bytes_image= bytes_image.getvalue()
+
+    return bytes_image, captcha_text
 
 
 class DFAFilter():

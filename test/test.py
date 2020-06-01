@@ -80,9 +80,23 @@ results = {
 
 
 
-admins = [] #获取群组所有管理员id
-results = bot.getChatAdministrators(chat_id=-1001120578978)
-for result in results:
-    if str(result["user"]["is_bot"]) == "False":
-        admins.append(result["user"]["id"])
-print(admins)
+# admins = [] #获取群组所有管理员id
+# results = bot.getChatAdministrators(chat_id=-1001120578978)
+# for result in results:
+#     if str(result["user"]["is_bot"]) == "False":
+#         admins.append(result["user"]["id"])
+# print(admins)
+
+
+#import cap
+# bytes_captcha, captcha_text = cap.captcha_img()
+# r = bot.sendPhoto(chat_id=chat_id, photo=bytes_captcha, caption="测试验证码图片发送", parse_mode="Text")
+# print(r)
+
+
+req = bot.sendMessage(chat_id=chat_id, text="测试消息自毁", parse_mode="HTML")
+print(req)
+import time
+time.sleep(30)
+req = bot.deleteMessage(chat_id=chat_id, message_id=req["message_id"])
+print(req)
