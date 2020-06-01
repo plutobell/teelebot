@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-5-30
+@last modify: 2020-6-1
 @author github: plutobell
-@version: 1.3.4_dev
+@version: 1.3.5_dev
 '''
 import time
 import sys
@@ -169,13 +169,16 @@ class Bot(object):
         if self.debug is True:
             print(req.text)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送音频消息 .ogg
         command = "sendVoice"
         if voice[:7] == "http://" or voice[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
+        elif type(voice) == bytes:
+            file_data = {"voice" : voice}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"voice" : open(voice, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -194,7 +197,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         '''
@@ -204,6 +207,9 @@ class Bot(object):
         if animation[:7] == "http://" or animation[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
+        elif type(animation) == bytes:
+            file_data = {"animation" : animation}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"animation" : open(animation, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -222,7 +228,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None, reply_markup=None):
         '''
@@ -232,6 +238,9 @@ class Bot(object):
         if audio[:7] == "http://" or audio[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
+        elif type(audio) == bytes:
+            file_data = {"audio" : audio}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"audio" : open(audio, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -252,7 +261,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送图片
         '''
@@ -262,6 +271,9 @@ class Bot(object):
         if photo[:7] == "http://" or photo[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
+        elif type(photo) == bytes:
+            file_data = {"photo" : photo}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"photo" : open(photo, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -280,7 +292,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         '''
@@ -290,6 +302,9 @@ class Bot(object):
         if video[:7] == "http://" or video[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
+        elif type(video) == bytes:
+            file_data = {"video" : video}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"video" : open(video, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -308,7 +323,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         '''
@@ -318,6 +333,9 @@ class Bot(object):
         if video_note[:7] == "http://" or video_note[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
+        elif type(video_note) == bytes:
+            file_data = {"video_note" : video_note}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"video_note" : open(video_note, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -336,7 +354,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None, reply_markup=None): #暂未弄懂格式。
         '''
@@ -384,13 +402,16 @@ class Bot(object):
         headers = {'Content-Type': 'application/json'}
         req = requests.post(self.url + addr, headers=headers, data=json.dumps(medias))
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendDocument(self, chat_id, document, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送文件
         command = "sendDocument"
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
+        elif type(document) == bytes:
+            file_data = {"document" : document}
+            addr = command + "?chat_id=" + str(chat_id)
         else:
             file_data = {"document" : open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -409,7 +430,7 @@ class Bot(object):
         else:
             req = requests.post(self.url + addr, files=file_data)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def leaveChat(self, chat_id): #退出群组
         command = "leaveChat"
@@ -418,7 +439,10 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def getChat(self, chat_id): #获取群组基本信息
+    def getChat(self, chat_id):
+        '''
+        获取群组基本信息
+        '''
         command = "getChat"
         addr = command + "?chat_id=" + str(chat_id)
         req = requests.get(self.url + addr)
@@ -618,7 +642,7 @@ class Bot(object):
 
         req = requests.post(self.url + addr)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendContact(self, chat_id, phone_number, first_name, last_name=None, reply_to_message_id=None, reply_markup=None):
         '''
@@ -635,7 +659,7 @@ class Bot(object):
 
         req = requests.post(self.url + addr)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendVenue(self, chat_id, latitude, longitude, title, address, reply_to_message_id=None, reply_markup=None):
         '''
@@ -651,7 +675,7 @@ class Bot(object):
 
         req = requests.post(self.url + addr)
 
-        return req.json().get("ok")
+        return req.json().get("result")
 
     def sendChatAction(self, chat_id, action):
         '''
