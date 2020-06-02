@@ -94,9 +94,40 @@ results = {
 # print(r)
 
 
-req = bot.sendMessage(chat_id=chat_id, text="测试消息自毁", parse_mode="HTML")
+
+# req = bot.sendMessage(chat_id=chat_id, text="被编辑的消息", parse_mode="HTML")
+# print(req)
+# import time
+# time.sleep(2)
+# req = bot.editMessageText(text="编辑后的消息", chat_id=chat_id, message_id=req["message_id"])
+# print(req)
+
+
+# import cap
+# bytes_captcha, captcha_text = cap.captcha_img()
+# req = bot.sendPhoto(chat_id=chat_id, photo=bytes_captcha, caption="测试编辑caption", parse_mode="Text")
+# print(req)
+# import time
+# time.sleep(2)
+# req = bot.editMessageCaption(chat_id=chat_id, caption="编辑后的caption", message_id=req["message_id"])
+# print(req)
+
+
+import cap  #//TODO
+bytes_captcha, captcha_text = cap.captcha_img()
+req = bot.sendPhoto(chat_id=user_id, photo=bytes_captcha, caption="测试编辑Media", parse_mode="Text")
 print(req)
 import time
-time.sleep(30)
-req = bot.deleteMessage(chat_id=chat_id, message_id=req["message_id"])
+time.sleep(2)
+bytes_captcha, captcha_text = cap.captcha_img()
+media = {
+    'media':[
+        {
+            'type': 'photo',
+            'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg',
+            'caption': '编辑后的Media'
+        }
+    ]
+}
+req = bot.editMessageMedia(chat_id=user_id, message_id=req["message_id"], media=media)
 print(req)

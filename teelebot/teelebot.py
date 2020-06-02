@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-1
+@last modify: 2020-6-2
 @author github: plutobell
-@version: 1.3.5_dev
+@version: 1.3.6_dev
 '''
 import time
 import sys
@@ -59,7 +59,7 @@ class Bot(object):
                             message_type = "callback_query_data"
                         elif (message.get("new_chat_members") != None) or (message.get("left_chat_member") != None):
                             message_type = "text"
-                            message["text"] = "/" #default prefix of command
+                            message["text"] = "" #default prefix of command
                         elif message.get("text") != None:
                             message_type = "text"
                         elif message.get("caption") != None:
@@ -876,19 +876,26 @@ class Bot(object):
             return req.json().get("ok")
 
     #Updating messages
-    def editMessageText(self, chat_id, text, message_id=None, inline_message_id=None, \
+    def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None, \
             parse_mode=None, disable_web_page_preview=None, reply_markup=None):
         '''
         编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
+        在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
         command = "editMessageText"
-        addr = command + "?chat_id=" + str(chat_id)
-        if message_id is not None:
+
+        if inline_message_id == None:
+            if message_id == None or chat_id == None:
+                return False
+
+        if inline_message_id != None:
+            addr = command + "?inline_message_id=" + str(inline_message_id)
+        else:
+            addr = command + "?chat_id=" + str(chat_id)
             addr += "&message_id=" + str(message_id)
-        if inline_message_id is not None:
-            addr += "&inline_message_id=" + str(inline_message_id)
+
         addr += "&text=" + str(text)
-        if parse_mode in ("Markdown", "HTML"):
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + str(parse_mode)
         if disable_web_page_preview is not None:
             addr += "&disable_web_page_preview=" + str(disable_web_page_preview)
@@ -902,20 +909,104 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json()
 
-    def editMessageCaption(self, chat_id, message_id, inline_message_id, text, parse_mode, reply_markup):
+    def editMessageCaption(self, chat_id=None, message_id=None, inline_message_id=None, caption=None, parse_mode=None, reply_markup=None):
         '''
-        编辑消息标题？成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
+        编辑消息的Caption。成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
+        在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        pass
+        command = "editMessageCaption"
+        if inline_message_id == None:
+            if message_id == None or chat_id == None:
+                return False
 
-    def editMessageMedia(self, chat_id, message_id, inline_message_id, media, reply_markup):
-        pass
+        if inline_message_id != None:
+            addr = command + "?inline_message_id=" + str(inline_message_id)
+        else:
+            addr = command + "?chat_id=" + str(chat_id)
+            addr += "&message_id=" + str(message_id)
 
-    def editMessageReplyMarkup(self, chat_id, message_id, inline_message_id, reply_markup):
-        pass
+        if caption is not None:
+            addr += "&caption=" + str(caption)
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
+            addr += "&parse_mode=" + str(parse_mode)
+        if reply_markup is not None:
+            addr += "&reply_markup=" + str(reply_markup)
 
-    def stopPoll(self, chat_id, message_id, reply_markup):
-        pass
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
+
+    def editMessageMedia(self, media, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
+        '''
+        编辑消息媒体
+        在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
+        '''
+        command = "editMessageMedia"
+        if inline_message_id == None:
+            if message_id == None or chat_id == None:
+                return False
+
+        if inline_message_id != None:
+            addr = command + "?inline_message_id=" + str(inline_message_id)
+        else:
+            addr = command + "?chat_id=" + str(chat_id)
+            addr += "&message_id=" + str(message_id)
+
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
+        req = requests.post(self.url + addr, json=media)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
+
+    def editMessageReplyMarkup(self, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
+        '''
+        编辑MessageReplyMarkup
+        在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
+        '''
+        command = "editMessageReplyMarkup"
+        if inline_message_id == None:
+            if message_id == None or chat_id == None:
+                return False
+
+        if inline_message_id != None:
+            addr = command + "?inline_message_id=" + str(inline_message_id)
+        else:
+            addr = command + "?chat_id=" + str(chat_id)
+            addr += "&message_id=" + str(message_id)
+
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
+
+    def stopPoll(self, chat_id, message_id, reply_markup=None):
+        '''
+        停止投票？并返回最终结果
+        '''
+        command = "stopPoll"
+        addr = command + "?chat_id" + str(chat_id) + "&message_id=" + str(message_id)
+
+        if reply_markup != None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
 
     def deleteMessage(self, chat_id, message_id):
         '''
@@ -930,7 +1021,6 @@ class Bot(object):
             return req.json().get("result")
         elif req.json().get("ok") == False:
             return req.json().get("ok")
-
 
 
     #Inline mode
