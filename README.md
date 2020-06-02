@@ -35,7 +35,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现 44 + 0.5 * 2 个 ###
+### 已实现 47 + 0.5 * 3 个 ###
 
 **Getting updates**
 
@@ -89,6 +89,10 @@ Python实现的Telegram Bot机器人框架
 **Updating messages**
 
 * editMessageText
+* editMessageCaption
+* editMessageMedia  (undone)
+* editMessageReplyMarkup
+* stopPoll
 * deleteMessage
 
 **Inline mode**
@@ -300,9 +304,13 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-2
+
+* v1.3.6 : 新增 Updating messages 类型函数接口；bug修复
+
 #### 2020-6-1
 
-* v1.3.5 : 文件发送类函数支持直接发送 Bytes 流，完善send类函数返回值
+* v1.3.5 : 文件发送类函数支持直接发送 Bytes 流，完善 send 类函数返回值
 
 #### 2020-5-30
 
