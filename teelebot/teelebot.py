@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-4
 @author github: plutobell
-@version: 1.3.9_dev
+@version: 1.4.0_dev
 '''
 import time
 import sys

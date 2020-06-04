@@ -19,7 +19,8 @@ Python实现的Telegram Bot机器人框架
 *  ID - 获取你的用户ID
 *  Top - 调用top命令查看服务器状态
 *  Translate - 调用 [有道翻译](http://fanyi.youdao.com/)API 对文字进行翻译
-*  Guard - 广告过滤插件， 使用 DFA 对消息进行过滤
+*  Guard - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
+*  Admin - 群管插件，管理员可通过指令对群进行管理(踢人、禁言等)
 
 
 
@@ -303,6 +304,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-5
+
+* v1.4.0 : 修复 Guard 插件 captcha 验证码手动刷新无回调的bug；新增插件 Admin
 
 #### 2020-6-4
 
