@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import os
 from teelebot import Bot
+from threading import Timer
+
+bot = Bot()
 
 def Menu(message):
-    bot = Bot()
 
     plugin_list = bot.plugin_bridge.values()
     menu_str = ""
@@ -20,3 +22,11 @@ def Menu(message):
     menu_str = "<b>===== 插件列表 =====</b>%0A%0A" + menu_str + "%0A%0Av" + bot.VERSION
     status = bot.sendChatAction(message["chat"]["id"], "typing")
     status = bot.sendMessage(message["chat"]["id"], menu_str, parse_mode="HTML", reply_to_message_id=message["message_id"])
+
+    timer = Timer(30, timer_func, args=[message["chat"]["id"], status["message_id"]])
+    timer.start()
+
+
+
+def timer_func(chat_id, message_id):
+    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
