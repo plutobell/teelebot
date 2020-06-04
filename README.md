@@ -310,7 +310,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 * v1.3.8 : 修复获取 callback_query 消息时无法获取触发 query 的用户的信息的bug
 
-* v1.3.7 :  bug修复，消息轮询增加对部分Media类消息的识别(photo、sticker、video、audio、document)
+* v1.3.7 :  bug修复，消息轮询增加对部分Media类消息(photo、sticker、video、audio、document)的识别
 
 #### 2020-6-2
 
