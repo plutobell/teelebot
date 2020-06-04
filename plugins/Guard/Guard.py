@@ -28,7 +28,7 @@ def Guard(message):
     user_id = message["from"]["id"]
     db = SqliteDB()
     gap = 60
-    bot_id = bot.getMe()["id"]
+    bot_id = (bot.getMe()["id"])
     with open(bot.plugin_dir + "Guard/config.ini") as f:
         data_group_id = f.read().strip()
 
@@ -69,6 +69,10 @@ def Guard(message):
                 }
             }
             status = bot.editMessageMedia(chat_id=chat_id, message_id=result[3], media=media, reply_markup=reply_markup)
+            if status != False:
+                status = bot.answerCallbackQuery(message["callback_query_id"],text="刷新成功",show_alert=bool("true"))
+            else:
+                status = bot.answerCallbackQuery(message["callback_query_id"],text="刷新失败",show_alert=bool("true"))
         else:
             status = bot.answerCallbackQuery(message["callback_query_id"],text="点啥点，关你啥事？",show_alert=bool("true"))
 
