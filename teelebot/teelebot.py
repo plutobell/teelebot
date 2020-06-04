@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-2
+@last modify: 2020-6-4
 @author github: plutobell
-@version: 1.3.6_dev
+@version: 1.3.9_dev
 '''
 import time
 import sys
@@ -60,6 +60,21 @@ class Bot(object):
                         elif (message.get("new_chat_members") != None) or (message.get("left_chat_member") != None):
                             message_type = "text"
                             message["text"] = "" #default prefix of command
+                        elif message.get("photo") != None:
+                            message["message_type"] = "photo"
+                            message_type = "message_type"
+                        elif message.get("sticker") != None:
+                            message["message_type"] = "sticker"
+                            message_type = "message_type"
+                        elif message.get("video") != None:
+                            message["message_type"] = "video"
+                            message_type = "message_type"
+                        elif message.get("audio") != None:
+                            message["message_type"] = "audio"
+                            message_type = "message_type"
+                        elif message.get("document") != None:
+                            message["message_type"] = "document"
+                            message_type = "message_type"
                         elif message.get("text") != None:
                             message_type = "text"
                         elif message.get("caption") != None:
@@ -103,6 +118,7 @@ class Bot(object):
 
                 if query_or_message == "callback_query":
                     callback_query = result.get(query_or_message).get("message")
+                    callback_query["click_user"] = result.get(query_or_message)["from"]
                     callback_query["callback_query_id"] = result.get(query_or_message).get("id")
                     callback_query["callback_query_data"] = result.get(query_or_message).get("data")
                     messages.append(callback_query)
@@ -125,7 +141,10 @@ class Bot(object):
         if self.debug is True:
             print(req.text)
 
-        return req.json()
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
 
     def getFile(self, file_id): #获取文件id
         command = "getFile"
@@ -281,7 +300,7 @@ class Bot(object):
         if caption != None:
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
-            addr += "&parse_mode" + parse_mode
+            addr += "&parse_mode=" + parse_mode
         if reply_to_message_id != None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup != None:
@@ -312,7 +331,7 @@ class Bot(object):
         if caption != None:
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
-            addr += "&parse_mode" + parse_mode
+            addr += "&parse_mode=" + parse_mode
         if reply_to_message_id != None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup != None:
@@ -343,7 +362,7 @@ class Bot(object):
         if caption != None:
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
-            addr += "&parse_mode" + parse_mode
+            addr += "&parse_mode=" + parse_mode
         if reply_to_message_id != None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup != None:
@@ -419,7 +438,7 @@ class Bot(object):
         if caption != None:
             addr += "&caption=" + caption
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
-            addr += "&parse_mode" + parse_mode
+            addr += "&parse_mode=" + parse_mode
         if reply_to_message_id is not None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup != None:
@@ -943,6 +962,14 @@ class Bot(object):
         '''
         编辑消息媒体
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
+        media format:
+        media = {
+            'media':{
+                    'type': 'photo',
+                    'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg',
+                    'caption': '编辑后的Media'
+            }
+        }
         '''
         command = "editMessageMedia"
         if inline_message_id == None:

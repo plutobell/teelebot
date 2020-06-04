@@ -113,21 +113,23 @@ results = {
 # print(req)
 
 
-import cap  #//TODO
-bytes_captcha, captcha_text = cap.captcha_img()
-req = bot.sendPhoto(chat_id=user_id, photo=bytes_captcha, caption="测试编辑Media", parse_mode="Text")
-print(req)
-import time
-time.sleep(2)
-bytes_captcha, captcha_text = cap.captcha_img()
-media = {
-    'media':[
-        {
-            'type': 'photo',
-            'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg',
-            'caption': '编辑后的Media'
-        }
-    ]
-}
-req = bot.editMessageMedia(chat_id=user_id, message_id=req["message_id"], media=media)
-print(req)
+# import cap  #//TODO
+# bytes_captcha, captcha_text = cap.captcha_img()
+# req = bot.sendPhoto(chat_id=user_id, photo=bytes_captcha, caption="测试编辑Media", parse_mode="Text")
+# print(req)
+# import time
+# time.sleep(2)
+# bytes_captcha, captcha_text = cap.captcha_img()
+# media = {
+#     'media':{
+#             'type': 'photo',
+#             'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg',
+#             'caption': '编辑后的Media'
+#     }
+# }
+# req = bot.editMessageMedia(chat_id=user_id, message_id=req["message_id"], media=media)
+# print(req)
+
+# req = bot.deleteMessage(chat_id=-1001120578978,message_id=104656)
+# print(req)
+
