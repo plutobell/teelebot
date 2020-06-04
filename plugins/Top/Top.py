@@ -65,4 +65,4 @@ def Top(message):
             status = bot.sendMessage(message["chat"]["id"], text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], text="您没有权限！", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        status = bot.sendMessage(message["chat"]["id"], text="抱歉，您无权操作!", parse_mode="HTML", reply_to_message_id=message["message_id"])
