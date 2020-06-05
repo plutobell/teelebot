@@ -133,21 +133,21 @@ results = {
 # req = bot.deleteMessage(chat_id=chat_id,message_id=104656)
 # print(req)
 
-permissions = {
-            'can_send_messages':False,
-            'can_send_media_messages':False,
-            'can_send_polls':False,
-            'can_send_other_messages':False,
-            'can_add_web_page_previews':False,
-            'can_change_info':False,
-            'can_invite_users':False,
-            'can_pin_messages':False
-        }
-req = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=permissions, until_date=60)
-print(req)
+# permissions = {
+#             'can_send_messages':False,
+#             'can_send_media_messages':False,
+#             'can_send_polls':False,
+#             'can_send_other_messages':False,
+#             'can_add_web_page_previews':False,
+#             'can_change_info':False,
+#             'can_invite_users':False,
+#             'can_pin_messages':False
+#         }
+# req = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=permissions, until_date=60)
+# print(req)
 
 
-req = bot.getChat(chat_id=chat_id)
-print(req.get("permissions"), len(req.get("permissions")))
-status = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=req.get("permissions"))
-print(status)
+# req = bot.getChat(chat_id=chat_id)
+# print(req.get("permissions"), len(req.get("permissions")))
+# status = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=req.get("permissions"))
+# print(status)
