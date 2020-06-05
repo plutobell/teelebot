@@ -230,6 +230,10 @@ def Guard(message):
             if c in str(text):
                 count += 1
 
+        if count > 0 or text[1:len(prefix)+1] == prefix: #在命令列表则删除用户指令
+            timer = Timer(gap, timer_func_for_del, args=[chat_id, message_id])
+            timer.start()
+
         if message["chat"]["type"] != "private":
             admins = administrators(chat_id=chat_id)
             if str(config["root"]) not in admins:
@@ -282,8 +286,6 @@ def Guard(message):
                     status = bot.sendMessage(chat_id=chat_id, text="操作失败，请检查命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
                     timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                     timer.start()
-        timer = Timer(gap, timer_func_for_del, args=[chat_id, message_id])
-        timer.start()
 
 
 def timer_func_for_del(chat_id, message_id):
