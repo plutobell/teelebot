@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-4
 @author github: plutobell
-@version: 1.4.0_dev
+@version: 1.4.1_dev
 '''
 import time
 import sys
@@ -574,9 +574,9 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def restrictChatMember(self, uid, chat_id, permissions, until_date=0):
+    def restrictChatMember(self, chat_id, user_id, permissions, until_date=None):
         '''
-        修改用户权限
+        限制群组用户权限
         permissions = {
             'can_send_messages':False,
             'can_send_media_messages':False,
@@ -587,14 +587,23 @@ class Bot(object):
             'can_invite_users':False,
             'can_pin_messages':False
         }
+        until_date format:
+        timestamp + offset
         '''
-        import json
         command = "restrictChatMember"
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid) + \
-            "&until_date=" + str(until_date)
-        req = requests.post(self.url + addr, data = json.dumps(permissions))
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+        if len(permissions) != 8:
+            return False
+        if until_date is not None:
+            until_date = int(time.time()) + int(until_date)
+            addr += "&until_date=" + str(until_date)
 
-        return req.json().get("ok")
+        req = requests.post(self.url + addr, json = permissions)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
 
     def promoteChatMember(self, uid, chat_id, can_change_info=None, can_post_messages=None, \
         can_edit_messages=None, can_delete_messages=None, can_invite_users=None, \
@@ -634,22 +643,33 @@ class Bot(object):
 
         req = requests.post(self.url + addr)
 
-        return req.json().get("ok")
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
 
-    def pinChatMessage(self, chat_id, message_id, disable_notification=False): #置顶消息
+    def pinChatMessage(self, chat_id, message_id, disable_notification=None): #置顶消息
         command = "pinChatMessage"
-        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id) + \
-            "&disable_notification=" + str(disable_notification)
+        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
+        if disable_notification != None:
+            addr += "&disable_notification=" + str(disable_notification)
+
         req = requests.post(self.url + addr)
 
-        return req.json().get("ok")
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
 
     def unpinChatMessage(self,chat_id): #取消置顶消息
         command = "unpinChatMessage"
         addr = command + "?chat_id=" + str(chat_id)
         req = requests.post(self.url + addr)
 
-        return req.json().get("ok")
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
 
     def sendLocation(self, chat_id, latitude, longitude, reply_to_message_id=None, reply_markup=None): #发送地图定位，经纬度
         command = "sendLocation"
@@ -767,35 +787,6 @@ class Bot(object):
 
         command = "unbanChatMember"
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
-
-        req = requests.post(self.url + addr)
-
-        if req.json().get("ok") == True:
-            return req.json().get("result")
-        elif req.json().get("ok") == False:
-            return req.json().get("ok")
-
-    def restrictChatMember(self, chat_id, user_id, can_change_info, can_post_messages, \
-                        can_edit_messages, can_delete_messages, can_invite_users, \
-                        can_restrict_members, can_pin_messages, can_promote_members, until_date=None):
-        '''
-        限制群组用户权限
-        until_date format:
-        timestamp + offset
-        '''
-        command = "restrictChatMember"
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
-        addr += "&can_change_info=" + str(can_change_info)
-        addr += "&can_post_messages=" + str(can_post_messages)
-        addr += "&can_edit_messages=" + str(can_edit_messages)
-        addr += "&can_delete_messages=" + str(can_delete_messages)
-        addr += "&can_invite_users=" + str(can_invite_users)
-        addr += "&can_restrict_members=" + str(can_restrict_members)
-        addr += "&can_pin_messages=" + str(can_pin_messages)
-        addr += "&can_promote_members=" + str(can_promote_members)
-        if until_date is not None:
-            until_date = int(time.time()) + int(until_date)
-            addr += "&until_date=" + str(until_date)
 
         req = requests.post(self.url + addr)
 
