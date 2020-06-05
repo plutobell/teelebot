@@ -20,7 +20,7 @@ def Admin(message):
     bot_id = str(bot.getMe()["id"])
     prefix = "admin"
 
-    commad = { #命令注册
+    command = { #命令注册
             "/adminkick": "kick",
             "/admindel": "del",
             "/adminpin": "pin",
@@ -29,7 +29,7 @@ def Admin(message):
             "/adminunmute": "unmute"
         }
     count = 0
-    for c in commad.keys():
+    for c in command.keys():
         if c in str(text):
             count += 1
 
@@ -53,7 +53,7 @@ def Admin(message):
             "<b>/adminunpin</b> - 取消置顶。格式:以回复要取消置顶的消息的形式发送指令%0A" +\
             "<b>/adminmute</b> - 禁言用户。格式:以回复要禁言用户的消息的形式发送指令，指令后跟禁言时间(支持的时间：1m,10m,1h,1d,forever)，以空格作为分隔符%0A" +\
             "<b>/adminunmute</b> - 解除用户禁言。格式:以回复要解除禁言用户的消息的形式发送指令%0A" +\
-            "%0A..."
+            "%0A"
         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
 
         timer = Timer(30, timer_func_for_del, args=[chat_id, status["message_id"]])
@@ -66,7 +66,7 @@ def Admin(message):
         target_chat_id = reply_to_message["chat"]["id"]
 
         if str(user_id) in admins and str(chat_id) == str(target_chat_id):
-            if text[1:] == prefix + commad["/adminkick"]:
+            if text[1:] == prefix + command["/adminkick"]:
                 if str(target_user_id) not in admins:
                     status = bot.kickChatMember(chat_id=chat_id, user_id=target_user_id, until_date=60)
                     status_ = bot.unbanChatMember(chat_id=chat_id, user_id=target_user_id)
@@ -80,28 +80,28 @@ def Admin(message):
                     status = bot.sendMessage(chat_id=chat_id, text="抱歉，无权处置该用户!", parse_mode="text", reply_to_message_id=message["message_id"])
                     timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                     timer.start()
-            elif text[1:] == prefix + commad["/admindel"]:
+            elif text[1:] == prefix + command["/admindel"]:
                 status = bot.deleteMessage(chat_id=chat_id, message_id=target_message_id)
                 if status == False:
                     status = bot.sendChatAction(chat_id, "typing")
                     status = bot.sendMessage(chat_id=chat_id, text="删除失败!", parse_mode="text", reply_to_message_id=message["message_id"])
                     timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                     timer.start()
-            elif text[1:] == prefix + commad["/adminpin"]:
+            elif text[1:] == prefix + command["/adminpin"]:
                 status = bot.pinChatMessage(chat_id=chat_id, message_id=target_message_id)
                 if status == False:
                     status = bot.sendChatAction(chat_id, "typing")
                     status = bot.sendMessage(chat_id=chat_id, text="置顶失败!", parse_mode="text", reply_to_message_id=message["message_id"])
                     timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                     timer.start()
-            elif text[1:] == prefix + commad["/adminunpin"]:
+            elif text[1:] == prefix + command["/adminunpin"]:
                 status = bot.unpinChatMessage(chat_id=chat_id)
                 if status == False:
                     status = bot.sendChatAction(chat_id, "typing")
                     status = bot.sendMessage(chat_id=chat_id, text="取消置顶失败!", parse_mode="text", reply_to_message_id=message["message_id"])
                     timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                     timer.start()
-            elif text[1:len(prefix + commad["/adminmute"])+1] == prefix + commad["/adminmute"]:
+            elif text[1:len(prefix + command["/adminmute"])+1] == prefix + command["/adminmute"]:
                 if str(target_user_id) not in admins:
                     mute_time = {
                         "1m": 1 * 60,
@@ -124,7 +124,7 @@ def Admin(message):
                         status = bot.restrictChatMember(chat_id=chat_id, user_id=target_user_id,permissions=permissions, until_date=mute_time[text[1:].split(' ')[1]])
                         if status != False:
                             status = bot.sendChatAction(chat_id, "typing")
-                            msg = "<b><a href='tg://user?id=" + str(target_user_id) + "'>" + str(target_user_id) + "</a></b> 已被禁言，持续时间：<b>" + str(mute_time[text[1:].split(' ')[1]]) + "</b>。"
+                            msg = "<b><a href='tg://user?id=" + str(target_user_id) + "'>" + str(target_user_id) + "</a></b> 已被禁言，持续时间：<b>" + str(text[1:].split(' ')[1]) + "</b>。"
                             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
                             timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                             timer.start()
@@ -144,7 +144,7 @@ def Admin(message):
                     status = bot.sendMessage(chat_id=chat_id, text="抱歉，无权处置该用户!", parse_mode="text", reply_to_message_id=message["message_id"])
                     timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
                     timer.start()
-            elif text[1:] == prefix + commad["/adminunmute"]:
+            elif text[1:] == prefix + command["/adminunmute"]:
                 if str(target_user_id) not in admins:
                     status = bot.getChat(chat_id=chat_id)
                     permissions = status.get("permissions")
