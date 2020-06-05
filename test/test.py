@@ -12,9 +12,9 @@ chat_id = config['chat_id']
 
 #bot.sendMessage(chat_id=chat_id, text="测试消息", parse_mode="text")
 
-bot.restrictChatMember(chat_id=chat_id, user_id=user_id, can_change_info=False, can_post_messages=False, \
-                        can_edit_messages=False, can_delete_messages=False, can_invite_users=False, \
-                        can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
+# bot.restrictChatMember(chat_id=chat_id, user_id=user_id, can_change_info=False, can_post_messages=False, \
+#                         can_edit_messages=False, can_delete_messages=False, can_invite_users=False, \
+#                         can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
 
 #bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=3600)
 
@@ -81,7 +81,7 @@ results = {
 
 
 # admins = [] #获取群组所有管理员id
-# results = bot.getChatAdministrators(chat_id=-1001120578978)
+# results = bot.getChatAdministrators(chat_id=chat_id)
 # for result in results:
 #     if str(result["user"]["is_bot"]) == "False":
 #         admins.append(result["user"]["id"])
@@ -130,6 +130,24 @@ results = {
 # req = bot.editMessageMedia(chat_id=user_id, message_id=req["message_id"], media=media)
 # print(req)
 
-# req = bot.deleteMessage(chat_id=-1001120578978,message_id=104656)
+# req = bot.deleteMessage(chat_id=chat_id,message_id=104656)
 # print(req)
 
+permissions = {
+            'can_send_messages':False,
+            'can_send_media_messages':False,
+            'can_send_polls':False,
+            'can_send_other_messages':False,
+            'can_add_web_page_previews':False,
+            'can_change_info':False,
+            'can_invite_users':False,
+            'can_pin_messages':False
+        }
+req = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=permissions, until_date=60)
+print(req)
+
+
+req = bot.getChat(chat_id=chat_id)
+print(req.get("permissions"), len(req.get("permissions")))
+status = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=req.get("permissions"))
+print(status)
