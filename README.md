@@ -307,6 +307,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-5
 
+* v1.4.1 : 修复部分接口bug，完善Admin插件
 * v1.4.0 : 修复 Guard 插件 captcha 验证码手动刷新无回调的bug；新增插件 Admin
 
 #### 2020-6-4
