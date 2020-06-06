@@ -305,6 +305,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-7
+
+* v1.4.3 : Admin 插件新增Bot权限检测；修复插件 Guard 和 Admin 的 bug；Guard 插件 captcha 时间调整
+
 #### 2020-6-6
 
 * v1.4.2 : 重构插件 Guard 部分代码，新增消息自毁,修复 captcha 可绕过验证的bug；修复 Admin 插件禁言时间显示bug；修复重构后插件 Guard 删除所有用户消息的 bug 
