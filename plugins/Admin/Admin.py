@@ -39,26 +39,26 @@ def Admin(message):
         if str(config["root"]) not in admins:
             admins.append(str(config["root"])) #root permission
 
-
-    results = bot.getChatAdministrators(chat_id=chat_id) #判断Bot是否具管理员权限
-    admin_status = False
-    for admin_user in results:
-        if str(admin_user["user"]["id"]) == str(bot_id):
-            admin_status = True
-    if admin_status != True:
-        status = bot.sendChatAction(chat_id, "typing")
-        msg = "权限不足，请授予全部权限以使用 Admin 插件。"
-        status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-        timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-        timer.start()
-        return False
-
-
-    if message["chat"]["type"] == "private": #判断是否为私人对话
+    if message["chat"]["type"] != "private":
+        results = bot.getChatAdministrators(chat_id=chat_id) #判断Bot是否具管理员权限
+        admin_status = False
+        for admin_user in results:
+            if str(admin_user["user"]["id"]) == str(bot_id):
+                admin_status = True
+        if admin_status != True:
             status = bot.sendChatAction(chat_id, "typing")
-            status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
-            timer = Timer(gap, timer_func_for_del, args=[chat_id, message_id])
+            msg = "权限不足，请授予全部权限以使用 Admin 插件。"
+            status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
+            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
             timer.start()
+            return False
+
+
+    if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
+        status = bot.sendChatAction(chat_id, "typing")
+        status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
+        timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
+        timer.start()
     elif text[1:len(prefix)+1] == prefix and count == 0: #菜单
         status = bot.sendChatAction(chat_id, "typing")
         msg = "<b>===== Admin 插件功能 =====</b>%0A%0A" +\
