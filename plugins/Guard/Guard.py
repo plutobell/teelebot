@@ -27,7 +27,7 @@ def Guard(message):
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
     db = SqliteDB()
-    gap = 60
+    gap = 75
     bot_id = (bot.getMe()["id"])
     with open(bot.plugin_dir + "Guard/config.ini") as f:
         data_group_id = f.read().strip()
@@ -239,7 +239,7 @@ def Guard(message):
             if str(config["root"]) not in admins:
                 admins.append(str(config["root"])) #root permission
 
-        if message["chat"]["type"] == "private": #判断是否为私人对话
+        if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
             timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])

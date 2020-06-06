@@ -497,7 +497,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def getUserProfilePhotos(self, user_id, offset=None, limit=None): #获取用户头像
+    def getUserProfilePhotos(self, user_id, offset=None, limit=None):
+        '''
+        获取用户头像
+        '''
         command = "getUserProfilePhotos"
         addr = command + "?user_id=" + str(user_id)
 
@@ -513,7 +516,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def getChatMember(self, uid, chat_id): #获取群组特定用户信息
+    def getChatMember(self, uid, chat_id):
+        '''
+        获取群组特定用户信息
+        '''
         command = "getChatMember"
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
         req = requests.get(self.url + addr)
@@ -523,21 +529,30 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def setChatTitle(self, chat_id, title): #设置群组标题
+    def setChatTitle(self, chat_id, title):
+        '''
+        设置群组标题
+        '''
         command = "setChatTitle"
         addr = command + "?chat_id=" + str(chat_id) + "&title=" + str(title)
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
 
-    def setChatDescription(self, chat_id, description): #设置群组简介（测试好像无效。。）
+    def setChatDescription(self, chat_id, description):
+        '''
+        设置群组简介（测试好像无效。。）
+        '''
         command = "setChatDescription"
         addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
         req = requests.post(self.url + addr)
 
         return req.json().get("ok")
 
-    def setChatPhoto(self, chat_id, photo): #设置群组头像
+    def setChatPhoto(self, chat_id, photo):
+        '''
+        设置群组头像
+        '''
         command = "setChatPhoto"
         file_data = {"photo" : open(photo, 'rb')}
         addr = command + "?chat_id=" + str(chat_id)
@@ -546,7 +561,10 @@ class Bot(object):
 
         return req.json().get("ok")
 
-    def deleteChatPhoto(self, chat_id): #删除群组头像
+    def deleteChatPhoto(self, chat_id):
+        '''
+        删除群组头像
+        '''
         command = "deleteChatPhoto"
         addr = command + "?chat_id=" + str(chat_id)
         req = requests.post(self.url + addr)
@@ -648,7 +666,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def pinChatMessage(self, chat_id, message_id, disable_notification=None): #置顶消息
+    def pinChatMessage(self, chat_id, message_id, disable_notification=None):
+        '''
+        置顶消息
+        '''
         command = "pinChatMessage"
         addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
         if disable_notification != None:
@@ -661,7 +682,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def unpinChatMessage(self,chat_id): #取消置顶消息
+    def unpinChatMessage(self,chat_id):
+        '''
+        取消置顶消息
+        '''
         command = "unpinChatMessage"
         addr = command + "?chat_id=" + str(chat_id)
         req = requests.post(self.url + addr)
