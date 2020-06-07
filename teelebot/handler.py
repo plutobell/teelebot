@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
-import configparser, os, sys
+import configparser
+import os
+import sys
 
 
 def config():
-    __version__ = "1.4.3_dev"
+    __version__ = "1.4.4_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -50,16 +52,18 @@ def config():
     return config
 
 def __bridge(plugin_dir):
-	plugin_bridge = {}
-	plugin_list = []
+    plugin_bridge = {}
+    plugin_list = []
 
-	plugin_lis = os.listdir(plugin_dir)
-	for plugi in plugin_lis:
-		if os.path.isdir(plugin_dir + plugi) and plugi != "__pycache__":
-			plugin_list.append(plugi)
-	for plugin in plugin_list:
-		with open(plugin_dir + plugin + r"/__init__.py", encoding="utf-8") as f:
-			plugin_bridge[f.readline().strip()[1:]] = plugin
+    plugin_lis = os.listdir(plugin_dir)
+    for plugi in plugin_lis:
+        if os.path.isdir(plugin_dir + plugi) and plugi != "__pycache__":
+            plugin_list.append(plugi)
+    for plugin in plugin_list:
+        with open(plugin_dir + plugin + r"/__init__.py", encoding="utf-8") as f:
+            row_one = f.readline().strip()[1:]
+            if row_one != "~~": #Hidden plugin
+                plugin_bridge[row_one] = plugin
 
     #print(plugin_bridge)
-	return plugin_bridge
+    return plugin_bridge
