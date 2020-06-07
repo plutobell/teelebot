@@ -229,7 +229,7 @@ python -m teelebot -c/-C <configure file path>
 
 
 
-## 插件开发指南 (以 Hello 插件为例) BETA 0.5
+## 插件开发指南 (以 Hello 插件为例) BETA 0.6
 
 #### 一、插件结构
 
@@ -271,6 +271,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 三、自定义触发指令
 
+##### 插件指令
+
 插件的触发指令可不同于插件名，允许自定义。以插件 `Hello` 为例，触发指令为 `/helloworld` 而不是 `Hello`。
 
 修改插件目录下的 `__init__.py` 文件设置触发指令：
@@ -283,6 +285,21 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 ```
 
 第一行为触发指令，默认以 `/`  作为前缀；第二行为插件简介。
+
+
+
+##### 不用作插件的特殊情况
+
+通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载，请将触发指令设置为 `~~`  。以 `Tools` 共用包为例， `__init__.py` 文件内容如下：
+
+```python
+#fille Tools/__init__.py
+
+#~~
+#Tools 包的简介
+```
+
+
 
 
 
@@ -306,6 +323,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 ## 更新历史 ##
 
 #### 2020-6-7
+
+* v1.4.4 : 新增识别 `plugins` 目录下非插件包的功能，非插件包将不被 `teelebot` 装载
 
 * v1.4.3 : Admin 插件新增Bot权限检测；修复插件 Guard 和 Admin 的 bug；Guard 插件 captcha 时间调整
 
