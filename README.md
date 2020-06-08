@@ -261,6 +261,10 @@ def Hello(message):
 
 函数 `Hello()` 即为插件的入口函数，参数 `message` 用于接收消息数据。
 
+
+
+
+
 ##### 资源路径
 
 若想在插件内进行打开文件等操作，需要使用的路径应当遵循以下的格式：
@@ -290,13 +294,21 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ##### 不用作插件的特殊情况
 
-通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载，请将触发指令设置为 `~~`  。以 `Tools` 共用包为例， `__init__.py` 文件内容如下：
+通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载，请将触发指令设置为 `~~`  。以 `tools` 共用包为例， `__init__.py` 文件内容如下：
 
 ```python
-#fille Tools/__init__.py
+#fille tools/__init__.py
 
 #~~
-#Tools 包的简介
+#tools 包的简介
+```
+
+建议用作插件的包名遵守 `Pascal命名法`，即每个单词的首字母大写；而不用做插件的包名使用全小写的包名，每个单词之间以`_`  分隔。以区分 `插件包` 和 `非插件包` ：
+
+```python
+- plugins
+  - Menu    #插件包
+  - tools   #非插件包
 ```
 
 
@@ -321,6 +333,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-8
+
+* v1.4.5 : Menu 插件新增翻页显示；优化部分函数返回值；修复 Guard 插件接收非自身 callback_query 消息的bug
 
 #### 2020-6-7
 
