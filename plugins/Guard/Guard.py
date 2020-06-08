@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-7
+last_modify: 2020-6-8
 '''
 
 from teelebot import Bot
@@ -56,7 +56,7 @@ def Guard(message):
             else:
                 last_name = ""
 
-            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码已手动刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内输入正确的验证码。(验证码由 5 位小写字母构成)"
+            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码已手动刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内输入正确的验证码。(验证码由 <b>5位小写字母</b> 构成)"
             bytes_image, captcha_text = captcha_img()
             status = bot.sendPhoto(chat_id=str(data_group_id), photo=bytes_image, parse_mode="HTML")
             db.update(message_id=result[3], authcode=captcha_text, chat_id=chat_id, user_id=user_id)
@@ -70,11 +70,11 @@ def Guard(message):
             }
             status = bot.editMessageMedia(chat_id=chat_id, message_id=result[3], media=media, reply_markup=reply_markup)
             if status != False:
-                status = bot.answerCallbackQuery(message["callback_query_id"],text="刷新成功",show_alert=bool("true"))
+                status = bot.answerCallbackQuery(message["callback_query_id"], text="刷新成功", show_alert=bool("true"))
             else:
-                status = bot.answerCallbackQuery(message["callback_query_id"],text="刷新失败",show_alert=bool("true"))
-        else:
-            status = bot.answerCallbackQuery(message["callback_query_id"],text="点啥点，关你啥事？",show_alert=bool("true"))
+                status = bot.answerCallbackQuery(message["callback_query_id"], text="刷新失败", show_alert=bool("true"))
+        elif message["callback_query_data"] == "/guardupdatingcaptcha": #防止接收来自其他插件的CallbackQuery
+            status = bot.answerCallbackQuery(message["callback_query_id"], text="点啥点，关你啥事？", show_alert=bool("true"))
 
     elif "new_chat_members" in message.keys():
         results = bot.getChatAdministrators(chat_id=chat_id) #判断Bot是否具管理员权限
@@ -119,7 +119,7 @@ def Guard(message):
                 timer.start()
             else:
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 您好，本群已开启人机验证，请在 <b>"+ str(gap) +"</b> 秒内输入正确的验证码。(验证码由 5 位小写字母构成)"
+                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 您好，本群已开启人机验证，请在 <b>"+ str(gap) +"</b> 秒内输入正确的验证码。(验证码由 <b>5位小写字母</b> 构成)"
                 bytes_image, captcha_text = captcha_img()
                 status = bot.sendPhoto(chat_id=chat_id, photo=bytes_image, caption=msg, parse_mode="HTML", reply_markup=reply_markup)
                 db.insert(chat_id=chat_id, user_id=user_id, message_id=status["message_id"], authcode=captcha_text)
@@ -203,7 +203,7 @@ def Guard(message):
                 timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
                 timer.start()
             else:
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码不正确，已刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内输入正确的验证码。(验证码由 5 位小写字母构成)"
+                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码不正确，已刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内输入正确的验证码。(验证码由 <b>5位小写字母</b> 构成)"
                 bytes_image, captcha_text = captcha_img()
                 status = bot.sendPhoto(chat_id=str(data_group_id), photo=bytes_image, parse_mode="HTML")
                 db.update(message_id=result[3], authcode=captcha_text, chat_id=chat_id, user_id=user_id)
