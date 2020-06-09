@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+name = "teelebot"
 __all__ = ['Bot']
 
 from .teelebot import Bot

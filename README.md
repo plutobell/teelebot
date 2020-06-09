@@ -21,6 +21,7 @@ Python实现的Telegram Bot机器人框架
 *  Translate - 调用 [有道翻译](http://fanyi.youdao.com/)API 对文字进行翻译
 *  Guard - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
 *  Admin - 群管插件，管理员可通过指令对群进行管理(踢人、禁言等)
+*  Qrcode - 二维码生成插件，调用 [Goole API](https://google.com) 生成二维码
 
 
 
@@ -333,6 +334,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-9
+
+* v1.4.6 : 新增插件 Qrcode；插件 Top 新增消息自毁
 
 #### 2020-6-8
 
