@@ -335,6 +335,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-10
+
+* v1.4.7 : 重构插件 Guard 的captcha，调整人机验证方式；
+
 #### 2020-6-9
 
 * v1.4.6 : 新增插件 Qrcode；插件 Top 新增消息自毁
