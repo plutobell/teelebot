@@ -359,6 +359,8 @@ def reply_markup_dict(captcha_text):
         [
             {"text": options[0],"callback_data":callback_data[0]},
             {"text": options[1],"callback_data":callback_data[1]},
+        ],
+        [
             {"text": options[2],"callback_data":callback_data[2]},
             {"text": options[3],"callback_data":callback_data[3]},
         ],
