@@ -1,19 +1,20 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-3-21
-last_modify: 2020-5-28
+last_modify: 2020-6-9
 '''
 import requests
+from threading import Timer
 from teelebot import Bot
 from teelebot.handler import config
 
+bot = Bot()
 config = config()
 
 #设置重连次数
 requests.adapters.DEFAULT_RETRIES = 15
 
 def Top(message):
-    bot = Bot()
     if str(message["from"]["id"]) == config["root"]:
         url = ""
         data = {"Key" : ""}
@@ -24,11 +25,15 @@ def Top(message):
 
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], text="主人，正在获取服务器信息，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        timer = Timer(5, timer_func, args=[message["chat"]["id"], status["message_id"]])
+        timer.start()
         req = requests.post(url=url, data=data)
         if req.json().get("status") == False:
             req.close()
             status = bot.sendChatAction(message["chat"]["id"], "typing")
             status = bot.sendMessage(message["chat"]["id"], text="抱歉主人，获取服务器信息失败", parse_mode="HTML", reply_to_message_id=message["message_id"])
+            timer = Timer(30, timer_func, args=[message["chat"]["id"], status["message_id"]])
+            timer.start()
         elif req.json().get("status") == True:
             contents = req.json().get("contents")
             Top = contents.get("Top")
@@ -63,6 +68,13 @@ def Top(message):
 
             status = bot.sendChatAction(message["chat"]["id"], "typing")
             status = bot.sendMessage(message["chat"]["id"], text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
+            timer = Timer(60, timer_func, args=[message["chat"]["id"], status["message_id"]])
+            timer.start()
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], text="抱歉，您无权操作!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        timer = Timer(30, timer_func, args=[message["chat"]["id"], status["message_id"]])
+        timer.start()
+
+def timer_func(chat_id, message_id):
+    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
