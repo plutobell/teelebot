@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-8
+last_modify: 2020-6-10
 '''
 
 from teelebot import Bot
@@ -10,6 +10,7 @@ import re
 import string
 import sqlite3
 import time
+from random import shuffle, randint
 from threading import Timer
 from teelebot.handler import config
 from captcha.image import ImageCaptcha
@@ -19,6 +20,17 @@ from io import BytesIO
 config = config()
 bot = Bot()
 
+restrict_permissions = {
+    'can_send_messages':False,
+    'can_send_media_messages':False,
+    'can_send_polls':False,
+    'can_send_other_messages':False,
+    'can_add_web_page_previews':False,
+    'can_change_info':False,
+    'can_invite_users':False,
+    'can_pin_messages':False
+}
+
 def Guard(message):
     repl = "<*>"
     DFA = DFAFilter()
@@ -27,37 +39,30 @@ def Guard(message):
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
     db = SqliteDB()
-    gap = 75
+    gap = 60
     bot_id = (bot.getMe()["id"])
     with open(bot.plugin_dir + "Guard/config.ini") as f:
         data_group_id = f.read().strip()
 
-    inlineKeyboard = [
-        [
-            {"text": "看不清，换一张","callback_data":"/guardupdatingcaptcha"},
-        ]
-    ]
-    reply_markup = {
-        "inline_keyboard": inlineKeyboard
-    }
-
     result = db.select(chat_id=chat_id, user_id=user_id)
-    if "reply_markup" in message.keys():
+    if "reply_markup" in message.keys() and message["chat"]["type"] != "private":
         user = message["click_user"]
         user_id = user["id"] #未处理：多用户同时点击的情况
         result = db.select(chat_id=chat_id, user_id=user_id)
-        if result != False and message["callback_query_data"] == "/guardupdatingcaptcha" and result[2] == str(user_id) and result[1] == str(chat_id):
-            if "first_name" in user.keys(): #Optional (first_name or last_name)
-                first_name = user["first_name"].strip()
-            else:
-                first_name = ""
-            if "last_name" in user.keys():
-                last_name = user["last_name"].strip()
-            else:
-                last_name = ""
 
-            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码已手动刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内输入正确的验证码。(验证码由 <b>5位小写字母</b> 构成)"
+        if "first_name" in user.keys(): #Optional (first_name or last_name)
+            first_name = user["first_name"].strip()
+        else:
+            first_name = ""
+        if "last_name" in user.keys():
+            last_name = user["last_name"].strip()
+        else:
+            last_name = ""
+
+        if result != False and message["callback_query_data"] == "/guardupdatingcaptcha" and result[2] == str(user_id) and result[1] == str(chat_id):
+            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码已手动刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内从下方选出与图片一致的验证码。"
             bytes_image, captcha_text = captcha_img()
+            reply_markup = reply_markup_dict(captcha_text=captcha_text)
             status = bot.sendPhoto(chat_id=str(data_group_id), photo=bytes_image, parse_mode="HTML")
             db.update(message_id=result[3], authcode=captcha_text, chat_id=chat_id, user_id=user_id)
             media = {
@@ -73,10 +78,47 @@ def Guard(message):
                 status = bot.answerCallbackQuery(message["callback_query_id"], text="刷新成功", show_alert=bool("true"))
             else:
                 status = bot.answerCallbackQuery(message["callback_query_id"], text="刷新失败", show_alert=bool("true"))
-        elif message["callback_query_data"] == "/guardupdatingcaptcha": #防止接收来自其他插件的CallbackQuery
+        elif result != False and message["callback_query_data"] == "/guardcaptchatrue" and result[2] == str(user_id) and result[1] == str(chat_id):
+            status = bot.answerCallbackQuery(message["callback_query_id"], text="正确", show_alert=bool("true"))
+            status = bot.getChat(chat_id=chat_id)
+            chat_title = status["title"]
+            permissions = status.get("permissions")
+            status = bot.restrictChatMember(chat_id=chat_id, user_id=result[2], permissions=permissions)
+            status = bot.deleteMessage(chat_id=chat_id, message_id=result[3])
+            db.delete(chat_id=chat_id, user_id=user_id)
+            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b>, 欢迎加入 <b>" + str(chat_title) + "</b>。"
+            status = bot.sendChatAction(chat_id, "typing")
+            status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
+
+            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
+            timer.start()
+
+        elif result != False and "/guardcaptchafalse" in message["callback_query_data"] and result[2] == str(user_id) and result[1] == str(chat_id):
+            status = bot.answerCallbackQuery(message["callback_query_id"], text="不正确", show_alert=bool("true"))
+            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码不正确，已刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内从下方选出与图片一致的验证码。"
+            bytes_image, captcha_text = captcha_img()
+            reply_markup = reply_markup_dict(captcha_text=captcha_text)
+            status = bot.sendPhoto(chat_id=str(data_group_id), photo=bytes_image, parse_mode="HTML")
+            db.update(message_id=result[3], authcode=captcha_text, chat_id=chat_id, user_id=user_id)
+            media = {
+                'media':{
+                        'type': 'photo',
+                        'media': status["photo"][0]["file_id"],
+                        'caption': msg,
+                        'parse_mode': 'HTML'
+                }
+            }
+            status = bot.editMessageMedia(chat_id=chat_id, message_id=result[3], media=media, reply_markup=reply_markup)
+            if status != False:
+                status = bot.answerCallbackQuery(message["callback_query_id"], text="刷新成功", show_alert=bool("true"))
+            else:
+                status = bot.answerCallbackQuery(message["callback_query_id"], text="刷新失败", show_alert=bool("true"))
+        elif message["callback_query_data"] in "/guardupdatingcaptcha" or "/guardcaptcha" in message["callback_query_data"]: #防止接收来自其他插件的CallbackQuery
             status = bot.answerCallbackQuery(message["callback_query_id"], text="点啥点，关你啥事？", show_alert=bool("true"))
 
     elif "new_chat_members" in message.keys():
+        status = bot.restrictChatMember(chat_id=chat_id, user_id=user_id,permissions=restrict_permissions, until_date=gap+5)
+
         results = bot.getChatAdministrators(chat_id=chat_id) #判断Bot是否具管理员权限
         admin_status = False
         for admin_user in results:
@@ -119,8 +161,9 @@ def Guard(message):
                 timer.start()
             else:
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 您好，本群已开启人机验证，请在 <b>"+ str(gap) +"</b> 秒内输入正确的验证码。(验证码由 <b>5位小写字母</b> 构成)"
+                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 您好，本群已开启人机验证，请在 <b>"+ str(gap) +"</b> 秒内从下方选出与图片一致的验证码。"
                 bytes_image, captcha_text = captcha_img()
+                reply_markup = reply_markup_dict(captcha_text=captcha_text)
                 status = bot.sendPhoto(chat_id=chat_id, photo=bytes_image, caption=msg, parse_mode="HTML", reply_markup=reply_markup)
                 db.insert(chat_id=chat_id, user_id=user_id, message_id=status["message_id"], authcode=captcha_text)
                 timer = Timer(gap + 1, timer_func, args=[gap, chat_id, user_id, first_name, last_name])
@@ -168,55 +211,6 @@ def Guard(message):
             timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
             timer.start()
 
-    elif result != False and result[2] == str(user_id) and result[1] == str(chat_id) and message["chat"]["type"] != "private":
-        status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-        if "first_name" in message["from"].keys(): #Optional (first_name or last_name)
-            first_name = message["from"]["first_name"].strip()
-        else:
-            first_name = ""
-        if "last_name" in message["from"].keys():
-            last_name = message["from"]["last_name"].strip()
-        else:
-            last_name = ""
-
-        if int(time.time()) > result[5] + gap:
-            status = bot.deleteMessage(chat_id=chat_id, message_id=result[3])
-            db.delete(chat_id=chat_id, user_id=user_id)
-            status = bot.kickChatMember(chat_id=chat_id, user_id=user_id, until_date=35)
-            #status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
-            msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 没能通过人机验证。"
-            status = bot.sendChatAction(chat_id, "typing")
-            status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-
-            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-            timer.start()
-        elif "text" in message.keys():
-            if message["text"] == result[4]:
-                status = bot.getChat(chat_id=chat_id)
-                chat_title = status["title"]
-                status = bot.deleteMessage(chat_id=chat_id, message_id=result[3])
-                db.delete(chat_id=chat_id, user_id=user_id)
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b>, 欢迎加入 <b>" + str(chat_title) + "</b>。"
-                status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-
-                timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-                timer.start()
-            else:
-                msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 验证码不正确，已刷新，请在 <b>"+ str((gap + result[5])-int(time.time())) +"</b> 秒内输入正确的验证码。(验证码由 <b>5位小写字母</b> 构成)"
-                bytes_image, captcha_text = captcha_img()
-                status = bot.sendPhoto(chat_id=str(data_group_id), photo=bytes_image, parse_mode="HTML")
-                db.update(message_id=result[3], authcode=captcha_text, chat_id=chat_id, user_id=user_id)
-                media = {
-                    'media':{
-                            'type': 'photo',
-                            'media': status["photo"][0]["file_id"],
-                            'caption': msg,
-                            'parse_mode': 'HTML'
-                    }
-                }
-                status = bot.editMessageMedia(chat_id=chat_id, message_id=result[3], media=media, reply_markup=reply_markup)
-
     elif "text" in message.keys():
         text = message["text"]
         prefix = "guard"
@@ -246,7 +240,7 @@ def Guard(message):
             timer.start()
         elif text[1:len(prefix)+1] == prefix and count == 0: #菜单
             status = bot.sendChatAction(chat_id, "typing")
-            msg = "<b>===== Admin 插件功能 =====</b>%0A%0A" +\
+            msg = "<b>===== Guard 插件功能 =====</b>%0A%0A" +\
                 "<b>/guardadd</b> - 新增过滤关键词，一次只能添加一个。格式：命令后接关键词，以空格作为分隔符%0A" +\
                 "%0A"
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
@@ -320,6 +314,11 @@ def administrators(chat_id):
 
     return admins
 
+def shuffle_str(s):
+    str_list = list(s)
+    shuffle(str_list)
+
+    return ''.join(str_list)
 
 def captcha_img(width=160, height=60, font_sizes=(50, 55, 60), fonts=None):
 
@@ -341,6 +340,38 @@ def captcha_img(width=160, height=60, font_sizes=(50, 55, 60), fonts=None):
 
     return bytes_image, captcha_text
 
+def reply_markup_dict(captcha_text):
+    options = []
+    answer = randint(0,3)
+    for i in range(4): #生成答案列表
+        if  answer == i:
+            options.append(captcha_text)
+        else:
+            options.append(shuffle_str(captcha_text))
+    callback_data = []
+    for i in range(4): #生成callback_data列表
+        if answer == i:
+            callback_data.append("/guardcaptchatrue")
+        else:
+            callback_data.append("/guardcaptchafalse" + str(i))
+
+    inlineKeyboard = [
+        [
+            {"text": options[0],"callback_data":callback_data[0]},
+            {"text": options[1],"callback_data":callback_data[1]},
+            {"text": options[2],"callback_data":callback_data[2]},
+            {"text": options[3],"callback_data":callback_data[3]},
+        ],
+        [
+            {"text": "看不清，换一张","callback_data":"/guardupdatingcaptcha"},
+        ]
+    ]
+    reply_markup = {
+        "inline_keyboard": inlineKeyboard
+    }
+    #print(inlineKeyboard)
+
+    return reply_markup
 
 class SqliteDB(object):
     def __init__(self):
