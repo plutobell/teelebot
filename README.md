@@ -22,6 +22,7 @@ Python实现的Telegram Bot机器人框架
 *  Guard - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
 *  Admin - 群管插件，管理员可通过指令对群进行管理(踢人、禁言等)
 *  Qrcode - 二维码生成插件，调用 [Goole API](https://google.com) 生成二维码
+*  IPinfo - 查询IP地址信息，调用 [ip-api](https://ip-api.com/)  查询IP信息
 
 
 
@@ -337,7 +338,9 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-10
 
+* v1.4.9 : 新增插件 IPinfo; 调整 ID插件消息文案
 * v1.4.8 : 修复插件 Guard 验证码选项显示不全的bug；ID 插件新增查询其他用户ID的功能
+
 * v1.4.7 : 重构插件 Guard 的captcha，调整人机验证方式
 
 #### 2020-6-9
