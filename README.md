@@ -11,10 +11,11 @@ Python实现的Telegram Bot机器人框架
 
 本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，实现了基本的插件系统。目前自带插件有以下几个：
 
-* Menu  -   自动生成的插件菜单
-*   Chat  -   调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
-*  Hello  -   Hello World插件例子
-*  Firefoxmoniter -  调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
+* Menu - 自动生成的插件菜单
+*   Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
+*   About - 关于
+*  Hello - Hello World插件例子
+*  Firefoxmoniter - 调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
 *  Bing - 调用第三方Bing壁纸接口 [bing](https://github.com/xCss/bing) 获取每日必应壁纸
 *  ID - 获取你的用户ID
 *  Top - 调用top命令查看服务器状态
@@ -337,6 +338,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 ## 更新历史 ##
 
 #### 2020-6-10
+
+* v1.5.0 : 媒体文件类发送函数新增通过 file_id 发送文件；新增插件 About
 
 * v1.4.9 : 新增插件 IPinfo; 调整 ID插件消息文案
 * v1.4.8 : 修复插件 Guard 验证码选项显示不全的bug；ID 插件新增查询其他用户ID的功能

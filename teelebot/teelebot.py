@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-10
 @author github:plutobell
-@version: 1.4.9_dev
+@version: 1.5.0_dev
 '''
 import time
 import sys
@@ -34,6 +34,7 @@ class Bot(object):
         self.plugin_dir = config["plugin_dir"]
         self.plugin_bridge = config["plugin_bridge"]
         self.VERSION = config["version"]
+        self.AUTHOR = config["author"]
 
     def __import_module(self, plugin_name):
         sys.path.append(self.plugin_dir + plugin_name + r"/")
@@ -201,6 +202,9 @@ class Bot(object):
         elif type(voice) == bytes:
             file_data = {"voice" : voice}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(voice) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
         else:
             file_data = {"voice" : open(voice, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -235,6 +239,9 @@ class Bot(object):
         elif type(animation) == bytes:
             file_data = {"animation" : animation}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(animation) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
         else:
             file_data = {"animation" : open(animation, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -269,6 +276,9 @@ class Bot(object):
         elif type(audio) == bytes:
             file_data = {"audio" : audio}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(audio) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
         else:
             file_data = {"audio" : open(audio, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -305,6 +315,9 @@ class Bot(object):
         elif type(photo) == bytes:
             file_data = {"photo" : photo}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(photo) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
         else:
             file_data = {"photo" : open(photo, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -339,6 +352,9 @@ class Bot(object):
         elif type(video) == bytes:
             file_data = {"video" : video}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(video) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
         else:
             file_data = {"video" : open(video, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -373,6 +389,9 @@ class Bot(object):
         elif type(video_note) == bytes:
             file_data = {"video_note" : video_note}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(video_note) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
         else:
             file_data = {"video_note" : open(video_note, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -455,6 +474,9 @@ class Bot(object):
         elif type(document) == bytes:
             file_data = {"document" : document}
             addr = command + "?chat_id=" + str(chat_id)
+        elif type(document) == str:
+            file_data = None
+            addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
         else:
             file_data = {"document" : open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
