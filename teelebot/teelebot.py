@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-10
 @author github:plutobell
-@version: 1.5.0_dev
+@version: 1.5.1_dev
 '''
 import time
 import sys
@@ -147,7 +147,10 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def getFile(self, file_id): #获取文件id
+    def getFile(self, file_id):
+        '''
+        获取文件信息
+        '''
         command = "getFile"
         addr = command + "?file_id=" + file_id
         req = requests.get(self.url + addr)
@@ -160,17 +163,18 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return req.json().get("ok")
 
-    def downloadFile(self, file_path, save_path): #下载文件
-        if file_path[:7] == "http://" or file_path[:7] == "https:/":
-            req = requests.get(file_path)
-        else:
-            url = self.basic_url + "file/bot" + self.key + r"/" + file_path
-            req = requests.get(url)
-        file_name = file_path.split('/')[len(file_path.split('/'))-1]
-        with open(save_path + '/' + file_name, "wb") as f:
-            f.write(req.content)
-        if  req.status_code == requests.codes.ok:
-            return True
+    def getFileDownloadPath(self, file_id):
+        '''
+        生成文件下载链接
+        注意：下载链接包含Bot Key
+        '''
+        req = self.getFile(file_id=file_id)
+        if req != False:
+
+            file_path = req["file_path"]
+            file_download_path = self.basic_url + "file/bot" + self.key + r"/" + file_path
+
+            return file_download_path
         else:
             return False
 

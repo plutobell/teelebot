@@ -32,8 +32,8 @@ def IPinfo(message):
                     for r in result.keys():
                         msg += str(r) + " : <i>" + str(result[r]) + "</i>%0A"
                     msg = "IP地址 <b>" + str(ip) + "</b> 的信息如下：%0A%0A" + msg
-                    msg = msg.replace("country", "地区或国家")
-                    msg = msg.replace("地区或国家Code", "地区或国家代码")
+                    msg = msg.replace("country", "国家或地区")
+                    msg = msg.replace("国家或地区Code", "国家或地区代码")
                     msg = msg.replace("region", "区域")
                     msg = msg.replace("区域Name", "区域名")
                     msg = msg.replace("city", "城市")
