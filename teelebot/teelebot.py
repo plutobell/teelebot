@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-10
 @author github:plutobell
-@version: 1.5.1_dev
+@version: 1.5.2_dev
 '''
 import time
 import sys
@@ -206,7 +206,7 @@ class Bot(object):
         elif type(voice) == bytes:
             file_data = {"voice" : voice}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(voice) == str:
+        elif type(voice) == str and '.' not in voice:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
         else:
@@ -243,7 +243,7 @@ class Bot(object):
         elif type(animation) == bytes:
             file_data = {"animation" : animation}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(animation) == str:
+        elif type(animation) == str and '.' not in animation:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
         else:
@@ -280,7 +280,7 @@ class Bot(object):
         elif type(audio) == bytes:
             file_data = {"audio" : audio}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(audio) == str:
+        elif type(audio) == str and '.' not in audio:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
         else:
@@ -319,7 +319,7 @@ class Bot(object):
         elif type(photo) == bytes:
             file_data = {"photo" : photo}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(photo) == str:
+        elif type(photo) == str and '.' not in photo:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
         else:
@@ -356,7 +356,7 @@ class Bot(object):
         elif type(video) == bytes:
             file_data = {"video" : video}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(video) == str:
+        elif type(video) == str and '.' not in video:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
         else:
@@ -393,7 +393,7 @@ class Bot(object):
         elif type(video_note) == bytes:
             file_data = {"video_note" : video_note}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(video_note) == str:
+        elif type(video_note) == str and '.' not in video_note:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
         else:
@@ -478,7 +478,7 @@ class Bot(object):
         elif type(document) == bytes:
             file_data = {"document" : document}
             addr = command + "?chat_id=" + str(chat_id)
-        elif type(document) == str:
+        elif type(document) == str and '.' not in document:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
         else:
