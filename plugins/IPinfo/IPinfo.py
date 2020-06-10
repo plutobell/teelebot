@@ -14,8 +14,12 @@ def IPinfo(message):
 
     if text[1:len(prefix)+1] == prefix:
         if len(text.split(' ')) == 2:
-            ip = text.split(' ')[1]
-            if len(ip.split('.')) not in [4, 8]:
+            ip = str(text.split(' ')[1])
+            count = 0
+            for i in ip.split('.'): #格式检查
+                if len(i) > 3 or int(i) > 255 or int(i) < 0:
+                    count += 1
+            if len(ip.split('.')) not in [4, 8] or count != 0:
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text="地址格式错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
                 timer = Timer(15, timer_func, args=[chat_id, status["message_id"]])
