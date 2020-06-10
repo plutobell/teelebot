@@ -340,7 +340,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-10
 
-* v1.5.2 : 修复媒体文件类发送函数发送本地文件时被识别为 file_id 类型的bug
+* v1.5.2 : 修复媒体文件类发送函数发送本地文件时被识别为 file_id 类型的bug；修复插件 Sticker 的bug；完善插件 IPinfo 的地址格式检查
 * v1.5.1 : 删除函数 downloadFile，新增函数 getFileDownloadPath；新增插件 Sticker
 * v1.5.0 : 媒体文件类发送函数新增通过 file_id 发送文件；新增插件 About
 
