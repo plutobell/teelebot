@@ -26,7 +26,7 @@ def Sticker(message):
                 timer.start()
             else:
                 status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendPhoto(chat_id=chat_id, text="您未指定要获取的贴纸!", parse_mode="text", reply_to_message_id=message_id)
+                status = bot.sendMessage(chat_id=chat_id, text="您未指定要获取的贴纸!", parse_mode="text", reply_to_message_id=message_id)
                 timer = Timer(15, timer_func, args=[chat_id, status["message_id"]])
                 timer.start()
         else:

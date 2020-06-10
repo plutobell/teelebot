@@ -51,9 +51,6 @@ def IPinfo(message):
                     status = bot.sendMessage(chat_id=chat_id, text="查询失败!", parse_mode="HTML", reply_to_message_id=message_id)
                     timer = Timer(5, timer_func, args=[chat_id, status["message_id"]])
                     timer.start()
-
-
-
         else:
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text="指令格式错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
