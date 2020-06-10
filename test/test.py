@@ -152,6 +152,9 @@ results = {
 # status = bot.restrictChatMember(chat_id=chat_id, user_id=config["root"], permissions=req.get("permissions"))
 # print(status)
 
-bot_id = str(bot.getMe()["id"])
-req = bot.getUserProfilePhotos(user_id=bot_id, limit=1)
-print(req.get("photos")[0][0]["file_id"])
+# bot_id = str(bot.getMe()["id"])
+# req = bot.getUserProfilePhotos(user_id=bot_id, limit=1)
+# print(req.get("photos")[0][0]["file_id"])
+
+req = bot.getFileDownloadPath(file_id="AAMCBQADGQEAAgnHXuCO-vFvdz4zDftTyEdVXkLLdVgAAvYAA7UTei_hUL93SWi3DkVAmmp0AAMBAAdtAANcOAACGgQ")
+print(req)

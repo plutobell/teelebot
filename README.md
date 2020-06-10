@@ -24,6 +24,7 @@ Python实现的Telegram Bot机器人框架
 *  Admin - 群管插件，管理员可通过指令对群进行管理(踢人、禁言等)
 *  Qrcode - 二维码生成插件，调用 [Goole API](https://google.com) 生成二维码
 *  IPinfo - 查询IP地址信息，调用 [ip-api](https://ip-api.com/)  查询IP信息
+*  Sticker - Sticker插件，获取贴纸图片
 
 
 
@@ -48,7 +49,7 @@ Python实现的Telegram Bot机器人框架
 **Available methods**
 
 * getMe
-* getFile & downloadFile
+* getFile & getFileDownloadPath
 * sendMessage
 * sendPhoto
 * sendDocument
@@ -339,12 +340,14 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-10
 
+* v1.5.1 : 删除函数 downloadFile，新增函数 getFileDownloadPath；新增插件 Sticker
+
 * v1.5.0 : 媒体文件类发送函数新增通过 file_id 发送文件；新增插件 About
 
 * v1.4.9 : 新增插件 IPinfo; 调整 ID插件消息文案
 * v1.4.8 : 修复插件 Guard 验证码选项显示不全的bug；ID 插件新增查询其他用户ID的功能
 
-* v1.4.7 : 重构插件 Guard 的captcha，调整人机验证方式
+* v1.4.7 : 重构插件 Guard 的 captcha，调整人机验证方式
 
 #### 2020-6-9
 
