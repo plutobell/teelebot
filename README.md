@@ -337,6 +337,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-10
 
+* v1.4.8 : 修复插件 Guard 验证码选项显示不全的bug；ID 插件新增查询其他用户ID的功能
 * v1.4.7 : 重构插件 Guard 的captcha，调整人机验证方式
 
 #### 2020-6-9
