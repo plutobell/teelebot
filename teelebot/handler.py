@@ -5,7 +5,7 @@ import sys
 
 
 def config():
-    __version__ = "1.5.5_dev"
+    __version__ = "1.5.6_dev"
     __author__ = "github:plutobell"
 
     config = {}

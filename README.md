@@ -48,6 +48,9 @@ Python实现的Telegram Bot机器人框架
 **Getting updates**
 
 * getUpdates
+* setWebhook
+* deleteWebhook
+* getWebhookInfo
 
 **Available methods**
 
@@ -342,6 +345,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 ## 更新历史 ##
 
 #### 2020-6-11
+
+* v1.5.6 : 新增函数接口 setWebhook、deleteWebhook 和 getWebhookInfo
 
 * v1.5.5 : Agc 插件新增随图片随机显示一条一言句子
 
