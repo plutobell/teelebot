@@ -15,7 +15,7 @@ def Acg(message):
         img = acg_img()
         if img != False:
             status = bot.sendChatAction(chat_id, "typing")
-            status = bot.sendPhoto(chat_id=chat_id, photo=img, caption="为你找到这张图片，快收下吧~", reply_to_message_id=message_id)
+            status = bot.sendPhoto(chat_id=chat_id, photo=img, caption=str(one_said()), parse_mode="HTML", reply_to_message_id=message_id)
         else:
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text="获取失败，请重试!", parse_mode="HTML", reply_to_message_id=message_id)
@@ -35,6 +35,12 @@ def acg_img():
         return req.content
     else:
         return False
+
+def one_said():
+    url = "http://api.guaqb.cn/v1/onesaid/"
+    req = requests.post(url)
+
+    return req.text
 
 
 def timer_func(chat_id, message_id):
