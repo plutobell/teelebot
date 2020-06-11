@@ -31,8 +31,8 @@ def TodayInHistory(message):
                     }
                     msg = ""
                     for sec in today_data:
-                        msg += "<i>" + str(sec["date"].split('年')[0]) + "</i> - " + str(sec["message"]) + "%0A%0A"
-                    msg = "<b>历史上的今天: " + str(sec["date"].split('年')[1]) + "</b>%0A%0A" + msg
+                        msg += "<i>" + str(sec["year"]) + "</i> - " + str(sec["title"]) + "%0A%0A"
+                    msg = "<b>历史上的今天: " + str(today_data[0]["today"]) + "</b>%0A%0A" + msg
                     status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg, parse_mode="HTML", reply_markup=reply_markup)
                     status = bot.answerCallbackQuery(message["callback_query_id"])
             else:
@@ -50,7 +50,7 @@ def TodayInHistory(message):
                     "inline_keyboard": inlineKeyboard
                     }
                     sec = today_data[0]
-                    msg = "<b>历史上的今天: " + str(sec["date"].split('年')[1]) + "</b>%0A%0A"
+                    msg = "<b>历史上的今天: " + str(today_data[0]["today"]) + "</b>%0A%0A"
                     status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg, parse_mode="HTML", reply_markup=reply_markup)
                     status = bot.answerCallbackQuery(message["callback_query_id"])
             else:
@@ -69,8 +69,8 @@ def TodayInHistory(message):
             }
             msg = ""
             for sec in today_data[:5]:
-                msg += "<i>" + str(sec["date"].split('年')[0]) + "</i> - " + str(sec["message"]) + "%0A%0A"
-            msg = "<b>历史上的今天: " + str(sec["date"].split('年')[1]) + "</b>%0A%0A" + msg + "..."
+                msg += "<i>" + str(sec["year"]) + "</i> - " + str(sec["title"]) + "%0A%0A"
+            msg = "<b>历史上的今天: " + str(today_data[0]["today"]) + "</b>%0A%0A" + msg + "..."
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
             timer = Timer(60, timer_func, args=[chat_id, status["message_id"]])
@@ -90,11 +90,14 @@ def TodayInHistory(message):
 
 
 def today_in_history():
-    url = "https://api.66mz8.com/api/today.php?format=json"
+    url = "https://api.asilu.com/today/"
 
     req = requests.get(url)
-    if req.json().get("code") == 200:
-        return req.json().get("data")
+    data = req.json()
+    if data["code"] == 200:
+        today_data = data["data"]
+        today_data[0]["today"] = str(data["month"]) + "月" + str(data["day"]) + "日"
+        return today_data
     else:
         return False
 
