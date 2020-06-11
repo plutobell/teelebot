@@ -133,6 +133,62 @@ class Bot(object):
         elif req.json().get("ok") == False:
             return False
 
+    def setWebhook(self, url, certificate=None, max_connections=None, allowed_updates=None):
+        '''
+        设置Webhook
+        Ports currently supported for Webhooks: 443, 80, 88, 8443.
+        '''
+        command = "setWebhook"
+        addr = command + "?url=" + str(url)
+        if max_connections != None:
+            addr += "&max_connections=" + str(max_connections)
+        if allowed_updates != None:
+            addr += "&allowed_updates=" + str(allowed_updates)
+
+        file_data = None
+        if certificate != None:
+            if type(voice) == bytes:
+                file_data = {"certificate" : certificate}
+            else:
+                file_data = {"certificate" : open(certificate, 'rb')}
+
+        if file_data == None:
+            req = requests.post(self.url + addr)
+        else:
+            req = requests.post(self.url + addr, files=file_data)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json()
+
+    def deleteWebhook(self):
+        '''
+        删除设置的Webhook
+        '''
+        command = "deleteWebhook"
+        addr = command
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def getWebhookInfo(self):
+        '''
+        获取当前的Webhook状态
+        '''
+        command = "getWebhookInfo"
+        addr = command
+        req = requests.post(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+
     #Available methods
     def getMe(self): #获取机器人基本信息
         command = "getMe"

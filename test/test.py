@@ -156,5 +156,14 @@ results = {
 # req = bot.getUserProfilePhotos(user_id=bot_id, limit=1)
 # print(req.get("photos")[0][0]["file_id"])
 
-req = bot.getFileDownloadPath(file_id="AAMCBQADGQEAAgnHXuCO-vFvdz4zDftTyEdVXkLLdVgAAvYAA7UTei_hUL93SWi3DkVAmmp0AAMBAAdtAANcOAACGgQ")
-print(req)
+# req = bot.getFileDownloadPath(file_id="AAMCBQADGQEAAgnHXuCO-vFvdz4zDftTyEdVXkLLdVgAAvYAA7UTei_hUL93SWi3DkVAmmp0AAMBAAdtAANcOAACGgQ")
+# print(req)
+
+# req = bot.getWebhookInfo()
+# print(req)
+# req = bot.deleteWebhook()
+# print(req)
+# status = bot.setWebhook("https://telegram_bot.123.com")
+# print(status)
+# req = bot.getWebhookInfo()
+# print(req)
