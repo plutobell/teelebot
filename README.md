@@ -343,6 +343,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-11
 
+* v1.5.4 : 优化插件 Firefoxmoniter、IPinfo、Qrcode、Top
+
 * v1.5.3 : 新增插件 TodayInHistory；新增插件 Dwz；新增插件 Acg；重构 Bing 插件
 
 #### 2020-6-10
