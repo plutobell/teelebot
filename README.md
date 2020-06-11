@@ -25,6 +25,9 @@ Python实现的Telegram Bot机器人框架
 *  Qrcode - 二维码生成插件，调用 [Goole API](https://google.com) 生成二维码
 *  IPinfo - 查询IP地址信息，调用 [ip-api](https://ip-api.com/)  查询IP信息
 *  Sticker - Sticker插件，获取贴纸图片
+*  TodayInHistory - TodayInHistory插件，调用 [Kate.API](https://api.66mz8.com/) 查看历史上的今天
+*  Dwz - Dwz插件，调用 [ALAPI](https://www.alapi.net/) 生成短网址
+*  Acg - Acg插件，调用 [ALAPI](https://www.alapi.net/) 随机获取一张ACG图
 
 
 
@@ -337,6 +340,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-11
+
+* v1.5.3 : 新增插件 TodayInHistory；新增插件 Dwz；新增插件 Acg
 
 #### 2020-6-10
 
