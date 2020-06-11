@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-10
+last_modify: 2020-6-11
 '''
 
 from teelebot import Bot
@@ -380,7 +380,7 @@ class SqliteDB(object):
         '''
         Open the connection
         '''
-        self.conn = sqlite3.connect(bot.plugin_dir + "Guard/captcha.db") #只读模式加上uri=True
+        self.conn = sqlite3.connect(bot.plugin_dir + "Guard/captcha.db", check_same_thread=False) #只读模式加上uri=True
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE IF NOT EXISTS captcha_list (id INTEGER PRIMARY KEY autoincrement, chat_id TEXT, user_id TEXT, message_id TEXT, authcode TEXT, timestamp INTEGER)")
 
