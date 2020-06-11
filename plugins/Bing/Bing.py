@@ -1,44 +1,43 @@
 # -*- coding:utf-8 -*-
-import requests, lxml, os, time
+import requests
+import time
+from threading import Timer
 from teelebot import Bot
-from bs4 import BeautifulSoup
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# 禁用HTTPS安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+bot = Bot()
 
 def Bing(message):
-    '''
-    Bing接口Github地址:https://github.com/xCss/bing
-    '''
+    prefix = "bing"
+    text = message["text"]
 
-    bot = Bot()
-    headers = {
-        'Host': 'bing.ioliu.cn',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66'
-    }
-    url = "https://bing.ioliu.cn"
-    req = requests.post(url, headers=headers, verify=False)
-    soup = BeautifulSoup(req.text,"lxml")
-    item = soup.find_all("div", class_="item")[0]
-    desc = item.find("h3").text
-    date = item.find("em").text
-    src = url + item.find("a", class_="ctrl download")["href"]
-    if not os.path.isfile(bot.plugin_dir + "Bing/status.db"):
-        with open(bot.plugin_dir + "Bing/status.db", "w") as f:
-            f.write(str(time.strftime('%Y-%m-%d')))
-    if not os.path.isfile(bot.plugin_dir + "Bing/today.jpg"):
-        with open(bot.plugin_dir + "Bing/today.jpg", "wb") as p:
-            req = requests.get(src, headers=headers)
-            p.write(req.content)
+    if text[1:len(prefix)+1] == prefix:
+        img = bing_img()
+        if img != False:
+            img_url = img["url"]
+            copyright_ = img["copyright"]
+            startdate = img["startdate"]
+            date = startdate[:4] + '-' + startdate[4:6] + '-' + startdate[6:]
+            status = bot.sendChatAction(message["chat"]["id"], "typing")
+            status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=img_url, caption=copyright_+"%0A%0A"+date, parse_mode="HTML", reply_to_message_id=message["message_id"])
+        else:
+            status = bot.sendChatAction(message["chat"]["id"], "typing")
+            status = bot.sendMessage(chat_id=message["chat"]["id"], text="获取失败，请重试!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+            timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
+            timer.start()
+    else:
+        status = bot.sendChatAction(chat_id, "typing")
+        status = bot.sendMessage(chat_id=message["chat"]["id"], text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
+        timer.start()
 
-    with open(bot.plugin_dir + "Bing/status.db", "r") as f:
-        old = f.readline().strip()
-    if date != old:
-        req = requests.get(src, headers=headers)
-        with open(bot.plugin_dir + "Bing/today.jpg", "wb") as p:
-            p.write(req.content)
-        with open(bot.plugin_dir + "Bing/status.db", "w") as f:
-            f.write(str(date))
+def bing_img():
+    url = "https://api.asilu.com/bg/"
+    req = requests.post(url)
 
-    status = bot.sendChatAction(message["chat"]["id"], "typing")
-    status = bot.sendPhoto(chat_id=message["chat"]["id"], photo=bot.plugin_dir + "Bing/today.jpg", caption=desc+"%0A%0A"+date, parse_mode="HTML", reply_to_message_id=message["message_id"])
+    if req.json().get("images"):
+        return req.json().get("images")[0]
+    else:
+        return False
+
+def timer_func(chat_id, message_id):
+    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)

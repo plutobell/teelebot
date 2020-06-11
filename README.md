@@ -16,14 +16,14 @@ Python实现的Telegram Bot机器人框架
 *   About - 关于
 *  Hello - Hello World插件例子
 *  Firefoxmoniter - 调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
-*  Bing - 调用第三方Bing壁纸接口 [bing](https://github.com/xCss/bing) 获取每日必应壁纸
+*  Bing - 调用第三方Bing壁纸接口 [Bing](https://asilu.com) 获取每日必应壁纸
 *  ID - 获取你的用户ID
 *  Top - 调用top命令查看服务器状态
-*  Translate - 调用 [有道翻译](http://fanyi.youdao.com/)API 对文字进行翻译
+*  Translate - 调用 [有道翻译](http://fanyi.youdao.com/) API 对文字进行翻译
 *  Guard - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
 *  Admin - 群管插件，管理员可通过指令对群进行管理(踢人、禁言等)
 *  Qrcode - 二维码生成插件，调用 [Goole API](https://google.com) 生成二维码
-*  IPinfo - 查询IP地址信息，调用 [ip-api](https://ip-api.com/)  查询IP信息
+*  IPinfo - 查询IP地址信息，调用 [ip-api](https://ip-api.com/) 查询IP信息
 *  Sticker - Sticker插件，获取贴纸图片
 *  TodayInHistory - TodayInHistory插件，调用 [Kate.API](https://api.66mz8.com/) 查看历史上的今天
 *  Dwz - Dwz插件，调用 [ALAPI](https://www.alapi.net/) 生成短网址
@@ -343,7 +343,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-11
 
-* v1.5.3 : 新增插件 TodayInHistory；新增插件 Dwz；新增插件 Acg
+* v1.5.3 : 新增插件 TodayInHistory；新增插件 Dwz；新增插件 Acg；重构 Bing 插件
 
 #### 2020-6-10
 
