@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-3-21
-last_modify: 2020-6-9
+last_modify: 2020-6-11
 '''
 import requests
 from threading import Timer
@@ -25,14 +25,13 @@ def Top(message):
 
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], text="主人，正在获取服务器信息，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
-        timer = Timer(5, timer_func, args=[message["chat"]["id"], status["message_id"]])
-        timer.start()
+        txt_message_id = status["message_id"]
+
         req = requests.post(url=url, data=data)
         if req.json().get("status") == False:
             req.close()
-            status = bot.sendChatAction(message["chat"]["id"], "typing")
-            status = bot.sendMessage(message["chat"]["id"], text="抱歉主人，获取服务器信息失败", parse_mode="HTML", reply_to_message_id=message["message_id"])
-            timer = Timer(30, timer_func, args=[message["chat"]["id"], status["message_id"]])
+            status = bot.editMessageText(chat_id=message["chat"]["id"], message_id=txt_message_id, text="抱歉主人，获取服务器信息失败", parse_mode="HTML")
+            timer = Timer(15, timer_func, args=[message["chat"]["id"], txt_message_id])
             timer.start()
         elif req.json().get("status") == True:
             contents = req.json().get("contents")
@@ -66,14 +65,13 @@ def Top(message):
                 "内存用量：<b>" + str(round((float(memory_total)-float(avail_memory))/1024, 2)) + "G</b> 已用，<b>" + str(round(float(avail_memory)/1024,2)) + "G</b> 空闲%0A" + \
                 "硬盘用量：<b>" + str(int(float(hd_total)-float(hd_avail))) + "G</b> 已用，<b>" + str(hd_avail) + "G</b> 空闲"
 
-            status = bot.sendChatAction(message["chat"]["id"], "typing")
-            status = bot.sendMessage(message["chat"]["id"], text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
-            timer = Timer(60, timer_func, args=[message["chat"]["id"], status["message_id"]])
+            status = bot.editMessageText(chat_id=message["chat"]["id"], message_id=txt_message_id, text=msg, parse_mode="HTML")
+            timer = Timer(60, timer_func, args=[message["chat"]["id"], txt_message_id])
             timer.start()
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], text="抱歉，您无权操作!", parse_mode="HTML", reply_to_message_id=message["message_id"])
-        timer = Timer(30, timer_func, args=[message["chat"]["id"], status["message_id"]])
+        timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
         timer.start()
 
 def timer_func(chat_id, message_id):

@@ -14,11 +14,6 @@ def Qrcode(message):
 
     if text[1:len(prefix)+1] == prefix:
         if len(text.split(' ')) == 2:
-            status = bot.sendChatAction(chat_id, "typing")
-            status = bot.sendMessage(chat_id=chat_id, text="正在生成，请稍等...", parse_mode="HTML", reply_to_message_id=message_id)
-            timer = Timer(5, timer_func, args=[chat_id, status["message_id"]])
-            timer.start()
-
             img = qrcode_img(text.split(' ')[1])
             if img != False:
                 status = bot.sendChatAction(chat_id, "typing")

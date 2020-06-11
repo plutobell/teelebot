@@ -3,17 +3,20 @@ from teelebot import Bot
 import requests, lxml, hashlib
 from bs4 import BeautifulSoup
 from teelebot.handler import config
+from threading import Timer
 
+bot = Bot()
 config = config()
 
 def Firefoxmoniter(message):
-    bot = Bot()
 
     with open(bot.plugin_dir + "Firefoxmoniter/__init__.py", encoding="utf-8") as f:
         h = f.readline()[1:]
     if len(message["text"]) < len(h):
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
+        timer.start()
         return False
     email = message["text"][len(h)-1:]
     email = email.strip()
@@ -23,14 +26,18 @@ def Firefoxmoniter(message):
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
+        timer.start()
         return False
 
     if str(message["from"]["id"]) == config["root"]:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "主人，正在查询邮件地址[" + str(email) + "]，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        txt_message_id = status["message_id"]
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "正在查询邮件地址" + str(email) + "，请稍等...", parse_mode="HTML", reply_to_message_id=message["message_id"])
+        txt_message_id = status["message_id"]
 
     protocol, ip, port = get_ip()
     proxies = {
@@ -41,8 +48,9 @@ def Firefoxmoniter(message):
     r_session = requests.Session()
     page = r_session.get(url, proxies=proxies)
     if not page.status_code == requests.codes.ok:
-        status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A操作过于频繁，请稍后再试!", parse_mode="text", reply_to_message_id=message["message_id"])
+        status = bot.editMessageText(chat_id=message["chat"]["id"],message_id=txt_message_id, text="查询失败！%0A操作过于频繁，请稍后再试!", parse_mode="text")
+        timer = Timer(15, timer_func, args=[message["chat"]["id"], txt_message_id])
+        timer.start()
         return False
     page.encoding = "utf-8"
     session = page.cookies["session"]
@@ -75,12 +83,13 @@ def Firefoxmoniter(message):
             data = "泄露的数据:%0A" + section.find_all("span")[4].text + "%0A"
             result += source + date + data + "%0A"
 
-        status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], result, parse_mode="HTML", reply_to_message_id=message["message_id"])
+        status = bot.editMessageText(chat_id=message["chat"]["id"],message_id=txt_message_id, text=result, parse_mode="text")
+        timer = Timer(60, timer_func, args=[message["chat"]["id"], txt_message_id])
+        timer.start()
     else:
-        status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检测命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
-
+        status = bot.editMessageText(chat_id=message["chat"]["id"], text="查询失败！%0A请检测命令格式!", parse_mode="text")
+        timer = Timer(15, timer_func, args=[message["chat"]["id"], txt_message_id])
+        timer.start()
 
 def get_ip():
     url = u"http://ip.jiangxianli.com/api/proxy_ip"
@@ -92,6 +101,9 @@ def get_ip():
         port = req.json().get("data").get("port")
         return protocol, ip, port
 
+
+def timer_func(chat_id, message_id):
+    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
 
 if __name__ == "__main__":
     Firefoxmoniter("hi@ojoll.com")

@@ -27,8 +27,7 @@ def IPinfo(message):
             elif len(ip.split('.')) in [4, 8]:
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text="正在查询，请稍等...", parse_mode="HTML", reply_to_message_id=message_id)
-                timer = Timer(5, timer_func, args=[chat_id, status["message_id"]])
-                timer.start()
+                txt_message_id = status["message_id"]
 
                 result = ip_info(ip)
                 if result != False:
@@ -46,14 +45,12 @@ def IPinfo(message):
                     msg = msg.replace("lon", "经度")
                     msg = msg.replace("timezone", "时区")
                     msg = msg.replace("isp", "ISP")
-                    status = bot.sendChatAction(chat_id, "typing")
-                    status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
-                    timer = Timer(60, timer_func, args=[chat_id, status["message_id"]])
+                    status = bot.editMessageText(chat_id=chat_id, message_id=txt_message_id, text=msg, parse_mode="HTML")
+                    timer = Timer(60, timer_func, args=[chat_id, txt_message_id])
                     timer.start()
                 else:
-                    status = bot.sendChatAction(chat_id, "typing")
-                    status = bot.sendMessage(chat_id=chat_id, text="查询失败!", parse_mode="HTML", reply_to_message_id=message_id)
-                    timer = Timer(5, timer_func, args=[chat_id, status["message_id"]])
+                    status = bot.editMessageText(chat_id=chat_id, message_id=txt_message_id, text="查询失败!", parse_mode="HTML")
+                    timer = Timer(15, timer_func, args=[chat_id, txt_message_id])
                     timer.start()
         else:
             status = bot.sendChatAction(chat_id, "typing")
