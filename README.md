@@ -178,7 +178,7 @@ local_port=webhook local port ////Optional while webhook is False
 
 #### 二、源码运行 ####
 
-1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`；
+1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`、`flask` ；
 
 
 
@@ -381,6 +381,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 ## 更新历史 ##
 
 #### 2020-6-12
+
+* v1.6.1 : 优化 requests 请求关闭方式
 
 * v1.6.0 : 新增 `Webhook` 模式运行；新增函数 washUpdates 和 pluginRun
 
