@@ -43,7 +43,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Telegram Bot API封装情况
 
-### 已实现 47 + 0.5 * 3 个 ###
+### 已实现 50 + 0.5 * 3 个 ###
 
 **Getting updates**
 
@@ -144,7 +144,36 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 
 ## 使用 ##
 
-#### 一、源码运行 ####
+#### 一、运行模式
+
+`teelebot` 支持以 `Webhook` 模式和 `getUpdates` 模式运行。生产环境推荐使用 `Webhook` 模式，而 `getUpdates` 则仅用于开发环境。
+
+##### 1、Webhook 模式
+
+`teelebot` 的 Webhook 目前仅支持 **`自签名证书`**。若要以 `Webhook` 模式运行，请将配置文件字段 `webhook` 设置为 `True` ，并且添加以下字段：
+
+```python
+[config]
+webhook=True
+cert_pub=your public certificate dir //Optional while webhook is False
+server_address=your server ip address or domain //Optional while webhook is False
+local_address=webhook local address //Optional while webhook is False
+local_port=webhook local port ////Optional while webhook is False
+```
+
+`cert_pub` 为你的公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `local_address` 为Webhook 本地IP地址， `local_port` 为 Webhook 本地运行的端口。
+
+推荐搭配 `nginx` 或者 `uwsgi` 使用。
+
+##### 2、getUpdates 模式
+
+要以 getUpdates 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。
+
+
+
+
+
+#### 二、源码运行 ####
 
 1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`；
 
@@ -157,6 +186,11 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 ```python
 [config]
 key=your key
+webhook=False
+cert_pub=your public certificate dir //Optional while webhook is False
+server_ip=your server ip address //Optional while webhook is False
+local_address=webhook local address //Optional while webhook is False
+local_port=webhook local port ////Optional while webhook is False
 root=your user id
 debug=False
 timeout=60
@@ -197,7 +231,7 @@ python -m teelebot -c/-C <configure file path>
 
 
 
-#### 二、Pip安装运行
+#### 三、Pip安装运行
 
 ##### 安装 #####
 
@@ -228,8 +262,6 @@ python -m teelebot -c/-C <configure file path>
 - 对于命令行手动指定配置文件路径的：
 
   输入`teelebot -c/-C <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
-
-
 
 
 
@@ -343,6 +375,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-12
+
+* v1.6.0 : 新增 `Webhook` 模式运行
 
 #### 2020-6-11
 

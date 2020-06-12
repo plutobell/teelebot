@@ -5,7 +5,7 @@ import sys
 
 
 def config():
-    __version__ = "1.5.6_dev"
+    __version__ = "1.6.0_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -26,12 +26,26 @@ def config():
     conf = configparser.ConfigParser()
     conf.read(config_dir)
     options = conf.options("config")
+
+    default_args = ["key", "webhook", "debug", "root", "timeout"]
+    for default_arg in default_args:
+        if default_arg not in options:
+            print("配置文件缺失必要的参数!")
+            return False
+
     for option in options:
         config[str(option)] = conf.get("config", option)
 
     if any([ "version" in config.keys(), "author" in config.keys() ]):
         print("配置文件存在错误!")
         os._exit(0)
+
+    if config["webhook"] == "True":
+        webhook_args = ["cert_pub", "server_address", "local_address" ,"local_port"]
+        for w in webhook_args:
+            if w not in config.keys():
+                print("请在配置文件中指定公钥路径!")
+                return False
 
     if "plugin_dir" in config.keys():
         plugin_dir = os.path.abspath(config["plugin_dir"]) + r'/'
@@ -42,6 +56,11 @@ def config():
         config["debug"] = True
     elif config["debug"] == "False":
         config["debug"] = False
+
+    if config["webhook"] == "True":
+        config["webhook"] = True
+    elif config["webhook"] == "False":
+        config["webhook"] = False
 
     config["author"] = __author__
     config["version"] = __version__

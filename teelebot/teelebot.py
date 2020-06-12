@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-11
+@last modify: 2020-6-12
 @author github:plutobell
-@version: 1.5.6_dev
+@version: 1.6.0_dev
 '''
 import time
 import sys
@@ -41,97 +41,114 @@ class Bot(object):
         Module = importlib.import_module(plugin_name) #模块检测，待完善
 
         return Module
+
+    def pluginRun(self, message):
+        plugin_list = self.plugin_bridge.keys()
+        for plugin in plugin_list:
+            if message.get("callback_query_id") != None: #callback query
+                message_type = "callback_query_data"
+            elif (message.get("new_chat_members") != None) or (message.get("left_chat_member") != None):
+                message_type = "text"
+                message["text"] = "" #default prefix of command
+            elif message.get("photo") != None:
+                message["message_type"] = "photo"
+                message_type = "message_type"
+            elif message.get("sticker") != None:
+                message["message_type"] = "sticker"
+                message_type = "message_type"
+            elif message.get("video") != None:
+                message["message_type"] = "video"
+                message_type = "message_type"
+            elif message.get("audio") != None:
+                message["message_type"] = "audio"
+                message_type = "message_type"
+            elif message.get("document") != None:
+                message["message_type"] = "document"
+                message_type = "message_type"
+            elif message.get("text") != None:
+                message_type = "text"
+            elif message.get("caption") != None:
+                message_type = "caption"
+            elif message.get("query") != None:
+                message_type = "query"
+            else:
+                continue
+            if message.get(message_type)[:len(plugin)] == plugin:
+                Module = self.__import_module(self.plugin_bridge[plugin])
+                threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
+                threadObj.setDaemon(True)
+                threadObj.start()
+
+
     def _run(self):
-        print("机器人开始轮询", "version:" + self.VERSION)
         #print("debug=" + str(self.debug))
-        plugin_list = []
-        for key in self.plugin_bridge.keys():
-            plugin_list.append(key)
+        plugin_list = self.plugin_bridge.keys()
         while True:
             try:
-                messages = self.getUpdates() #获取消息队列messages
+                results = self.getUpdates() #获取消息队列messages
+                messages = self.washUpdates(results)
                 if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
-                    if message == None:
-                        continue
-                    for plugin in plugin_list:
-                        if message.get("callback_query_id") != None: #callback query
-                            message_type = "callback_query_data"
-                        elif (message.get("new_chat_members") != None) or (message.get("left_chat_member") != None):
-                            message_type = "text"
-                            message["text"] = "" #default prefix of command
-                        elif message.get("photo") != None:
-                            message["message_type"] = "photo"
-                            message_type = "message_type"
-                        elif message.get("sticker") != None:
-                            message["message_type"] = "sticker"
-                            message_type = "message_type"
-                        elif message.get("video") != None:
-                            message["message_type"] = "video"
-                            message_type = "message_type"
-                        elif message.get("audio") != None:
-                            message["message_type"] = "audio"
-                            message_type = "message_type"
-                        elif message.get("document") != None:
-                            message["message_type"] = "document"
-                            message_type = "message_type"
-                        elif message.get("text") != None:
-                            message_type = "text"
-                        elif message.get("caption") != None:
-                            message_type = "caption"
-                        elif message.get("query") != None:
-                            message_type = "query"
-                        else:
-                            continue
-                        if message.get(message_type)[:len(plugin)] == plugin:
-                            Module = self.__import_module(self.plugin_bridge[plugin])
-                            threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
-                            threadObj.setDaemon(True)
-                            threadObj.start()
+                    self.pluginRun(message)
                 time.sleep(0.2) #经测试，延时0.2s较为合理
             except KeyboardInterrupt: #判断键盘输入，终止循环
                 sys.exit("程序终止") #退出存在问题，待修复
 
     #Getting updates
-    def getUpdates(self): #获取消息队列
+    def getUpdates(self, limit=100, allowed_updates=None):
+        '''
+        获取消息队列
+        '''
         command = "getUpdates"
-        addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
-        req = requests.get(self.url + addr)
-        #req.keep_alive = False
-        if self.debug is True:
-            print(req.text)
-        if req.json().get("ok") == True:
-            update_ids = []
-            messages = []
-            results = req.json().get("result")
-            if len(results) < 1:
-                return None
-            for result in results:
-                query_or_message = ""
-                if result.get("inline_query"):
-                    query_or_message = "inline_query"
-                elif result.get("callback_query"):
-                    query_or_message = "callback_query"
-                elif result.get("message"):
-                    query_or_message = "message"
-                update_ids.append(result.get("update_id"))
+        addr = command + "?offset=" + str(self.offset) +\
+            "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
 
-                if query_or_message == "callback_query":
-                    callback_query = result.get(query_or_message).get("message")
-                    callback_query["click_user"] = result.get(query_or_message)["from"]
-                    callback_query["callback_query_id"] = result.get(query_or_message).get("id")
-                    callback_query["callback_query_data"] = result.get(query_or_message).get("data")
-                    messages.append(callback_query)
-                else:
-                    messages.append(result.get(query_or_message))
-            if len(update_ids) >= 1:
-                self.offset = max(update_ids) + 1
-                return messages
+        if allowed_updates != None:
+            req = requests.get(self.url + addr, json=allowed_updates)
+        else:
+            req = requests.get(self.url + addr)
+
+        if req.json().get("ok") == True:
+            return req.json().get("result")
+        elif req.json().get("ok") == False:
+            return req.json().get("ok")
+
+    def washUpdates(self, results):
+        '''
+        清洗消息队列
+        results应当是一个列表
+        '''
+        if len(results) < 1:
+            return None
+        update_ids = []
+        messages = []
+        for result in results:
+            update_ids.append(result["update_id"])
+            query_or_message = ""
+            if result.get("inline_query"):
+                query_or_message = "inline_query"
+            elif result.get("callback_query"):
+                query_or_message = "callback_query"
+            elif result.get("message"):
+                query_or_message = "message"
+            update_ids.append(result.get("update_id"))
+
+            if query_or_message == "callback_query":
+                callback_query = result.get(query_or_message).get("message")
+                callback_query["click_user"] = result.get(query_or_message)["from"]
+                callback_query["callback_query_id"] = result.get(query_or_message).get("id")
+                callback_query["callback_query_data"] = result.get(query_or_message).get("data")
+                messages.append(callback_query)
             else:
-                return None
+                messages.append(result.get(query_or_message))
+        if len(update_ids) >= 1:
+            self.offset = max(update_ids) + 1
+            return messages
         elif req.json().get("ok") == False:
             return False
+        else:
+            return None
 
     def setWebhook(self, url, certificate=None, max_connections=None, allowed_updates=None):
         '''
@@ -147,7 +164,7 @@ class Bot(object):
 
         file_data = None
         if certificate != None:
-            if type(voice) == bytes:
+            if type(certificate) == bytes:
                 file_data = {"certificate" : certificate}
             else:
                 file_data = {"certificate" : open(certificate, 'rb')}
@@ -156,7 +173,7 @@ class Bot(object):
             req = requests.post(self.url + addr)
         else:
             req = requests.post(self.url + addr, files=file_data)
-
+        print(req.json())
         if req.json().get("ok") == True:
             return req.json().get("result")
         elif req.json().get("ok") == False:
