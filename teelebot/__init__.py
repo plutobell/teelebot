@@ -26,7 +26,7 @@ def main():
 
         print(" * 机器人开始运行", "\n * 框架版本：" + config["version"], "\n * 运行模式: Webhook\n")
         #webhook_app.debug=False
-        webhook_app.run(host=config["local_address"], port=config["local_port"])
+        webhook_app.run(host=config["local_address"], port=config["local_port"], threaded=True)
     else:
         print("正在自检", end="\r")
         status = bot.getWebhookInfo()
