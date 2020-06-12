@@ -14,7 +14,7 @@ def main():
     if config["webhook"] == True:
         print("正在自检", end="\r")
         status = bot.getWebhookInfo()
-        url = "https://" + str(config["server_address"] + "/bot" + str(config["key"]))
+        url = "https://" + str(config["server_address"] + ":" +str(config["server_port"]) + "/bot" + str(config["key"]))
         if status != False:
             if status["url"] != url or status["has_custom_certificate"] == False:
                 status = bot.setWebhook(url=url, certificate=config["cert_pub"])
