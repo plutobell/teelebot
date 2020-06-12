@@ -159,11 +159,12 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 webhook=True
 cert_pub=your public certificate dir //Optional while webhook is False
 server_address=your server ip address or domain //Optional while webhook is False
+server_port=your server port //Optional while webhook is False
 local_address=webhook local address //Optional while webhook is False
 local_port=webhook local port ////Optional while webhook is False
 ```
 
-`cert_pub` 为你的公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `local_address` 为Webhook 本地IP地址， `local_port` 为 Webhook 本地运行的端口。
+`cert_pub` 为你的公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地IP地址， `local_port` 为 Webhook 本地运行的端口。
 
 推荐搭配 `nginx` 或者 `uwsgi` 使用。
 
@@ -191,6 +192,7 @@ key=your key
 webhook=False
 cert_pub=your public certificate dir //Optional while webhook is False
 server_ip=your server ip address //Optional while webhook is False
+server_port=your server port //Optional while webhook is False
 local_address=webhook local address //Optional while webhook is False
 local_port=webhook local port ////Optional while webhook is False
 root=your user id

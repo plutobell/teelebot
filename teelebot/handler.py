@@ -41,7 +41,7 @@ def config():
         os._exit(0)
 
     if config["webhook"] == "True":
-        webhook_args = ["cert_pub", "server_address", "local_address" ,"local_port"]
+        webhook_args = ["cert_pub", "server_address", "server_port", "local_address" ,"local_port"]
         for w in webhook_args:
             if w not in config.keys():
                 print("请在配置文件中指定公钥路径!")
