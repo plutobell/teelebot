@@ -55,7 +55,7 @@ Python实现的Telegram Bot机器人框架
 **Available methods**
 
 * getMe
-* getFile & getFileDownloadPath
+* getFile
 * sendMessage
 * sendPhoto
 * sendDocument
@@ -112,9 +112,11 @@ Python实现的Telegram Bot机器人框架
 
 
 
-目标是封装官方所有的接口
+**teelebot method**
 
-
+*  getFileDownloadPath
+* washUpdates
+* pluginRun
 
 
 
@@ -378,7 +380,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-12
 
-* v1.6.0 : 新增 `Webhook` 模式运行
+* v1.6.0 : 新增 `Webhook` 模式运行；新增函数 washUpdates 和 pluginRun
 
 #### 2020-6-11
 
