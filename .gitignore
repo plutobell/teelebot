@@ -4,3 +4,4 @@ __pycache__/
 *.ini
 *.db
 info.txt
+cert/
