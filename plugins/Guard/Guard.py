@@ -343,11 +343,14 @@ def captcha_img(width=160, height=60, font_sizes=(50, 55, 60), fonts=None):
 def reply_markup_dict(captcha_text):
     options = []
     answer = randint(0,3)
-    for i in range(4): #生成答案列表
-        if  answer == i:
-            options.append(captcha_text)
-        else:
-            options.append(shuffle_str(captcha_text))
+    while True:
+        for i in range(4): #生成答案列表
+            if  answer == i:
+                options.append(captcha_text)
+            else:
+                options.append(shuffle_str(captcha_text))
+        if len(options) == len(set(options)):
+            break
     callback_data = []
     for i in range(4): #生成callback_data列表
         if answer == i:

@@ -46,16 +46,16 @@ def Firefoxmoniter(message):
 
     url = "https://monitor.firefox.com/"
     r_session = requests.Session()
-    page = r_session.get(url, proxies=proxies)
-    if not page.status_code == requests.codes.ok:
-        status = bot.editMessageText(chat_id=message["chat"]["id"],message_id=txt_message_id, text="查询失败！%0A操作过于频繁，请稍后再试!", parse_mode="text")
-        timer = Timer(15, timer_func, args=[message["chat"]["id"], txt_message_id])
-        timer.start()
-        return False
-    page.encoding = "utf-8"
-    session = page.cookies["session"]
-    soup = BeautifulSoup(page.text, "lxml")
-    csrf = soup.find_all("input")[0]["value"]
+    with r_session.get(url, proxies=proxies) as page:
+        if not page.status_code == requests.codes.ok:
+            status = bot.editMessageText(chat_id=message["chat"]["id"],message_id=txt_message_id, text="查询失败！%0A操作过于频繁，请稍后再试!", parse_mode="text")
+            timer = Timer(15, timer_func, args=[message["chat"]["id"], txt_message_id])
+            timer.start()
+            return False
+        page.encoding = "utf-8"
+        session = page.cookies["session"]
+        soup = BeautifulSoup(page.text, "lxml")
+        csrf = soup.find_all("input")[0]["value"]
 
     url = "https://monitor.firefox.com/scan"
     data = {
@@ -70,11 +70,12 @@ def Firefoxmoniter(message):
         'referer': 'https://monitor.firefox.com/',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
     }
-    page = r_session.post(url, data=data, headers=headers, proxies=proxies)
-    page.encoding = "utf-8"
+    with r_session.post(url, data=data, headers=headers, proxies=proxies) as page:
+        page.encoding = "utf-8"
 
-    result = ""
-    soup = BeautifulSoup(page.text, "lxml")
+        result = ""
+        soup = BeautifulSoup(page.text, "lxml")
+
     if "扫描结果" in soup.find("title").text:
         result += "电子邮件地址" + email +"出现在" + str(soup.find("span", class_="bold").text) + "次已知数据外泄事件中。%0A%0A"
         for section in soup.find_all("div", class_="flx flx-col"):
