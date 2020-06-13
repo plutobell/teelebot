@@ -3,9 +3,8 @@ import configparser
 import os
 import sys
 
-
 def config():
-    __version__ = "1.6.2_dev"
+    __version__ = "1.6.5_dev"
     __author__ = "github:plutobell"
 
     config = {}

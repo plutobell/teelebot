@@ -179,7 +179,7 @@ local_port=webhook local port ////Optional while webhook is False
 
 #### 二、源码运行 ####
 
-1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests`、`flask` ；
+1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests` ；
 
 
 
@@ -383,6 +383,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-13
 
+* v1.6.5 : 完全重构 `webhook` 实现，去除依赖 Flask；修复 Guard 插件验证码选项重复的bug
 * v1.6.2 : teelebot method 部分函数名字更改；优化插件 requests 请求关闭方式
 
 #### 2020-6-12
