@@ -115,8 +115,9 @@ Python实现的Telegram Bot机器人框架
 **teelebot method**
 
 *  getFileDownloadPath
-* washUpdates
-* pluginRun
+* _washUpdates
+* _pluginRun
+* _runUpdates
 
 
 
@@ -379,6 +380,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-13
+
+* v1.6.2 : teelebot method 部分函数名字更改；优化插件 requests 请求关闭方式
 
 #### 2020-6-12
 

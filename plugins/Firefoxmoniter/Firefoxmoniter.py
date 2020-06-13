@@ -93,13 +93,13 @@ def Firefoxmoniter(message):
 
 def get_ip():
     url = u"http://ip.jiangxianli.com/api/proxy_ip"
-    req = requests.get(url)
-    status = req.json().get("msg")
-    if status == "成功":
-        protocol = req.json().get("data").get("protocol")
-        ip = req.json().get("data").get("ip")
-        port = req.json().get("data").get("port")
-        return protocol, ip, port
+    with requests.get(url) as req:
+        status = req.json().get("msg")
+        if status == "成功":
+            protocol = req.json().get("data").get("protocol")
+            ip = req.json().get("data").get("ip")
+            port = req.json().get("data").get("port")
+            return protocol, ip, port
 
 
 def timer_func(chat_id, message_id):

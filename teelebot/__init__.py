@@ -40,4 +40,4 @@ def main():
             print("获取运行模式失败!")
 
         print("机器人开始运行", "\n框架版本：" + config["version"], "\n运行模式: getUpdates")
-        bot._run()
+        bot._runUpdates()

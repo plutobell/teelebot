@@ -92,14 +92,14 @@ def TodayInHistory(message):
 def today_in_history():
     url = "https://api.asilu.com/today/"
 
-    req = requests.get(url)
-    data = req.json()
-    if data["code"] == 200:
-        today_data = data["data"]
-        today_data[0]["today"] = str(data["month"]) + "月" + str(data["day"]) + "日"
-        return today_data
-    else:
-        return False
+    with requests.get(url) as req:
+        data = req.json()
+        if data["code"] == 200:
+            today_data = data["data"]
+            today_data[0]["today"] = str(data["month"]) + "月" + str(data["day"]) + "日"
+            return today_data
+        else:
+            return False
 
 def timer_func(chat_id, message_id):
     status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)

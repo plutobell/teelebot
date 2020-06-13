@@ -66,17 +66,17 @@ def IPinfo(message):
 
 def ip_info(ip):
     url = "http://ip-api.com/json/"+ str(ip) + "?lang=zh-CN"
-    req = requests.post(url=url)
-    result = req.json()
+    with requests.post(url=url) as req:
+        result = req.json()
 
-    if result.get("status") == "success":
-        del result["status"]
-        del result["query"]
-        del result["org"]
-        del result["as"]
-        return result
-    else:
-        return False
+        if result.get("status") == "success":
+            del result["status"]
+            del result["query"]
+            del result["org"]
+            del result["as"]
+            return result
+        else:
+            return False
 
 
 def timer_func(chat_id, message_id):

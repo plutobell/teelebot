@@ -16,8 +16,8 @@ def Chat(message):
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendVoice(message["chat"]["id"], voice=bot.plugin_dir + "Chat/hello.ogg", reply_to_message_id=message["message_id"])
     else:
-        req = requests.get(url + ubp.quote(message["text"][1:])) #urlencode编码
-        req.keep_alive = False
-        req.encoding = "utf-8"
-        status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendMessage(message["chat"]["id"], str(req.json().get("content").replace("{br}", "%0A").replace("菲菲", "小埋")), parse_mode="HTML", reply_to_message_id=message["message_id"])
+        with requests.get(url + ubp.quote(message["text"][1:])) as req: #urlencode编码
+            req.keep_alive = False
+            req.encoding = "utf-8"
+            status = bot.sendChatAction(message["chat"]["id"], "typing")
+            status = bot.sendMessage(message["chat"]["id"], str(req.json().get("content").replace("{br}", "%0A").replace("菲菲", "小埋")), parse_mode="HTML", reply_to_message_id=message["message_id"])

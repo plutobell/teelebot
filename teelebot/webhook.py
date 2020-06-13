@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-6-12
+@last modify: 2020-6-13
 '''
 from flask import Flask
 from flask import request
@@ -23,9 +23,9 @@ def index():
         message = request.json
         results = []
         results.append(message)
-        messages = bot.washUpdates(results)
+        messages = bot._washUpdates(results)
         for message in messages:
-            bot.pluginRun(message)
+            bot._pluginRun(message)
 
         return "ok"
 
