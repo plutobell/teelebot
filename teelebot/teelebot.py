@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-13
 @author github:plutobell
-@version: 1.6.2_dev
+@version: 1.6.5_dev
 '''
 import time
 import sys
@@ -110,6 +110,8 @@ class Bot(object):
         update_ids = []
         messages = []
         for result in results:
+            if "update_id" not in result.keys():
+                return None
             update_ids.append(result["update_id"])
             query_or_message = ""
             if result.get("inline_query"):

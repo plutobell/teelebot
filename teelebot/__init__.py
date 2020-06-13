@@ -4,7 +4,7 @@ name = "teelebot"
 __all__ = ['Bot']
 
 from .teelebot import Bot
-from .webhook import webhook_app
+from .webhook import runWebhook
 from .handler import config
 
 bot = Bot()
@@ -12,7 +12,7 @@ config = config()
 
 def main():
     if config["webhook"] == True:
-        print("正在自检", end="\r")
+        print(" * 正在自检", end="\r")
         status = bot.getWebhookInfo()
         url = "https://" + str(config["server_address"] + ":" +str(config["server_port"]) + "/bot" + str(config["key"]))
         if status != False:
@@ -24,11 +24,11 @@ def main():
         else:
             print("获取运行模式失败!")
 
-        print(" * 机器人开始运行", "\n * 框架版本：" + config["version"], "\n * 运行模式: Webhook\n")
+        print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + config["version"], "\n * 运行模式: Webhook\n")
         #webhook_app.debug=False
-        webhook_app.run(host=config["local_address"], port=config["local_port"], threaded=True)
+        runWebhook(host=config["local_address"], port=int(config["local_port"]))
     else:
-        print("正在自检", end="\r")
+        print(" * 正在自检", end="\r")
         status = bot.getWebhookInfo()
         if status != False:
             if status["url"] != "" or status["has_custom_certificate"] != False:
@@ -39,5 +39,5 @@ def main():
         else:
             print("获取运行模式失败!")
 
-        print("机器人开始运行", "\n框架版本：" + config["version"], "\n运行模式: getUpdates")
+        print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + config["version"], "\n * 运行模式: getUpdates")
         bot._runUpdates()
