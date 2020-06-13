@@ -42,11 +42,11 @@ def qrcode_img(data):
     url_basic = "https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl="
     url = url_basic + str(data)
 
-    req = requests.post(url=url)
-    if type(req.content) == bytes:
-        return req.content
-    else:
-        return False
+    with requests.post(url=url) as req:
+        if type(req.content) == bytes:
+            return req.content
+        else:
+            return False
 
 def timer_func(chat_id, message_id):
     status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)

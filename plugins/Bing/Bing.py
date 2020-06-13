@@ -32,12 +32,12 @@ def Bing(message):
 
 def bing_img():
     url = "https://api.asilu.com/bg/"
-    req = requests.post(url)
+    with requests.post(url) as req:
 
-    if req.json().get("images"):
-        return req.json().get("images")[0]
-    else:
-        return False
+        if req.json().get("images"):
+            return req.json().get("images")[0]
+        else:
+            return False
 
 def timer_func(chat_id, message_id):
     status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)

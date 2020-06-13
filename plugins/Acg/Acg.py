@@ -30,17 +30,17 @@ def Acg(message):
 
 def acg_img():
     url = "https://v1.alapi.cn/api/acg"
-    req = requests.post(url)
-    if type(req.content) == bytes:
-        return req.content
-    else:
-        return False
+    with requests.post(url) as req:
+        if type(req.content) == bytes:
+            return req.content
+        else:
+            return False
 
 def one_said():
     url = "http://api.guaqb.cn/v1/onesaid/"
-    req = requests.post(url)
+    with requests.post(url) as req:
 
-    return req.text
+        return req.text
 
 
 def timer_func(chat_id, message_id):

@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-12
+@last modify: 2020-6-13
 @author github:plutobell
-@version: 1.6.1_dev
+@version: 1.6.2_dev
 '''
 import time
 import sys
@@ -37,14 +37,15 @@ class Bot(object):
         self.VERSION = config["version"]
         self.AUTHOR = config["author"]
 
+
+    #teelebot method
     def __import_module(self, plugin_name):
         sys.path.append(self.plugin_dir + plugin_name + r"/")
         Module = importlib.import_module(plugin_name) #模块检测，待完善
 
         return Module
 
-    def pluginRun(self, message):
-        print(message)
+    def _pluginRun(self, message):
         if message == None:
             return
         plugin_list = self.plugin_bridge.keys()
@@ -84,44 +85,22 @@ class Bot(object):
                 threadObj.start()
 
 
-    def _run(self):
+    def _runUpdates(self):
         #print("debug=" + str(self.debug))
         plugin_list = self.plugin_bridge.keys()
         while True:
             try:
                 results = self.getUpdates() #获取消息队列messages
-                messages = self.washUpdates(results)
+                messages = self._washUpdates(results)
                 if messages == None or messages == False:
                     continue
                 for message in messages: #获取单条消息记录message
-                    self.pluginRun(message)
+                    self._pluginRun(message)
                 time.sleep(0.2) #经测试，延时0.2s较为合理
             except KeyboardInterrupt: #判断键盘输入，终止循环
                 sys.exit("程序终止") #退出存在问题，待修复
 
-    #Getting updates
-    def getUpdates(self, limit=100, allowed_updates=None):
-        '''
-        获取消息队列
-        '''
-        command = "getUpdates"
-        addr = command + "?offset=" + str(self.offset) +\
-            "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
-
-        if allowed_updates != None:
-            with requests.get(self.url + addr, json=allowed_updates, verify=False) as req:
-                if req.json().get("ok") == True:
-                    return req.json().get("result")
-                elif req.json().get("ok") == False:
-                    return req.json().get("ok")
-        else:
-            with requests.get(self.url + addr, verify=False) as req:
-                if req.json().get("ok") == True:
-                    return req.json().get("result")
-                elif req.json().get("ok") == False:
-                    return req.json().get("ok")
-
-    def washUpdates(self, results):
+    def _washUpdates(self, results):
         '''
         清洗消息队列
         results应当是一个列表
@@ -156,6 +135,29 @@ class Bot(object):
             return False
         else:
             return None
+
+
+    #Getting updates
+    def getUpdates(self, limit=100, allowed_updates=None):
+        '''
+        获取消息队列
+        '''
+        command = "getUpdates"
+        addr = command + "?offset=" + str(self.offset) +\
+            "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
+
+        if allowed_updates != None:
+            with requests.get(self.url + addr, json=allowed_updates, verify=False) as req:
+                if req.json().get("ok") == True:
+                    return req.json().get("result")
+                elif req.json().get("ok") == False:
+                    return req.json().get("ok")
+        else:
+            with requests.get(self.url + addr, verify=False) as req:
+                if req.json().get("ok") == True:
+                    return req.json().get("result")
+                elif req.json().get("ok") == False:
+                    return req.json().get("ok")
 
     def setWebhook(self, url, certificate=None, max_connections=None, allowed_updates=None):
         '''

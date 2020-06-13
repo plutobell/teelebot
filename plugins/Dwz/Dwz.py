@@ -50,11 +50,11 @@ def Dwz(message):
 def dwz(url):
     url = "https://v1.alapi.cn/api/url?url=" + str(url)
 
-    req = requests.get(url)
-    if req.json().get("code") == 200:
-        return req.json().get("data")
-    else:
-        return False
+    with requests.get(url) as req:
+        if req.json().get("code") == 200:
+            return req.json().get("data")
+        else:
+            return False
 
 def timer_func(chat_id, message_id):
     status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
