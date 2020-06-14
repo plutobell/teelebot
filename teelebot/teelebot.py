@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-14
+@last modify: 2020-6-15
 @author github:plutobell
-@version: 1.6.6_dev
+@version: 1.6.8_dev
 '''
 import time
 import sys
@@ -14,6 +14,7 @@ import threading
 
 import requests
 from .handler import config
+from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 config = config()
@@ -30,6 +31,7 @@ class Bot(object):
         self.basic_url = "https://api.telegram.org/"
         self.url = self.basic_url + r"bot" + self.key + r"/"
         self.webhook = config["webhook"]
+        self.__thread_pool = ThreadPoolExecutor(int(config["pool_size"]))
         self.timeout = config["timeout"]
         self.offset = 0
         self.debug = config["debug"]
@@ -79,16 +81,11 @@ class Bot(object):
                 message_type = "query"
             else:
                 continue
+
             if message.get(message_type)[:len(plugin)] == plugin:
-                if self.webhook == False:
-                    Module = self.__import_module(self.plugin_bridge[plugin])
-                    threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
-                    threadObj.setDaemon(True)
-                    threadObj.start()
-                elif self.webhook == True:
-                    Module = self.__import_module(self.plugin_bridge[plugin])
-                    pluginFunc = getattr(Module, self.plugin_bridge[plugin])
-                    pluginFunc(message)
+                Module = self.__import_module(self.plugin_bridge[plugin])
+                pluginFunc = getattr(Module, self.plugin_bridge[plugin])
+                self.__thread_pool.submit(pluginFunc, message)
 
 
     def _runUpdates(self):
@@ -190,7 +187,7 @@ class Bot(object):
             req = requests.post(self.url + addr, verify=False)
         else:
             req = requests.post(self.url + addr, files=file_data, verify=False)
-        print(req.json())
+
         if req.json().get("ok") == True:
             return req.json().get("result")
         elif req.json().get("ok") == False:

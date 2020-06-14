@@ -92,9 +92,11 @@ def TodayInHistory(message):
 def today_in_history():
     url = "https://api.asilu.com/today/"
 
-    with requests.get(url) as req:
+    with requests.get(url=url, verify=False) as req:
         data = req.json()
-        if data["code"] == 200:
+        if not req.status_code == requests.codes.ok:
+            return False
+        elif data["code"] == 200:
             today_data = data["data"]
             today_data[0]["today"] = str(data["month"]) + "月" + str(data["day"]) + "日"
             return today_data

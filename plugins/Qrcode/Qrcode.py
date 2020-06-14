@@ -42,8 +42,10 @@ def qrcode_img(data):
     url_basic = "https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl="
     url = url_basic + str(data)
 
-    with requests.post(url=url) as req:
-        if type(req.content) == bytes:
+    with requests.post(url=url, verify=False) as req:
+        if not req.status_code == requests.codes.ok:
+            return False
+        elif type(req.content) == bytes:
             return req.content
         else:
             return False

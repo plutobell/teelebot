@@ -70,7 +70,7 @@ def Firefoxmoniter(message):
         'referer': 'https://monitor.firefox.com/',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
     }
-    with r_session.post(url, data=data, headers=headers, proxies=proxies) as page:
+    with r_session.post(url=url, data=data, headers=headers, proxies=proxies, verify=False) as page:
         page.encoding = "utf-8"
 
         result = ""
@@ -94,7 +94,7 @@ def Firefoxmoniter(message):
 
 def get_ip():
     url = u"http://ip.jiangxianli.com/api/proxy_ip"
-    with requests.get(url) as req:
+    with requests.get(url=url) as req:
         status = req.json().get("msg")
         if status == "成功":
             protocol = req.json().get("data").get("protocol")

@@ -32,9 +32,10 @@ def Bing(message):
 
 def bing_img():
     url = "https://api.asilu.com/bg/"
-    with requests.post(url) as req:
-
-        if req.json().get("images"):
+    with requests.post(url=url, verify=False) as req:
+        if not req.status_code == requests.codes.ok:
+            return False
+        elif req.json().get("images"):
             return req.json().get("images")[0]
         else:
             return False
