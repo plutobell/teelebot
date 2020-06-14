@@ -381,6 +381,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-14
+
+* v1.6.6 : 优化 `webhook` 模式多线程，减少资源占用
+
 #### 2020-6-13
 
 * v1.6.5 : 完全重构 `webhook` 实现，去除依赖 Flask；修复 Guard 插件验证码选项重复的bug
