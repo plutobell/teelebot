@@ -190,12 +190,13 @@ local_port=webhook local port ////Optional while webhook is False
 ```python
 [config]
 key=your key
+pool_size=40 //the thread pool size, default 40, range(1, 101)
 webhook=False
 cert_pub=your public certificate dir //Optional while webhook is False
 server_ip=your server ip address //Optional while webhook is False
 server_port=your server port //Optional while webhook is False
 local_address=webhook local address //Optional while webhook is False
-local_port=webhook local port ////Optional while webhook is False
+local_port=webhook local port //Optional while webhook is False
 root=your user id
 debug=False
 timeout=60
@@ -380,6 +381,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-15
+
+* v1.6.8 : 线程使用线程池，提高性能和稳定性；部分插件优化；bug修复
 
 #### 2020-6-14
 

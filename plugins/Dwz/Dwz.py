@@ -50,8 +50,10 @@ def Dwz(message):
 def dwz(url):
     url = "https://v1.alapi.cn/api/url?url=" + str(url)
 
-    with requests.get(url) as req:
-        if req.json().get("code") == 200:
+    with requests.get(url=url, verify=False) as req:
+        if not req.status_code == requests.codes.ok:
+            return False
+        elif req.json().get("code") == 200:
             return req.json().get("data")
         else:
             return False

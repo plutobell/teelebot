@@ -30,15 +30,17 @@ def Acg(message):
 
 def acg_img():
     url = "https://v1.alapi.cn/api/acg"
-    with requests.post(url) as req:
-        if type(req.content) == bytes:
+    with requests.post(url=url, verify=False) as req:
+        if not req.status_code == requests.codes.ok:
+            return False
+        elif type(req.content) == bytes:
             return req.content
         else:
             return False
 
 def one_said():
     url = "http://api.guaqb.cn/v1/onesaid/"
-    with requests.post(url) as req:
+    with requests.post(url, verify=False) as req:
 
         return req.text
 

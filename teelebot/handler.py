@@ -4,7 +4,7 @@ import os
 import sys
 
 def config():
-    __version__ = "1.6.6_dev"
+    __version__ = "1.6.8_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -50,6 +50,13 @@ def config():
         plugin_dir = os.path.abspath(config["plugin_dir"]) + r'/'
     else:
         plugin_dir = os.path.dirname(os.path.abspath(__file__)) + "/plugins/"
+
+    if "pool_size" in config.keys():
+        if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
+            print("线程池尺寸超出范围!(1-100)")
+            return False
+    else:
+        config["pool_size"] = "40"
 
     if config["debug"] == "True":
         config["debug"] = True
