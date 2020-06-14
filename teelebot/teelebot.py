@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-13
+@last modify: 2020-6-14
 @author github:plutobell
-@version: 1.6.5_dev
+@version: 1.6.6_dev
 '''
 import time
 import sys
@@ -29,6 +29,7 @@ class Bot(object):
             self.key = config["key"]
         self.basic_url = "https://api.telegram.org/"
         self.url = self.basic_url + r"bot" + self.key + r"/"
+        self.webhook = config["webhook"]
         self.timeout = config["timeout"]
         self.offset = 0
         self.debug = config["debug"]
@@ -79,10 +80,15 @@ class Bot(object):
             else:
                 continue
             if message.get(message_type)[:len(plugin)] == plugin:
-                Module = self.__import_module(self.plugin_bridge[plugin])
-                threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
-                threadObj.setDaemon(True)
-                threadObj.start()
+                if self.webhook == False:
+                    Module = self.__import_module(self.plugin_bridge[plugin])
+                    threadObj = threading.Thread(target=getattr(Module, self.plugin_bridge[plugin]), args=[message])
+                    threadObj.setDaemon(True)
+                    threadObj.start()
+                elif self.webhook == True:
+                    Module = self.__import_module(self.plugin_bridge[plugin])
+                    pluginFunc = getattr(Module, self.plugin_bridge[plugin])
+                    pluginFunc(message)
 
 
     def _runUpdates(self):
