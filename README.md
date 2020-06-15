@@ -125,7 +125,7 @@ Python实现的Telegram Bot机器人框架
 
 ## Demo ##
 
-* Telegram群组： [teelebot体验群](http://t.me/isteelebot)（t.me/isteelebot）
+* Telegram群组： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）
 
 
 
@@ -371,7 +371,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 * Email：hi#ojoll.com ( # == @ )
 * Blog:    [北及](https://ojoll.com)
-* Telegram群组：[teelebot体验群](http://t.me/isteelebot)（t.me/isteelebot）
+* Telegram群组：[teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）
 * 其他：本repo 的 Issue
 
 
