@@ -2,12 +2,13 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-15
+@last modify: 2020-6-16
 @author github:plutobell
-@version: 1.6.8_dev
+@version: 1.7.0_dev
 '''
 import time
 import sys
+import os
 import json
 import importlib
 import threading
@@ -51,7 +52,28 @@ class Bot(object):
     def _pluginRun(self, message):
         if message == None:
             return
+
         plugin_list = self.plugin_bridge.keys()
+        plugin_bridge = self.plugin_bridge
+
+        chat_id = message["chat"]["id"]
+        chat_type = message["chat"]["type"]
+        if chat_type != "private" and "/pluginctl" in plugin_bridge.keys() and plugin_bridge["/pluginctl"] == "PluginCTL":
+            if os.path.exists(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"):
+                with open(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                    plugin_setting = f.read().strip()
+                plugin_list_off = plugin_setting.split(',')
+                plugin_bridge_temp = {}
+                for plugin in plugin_list:
+                    plugin_temp = plugin
+                    if plugin == "" or plugin == " ":
+                        plugin = "nil"
+                    if plugin not in plugin_list_off:
+                        plugin = plugin_temp
+                        plugin_bridge_temp[plugin] = plugin_bridge[plugin]
+                plugin_bridge = plugin_bridge_temp
+                plugin_list = plugin_bridge.keys()
+
         for plugin in plugin_list:
             if "callback_query_id" in message.keys(): #callback query
                 message_type = "callback_query_data"
@@ -83,8 +105,8 @@ class Bot(object):
                 continue
 
             if message.get(message_type)[:len(plugin)] == plugin:
-                Module = self.__import_module(self.plugin_bridge[plugin])
-                pluginFunc = getattr(Module, self.plugin_bridge[plugin])
+                Module = self.__import_module(plugin_bridge[plugin])
+                pluginFunc = getattr(Module, plugin_bridge[plugin])
                 self.__thread_pool.submit(pluginFunc, message)
 
 

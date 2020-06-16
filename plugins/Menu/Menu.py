@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2019-8-15
-last_modify: 2020-6-8
+last_modify: 2020-6-16
 '''
 
 import os
@@ -14,8 +14,24 @@ def Menu(message):
     prefix = "start"
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
+    chat_type = message["chat"]["type"]
 
     plugin_list = bot.plugin_bridge.values()
+    if chat_type != "private" and "/pluginctl" in bot.plugin_bridge.keys() and bot.plugin_bridge["/pluginctl"] == "PluginCTL":
+        if os.path.exists(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"):
+            with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                plugin_setting = f.read().strip()
+            plugin_list_off = plugin_setting.split(',')
+            plugin_list_value = {}
+            for plug in bot.plugin_bridge.keys():
+                plugin_temp = plug
+                if plug == "" or plug == " ":
+                    plug = "nil"
+                if plug not in plugin_list_off:
+                    plug = plugin_temp
+                    plugin_list_value[plug] = bot.plugin_bridge[plug]
+            plugin_list = plugin_list_value.values()
+
     plugin_count = len(plugin_list)
     page_size = 5
     page_total = int((plugin_count + page_size - 1) / page_size) # 总页数=（总数+每页数量-1）/每页数量

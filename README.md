@@ -14,6 +14,7 @@ Python实现的Telegram Bot机器人框架
 * Menu - 自动生成的插件菜单
 *   Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
 *   About - 关于
+*   PluginCTL - 插件开关控制
 *  Hello - Hello World插件例子
 *  Firefoxmoniter - 调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
 *  Bing - 调用第三方Bing壁纸接口 [Bing](https://asilu.com) 获取每日必应壁纸
@@ -381,6 +382,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新历史 ##
+
+#### 2020-6-16
+
+* v1.7.0 : 新增插件 PluginCTL，插件现支持手动开关；_pluginRun函数 支持插件 PluginCTL； 插件 Menu 适配插件 PluginCTL
 
 #### 2020-6-15
 
