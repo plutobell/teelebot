@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-6-15
+@last modify: 2020-6-17
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
@@ -57,7 +57,6 @@ def runWebhook(host, port):
         sys.exit("程序终止")
 
 if __name__ == '__main__':
-    import sys
     try:
         run()
     except KeyboardInterrupt:
