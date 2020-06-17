@@ -42,7 +42,7 @@ def PluginCTL(message):
     if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
         status = bot.sendChatAction(chat_id, "typing")
         status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
-        timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
+        timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
         timer.start()
     elif text[1:len(prefix)+1] == prefix and count == 0:
         status = bot.sendChatAction(chat_id, "typing")
