@@ -383,6 +383,11 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+
+#### 2020-6-17
+
+* v1.7.1 : 修复线程池内线程异常不报错的bug，完善日志显示；修复插件 PluginCTL 的bug
+
 #### 2020-6-16
 
 * v1.7.0 : 新增插件 PluginCTL，插件现支持手动开关；_pluginRun函数 支持插件 PluginCTL； 插件 Menu 适配插件 PluginCTL
