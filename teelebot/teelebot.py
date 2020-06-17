@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-17
 @author github:plutobell
-@version: 1.7.0_dev
+@version: 1.7.1_dev
 '''
 import time
 import sys
@@ -21,6 +21,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 config = config()
 requests.adapters.DEFAULT_RETRIES = 5
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 class Bot(object):
     "机器人的基类"
 
@@ -45,6 +46,11 @@ class Bot(object):
         self.__thread_pool.shutdown(wait=True)
 
     #teelebot method
+    def __threadpool_exception(self, fur):
+        if fur.exception() != None:
+            print("\n\n" + "_" * 50 + "\n")
+            print(fur.result())
+
     def __import_module(self, plugin_name):
         sys.path.append(self.plugin_dir + plugin_name + r"/")
         Module = importlib.import_module(plugin_name) #模块检测，待完善
@@ -109,10 +115,8 @@ class Bot(object):
             if message.get(message_type)[:len(plugin)] == plugin:
                 Module = self.__import_module(plugin_bridge[plugin])
                 pluginFunc = getattr(Module, plugin_bridge[plugin])
-                try:
-                    self.__thread_pool.submit(pluginFunc, message)
-                except Exception as e:
-                    print(e)
+                fur = self.__thread_pool.submit(pluginFunc, message)
+                fur.add_done_callback(self.__threadpool_exception)
 
     def _runUpdates(self):
         #print("debug=" + str(self.debug))
