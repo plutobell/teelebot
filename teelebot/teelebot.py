@@ -2,7 +2,7 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-16
+@last modify: 2020-6-17
 @author github:plutobell
 @version: 1.7.0_dev
 '''
@@ -41,6 +41,8 @@ class Bot(object):
         self.VERSION = config["version"]
         self.AUTHOR = config["author"]
 
+    def __del__(self):
+        self.__thread_pool.shutdown(wait=True)
 
     #teelebot method
     def __import_module(self, plugin_name):
@@ -107,8 +109,10 @@ class Bot(object):
             if message.get(message_type)[:len(plugin)] == plugin:
                 Module = self.__import_module(plugin_bridge[plugin])
                 pluginFunc = getattr(Module, plugin_bridge[plugin])
-                self.__thread_pool.submit(pluginFunc, message)
-
+                try:
+                    self.__thread_pool.submit(pluginFunc, message)
+                except Exception as e:
+                    print(e)
 
     def _runUpdates(self):
         #print("debug=" + str(self.debug))
