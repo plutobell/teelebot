@@ -383,6 +383,9 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-19
+
+* v1.7.2 : 框架主体代码优化；部分插件优化；修复插件 Translate的bug( [#1](https://github.com/plutobell/teelebot/pull/1) )，感谢 [ZHLHZHU](https://github.com/ZHLHZHU)
 
 #### 2020-6-17
 
