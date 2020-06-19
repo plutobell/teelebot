@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-15
+last_modify: 2020-6-19
 '''
 import requests
 import urllib.parse as ubp
@@ -31,6 +31,10 @@ def Translate(message):
             status = bot.sendMessage(chat_id=message["chat"]["id"], text="获取失败，请重试!", parse_mode="HTML", reply_to_message_id=message["message_id"])
             timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
             timer.start()
+        elif req.json().get("type", "UNSUPPORTED") == "UNSUPPORTED":  # 翻译的源文字未成功识别语言
+            bot.sendChatAction(message["chat"]["id"], "typing")
+            bot.sendMessage(chat_id=message["chat"]["id"], text="没看出来这是什么语言%0A%0A" + words, parse_mode="HTML",
+                            reply_to_message_id=message["message_id"])
         else:
             types = {
                 "ZH_CN2EN": "中文　»　英语",
@@ -47,7 +51,7 @@ def Translate(message):
                 "SP2ZH_CN": "西语　»　中文"
             }
 
-            type_= req.json().get("type")
+            type_ = req.json().get("type")
             result = ""
             for paragraph in req.json().get("translateResult"):
                 for sentence in paragraph:
