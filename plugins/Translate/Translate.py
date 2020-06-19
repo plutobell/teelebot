@@ -8,9 +8,9 @@ import urllib.parse as ubp
 from teelebot import Bot
 from threading import Timer
 
+bot = Bot()
 
 def Translate(message):
-    bot = Bot()
     prefix = "translate"
 
     if message["text"][1:len(prefix)+1] != prefix or len(message["text"].split(':')) != 2:
