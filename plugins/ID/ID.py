@@ -4,7 +4,7 @@ from teelebot.handler import config
 from threading import Timer
 
 bot = Bot()
-bot_id = str(bot.getMe()["id"])
+bot_id = bot.key.split(':')[0]
 config = config()
 
 def ID(message):

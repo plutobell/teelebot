@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-6-4
-last_modify: 2020-6-7
+last_modify: 2020-6-19
 '''
 
 from teelebot import Bot
@@ -17,7 +17,7 @@ def Admin(message):
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
     text = message["text"]
-    bot_id = str(bot.getMe()["id"])
+    bot_id = bot.key.split(':')[0]
     prefix = "admin"
 
     command = { #命令注册

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-11
+last_modify: 2020-6-19
 '''
 
 from teelebot import Bot
@@ -40,7 +40,8 @@ def Guard(message):
     user_id = message["from"]["id"]
     db = SqliteDB()
     gap = 60
-    bot_id = (bot.getMe()["id"])
+    bot_id = bot.key.split(':')[0]
+
     with open(bot.plugin_dir + "Guard/config.ini") as f:
         data_group_id = f.read().strip()
 

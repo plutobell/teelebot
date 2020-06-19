@@ -8,6 +8,7 @@ def About(message):
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
     text = message["text"]
+    bot_id = bot.key.split(':')[0]
     prefix = "about"
 
     with open(bot.plugin_dir + "About/config.ini", 'r', encoding="utf-8") as g:
@@ -28,7 +29,7 @@ def About(message):
         msg = "此 Bot 基于 <b>teelebot</b> 框架 <b>v" + bot.VERSION + "</b>%0A%0A" +\
             "<b>teelebot</b> 是基于 Telegram Bot API 的 Bot 框架，具有插件系统，扩展方便。%0A%0A"
 
-        req = bot.getUserProfilePhotos(user_id=str(bot.getMe()["id"]), limit=1)
+        req = bot.getUserProfilePhotos(user_id=str(bot_id), limit=1)
         bot_icon = req.get("photos")[0][0]["file_id"]
         if type(bot_icon) == str and len(bot_icon) > 50:
             photo = bot_icon
