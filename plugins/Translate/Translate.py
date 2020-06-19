@@ -33,8 +33,9 @@ def Translate(message):
             timer.start()
         elif req.json().get("type", "UNSUPPORTED") == "UNSUPPORTED":  # 翻译的源文字未成功识别语言
             bot.sendChatAction(message["chat"]["id"], "typing")
-            bot.sendMessage(chat_id=message["chat"]["id"], text="没看出来这是什么语言%0A%0A" + words, parse_mode="HTML",
-                            reply_to_message_id=message["message_id"])
+            status = bot.sendMessage(chat_id=message["chat"]["id"], text="没看出来这是什么语言%0A%0A" + words, parse_mode="HTML", reply_to_message_id=message["message_id"])
+            timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
+            timer.start()
         else:
             types = {
                 "ZH_CN2EN": "中文　»　英语",
