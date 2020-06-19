@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-18
+@last modify: 2020-6-19
 @author github:plutobell
-@version: 1.7.1_dev
+@version: 1.7.2_dev
 '''
 import time
 import sys
