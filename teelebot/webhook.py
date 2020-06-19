@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-6-17
+@last modify: 2020-6-18
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from socketserver import ThreadingMixIn
+#from socketserver import ThreadingMixIn
 import json
 import sys
 from .teelebot import Bot
@@ -44,20 +44,19 @@ class RequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
-
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
-
+# class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+#     pass
 
 def runWebhook(host, port):
     try:
         server = HTTPServer((host, port), RequestHandler)
         server.serve_forever()
     except KeyboardInterrupt:
+        server.server_close()
         sys.exit("程序终止")
 
 if __name__ == '__main__':
     try:
-        run()
+        runWebhook()
     except KeyboardInterrupt:
         sys.exit("exit")

@@ -25,7 +25,6 @@ def main():
             print("获取运行模式失败!")
 
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + config["version"], "\n * 运行模式: Webhook", "\n * 最大线程: " + str(config["pool_size"]))
-        #webhook_app.debug=False
         runWebhook(host=config["local_address"], port=int(config["local_port"]))
     else:
         print(" * 正在自检", end="\r")

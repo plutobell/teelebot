@@ -2,7 +2,7 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-17
+@last modify: 2020-6-18
 @author github:plutobell
 @version: 1.7.1_dev
 '''
@@ -33,7 +33,7 @@ class Bot(object):
         self.basic_url = "https://api.telegram.org/"
         self.url = self.basic_url + r"bot" + self.key + r"/"
         self.webhook = config["webhook"]
-        self.__thread_pool = ThreadPoolExecutor(int(config["pool_size"]))
+        self.__thread_pool = ThreadPoolExecutor(max_workers=int(config["pool_size"]))
         self.timeout = config["timeout"]
         self.offset = 0
         self.debug = config["debug"]
@@ -48,7 +48,8 @@ class Bot(object):
     #teelebot method
     def __threadpool_exception(self, fur):
         if fur.exception() != None:
-            print("\n\n" + "_" * 50 + "\n")
+            now_time = time.strftime("%Y/%m/%d %H:%M:%S")
+            print("\n\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19 + "\n")
             print(fur.result())
 
     def __import_module(self, plugin_name):
