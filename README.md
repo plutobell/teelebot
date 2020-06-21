@@ -168,7 +168,7 @@ local_port=webhook local port ////Optional while webhook is False
 
 `cert_pub` 为你的公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地IP地址， `local_port` 为 Webhook 本地运行的端口。
 
-推荐搭配 `nginx` 或者 `uwsgi` 使用。
+推荐搭配 `nginx` 使用。
 
 ##### 2、getUpdates 模式
 
@@ -383,9 +383,13 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-21
+
+* v1.7.3 : 修复Guard插件长时间运行后 占用 100% CPU 的bug，感谢 [ZHLH](https://github.com/ZHLHZHU) 、Macronut 和 某位匿名朋友 的帮助
+
 #### 2020-6-19
 
-* v1.7.2 : 框架主体代码优化；部分插件优化；修复插件 Translate的bug( [#1](https://github.com/plutobell/teelebot/pull/1) )，感谢 [ZHLHZHU](https://github.com/ZHLHZHU)
+* v1.7.2 : 框架主体代码优化；部分插件优化；修复插件 Translate 的bug( [#1](https://github.com/plutobell/teelebot/pull/1) )，感谢 [ZHLH](https://github.com/ZHLHZHU)
 
 #### 2020-6-17
 
@@ -393,7 +397,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-16
 
-* v1.7.0 : 新增插件 PluginCTL，插件现支持手动开关；_pluginRun函数 支持插件 PluginCTL； 插件 Menu 适配插件 PluginCTL
+* v1.7.0 : 新增插件 PluginCTL，插件现支持手动开关；_pluginRun 函数 支持插件 PluginCTL； 插件 Menu 适配插件 PluginCTL
 
 #### 2020-6-15
 
