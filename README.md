@@ -385,7 +385,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-21
 
-* v1.7.3 : 修复Guard插件长时间运行后 占用 100% CPU 的bug，感谢 [ZHLH](https://github.com/ZHLHZHU) 、Macronut 和 某位匿名朋友 的帮助
+* v1.7.3 : 修复Guard插件长时间运行后 占用 100% CPU 的bug，感谢 [ZHLH](https://github.com/ZHLHZHU) 、[Macronut](https://github.com/macronut) 和 某位匿名朋友 的帮助
 
 #### 2020-6-19
 
