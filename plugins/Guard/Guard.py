@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-19
+last_modify: 2020-6-21
 '''
 
 from teelebot import Bot
@@ -335,15 +335,15 @@ def captcha_img(width=160, height=60, font_sizes=(50, 55, 60), fonts=None):
     image = img.generate_image(captcha_text)
 
     #save to bytes
-    bytes_image= BytesIO()
+    bytes_image = BytesIO()
     image.save(bytes_image, format='png')
-    bytes_image= bytes_image.getvalue()
+    bytes_image = bytes_image.getvalue()
 
     return bytes_image, captcha_text
 
 def reply_markup_dict(captcha_text):
-    options = []
     answer = randint(0,3)
+    options = []
     while True:
         for i in range(4): #生成答案列表
             if  answer == i:
@@ -352,6 +352,9 @@ def reply_markup_dict(captcha_text):
                 options.append(shuffle_str(captcha_text))
         if len(options) == len(set(options)):
             break
+        else: #存在重复的情况下清空options，防止死循环
+            options = []
+
     callback_data = []
     for i in range(4): #生成callback_data列表
         if answer == i:
