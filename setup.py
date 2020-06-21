@@ -36,7 +36,7 @@ setup(
 					'plugins/Hello/helloworld.png'
 		],
     },
-    install_requires=['requests', 'flask'],
+    install_requires=['requests'],
     entry_points={
         'console_scripts': [
             'teelebot=teelebot:main',
