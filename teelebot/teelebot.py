@@ -55,12 +55,11 @@ class Bot(object):
 
     #teelebot method
     def __threadpool_exception(self, fur):
+        now_time = time.strftime("%Y/%m/%d %H:%M:%S")
         if self.debug == True:
-            now_time = time.strftime("%Y/%m/%d %H:%M:%S")
             print("\n\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19 + "\n")
             print(fur.result())
         elif fur.exception() != None:
-            now_time = time.strftime("%Y/%m/%d %H:%M:%S")
             print("\n\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19 + "\n")
             print(fur.result())
 
