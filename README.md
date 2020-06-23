@@ -118,7 +118,8 @@ Python实现的Telegram Bot机器人框架
 *  getFileDownloadPath
 * _washUpdates
 * _pluginRun
-* _runUpdates
+* __connection_session
+* message_deletor
 
 
 
@@ -302,13 +303,12 @@ Hello/
 #file Hello/Hello.py
 
 # -*- coding:utf-8 -*-
-from teelebot import Bot
 
-def Hello(message):
+def Hello(bot, message):
     pass
 ```
 
-函数 `Hello()` 即为插件的入口函数，参数 `message` 用于接收消息数据。
+函数 `Hello()` 即为插件的入口函数，参数 `bot` 为Bot接口库实例化对象，参数 `message` 用于接收消息数据。
 
 
 
@@ -381,9 +381,18 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 
-## 更新历史 ##
+## 更新日志 ##
 
 #### 2020-6-23
+
+* v1.8.0 : 
+  * 框架大规模重构，进一步封装，插件入口函数新增参数 `bot` ，Bot类不再需要手动导入
+  * 分离 `polling` 运行模式
+  * Bot类新增属性 `config` ，config 不再需要手动导入
+  * 新增函数 `__connection_session()` ，引入连接池，统一管理连接
+  * 新增消息自毁函数 `message_deletor()` ，消息自毁不再需要手动实现
+  * 完善日志显示和 debug 模式
+  * 现有插件适配此版本框架，此版本框架不再向下兼容为旧版框架编写的插件
 
 * v1.7.5 : 重构 requests 请求方式；完善日志显示
 
