@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-21
+last_modify: 2020-6-23
 '''
 
-from teelebot import Bot
 from collections import defaultdict
 import re
 import string
@@ -12,13 +11,9 @@ import sqlite3
 import time
 from random import shuffle, randint
 from threading import Timer
-from teelebot.handler import config
 from captcha.image import ImageCaptcha
 from random import randint
 from io import BytesIO
-
-config = config()
-bot = Bot()
 
 restrict_permissions = {
     'can_send_messages':False,
@@ -31,14 +26,14 @@ restrict_permissions = {
     'can_pin_messages':False
 }
 
-def Guard(message):
+def Guard(bot, message):
     repl = "<*>"
     DFA = DFAFilter()
     DFA.parse(bot.plugin_dir + "Guard/keywords")
     message_id = message["message_id"]
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
-    db = SqliteDB()
+    db = SqliteDB(bot)
     gap = 60
     bot_id = bot.key.split(':')[0]
 
@@ -91,8 +86,7 @@ def Guard(message):
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
 
-            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(30, status["chat"]["id"], status["message_id"])
 
         elif result != False and "/guardcaptchafalse" in message["callback_query_data"] and result[2] == str(user_id) and result[1] == str(chat_id):
             status = bot.answerCallbackQuery(message["callback_query_id"], text="不正确", show_alert=bool("true"))
@@ -129,8 +123,7 @@ def Guard(message):
             status = bot.sendChatAction(chat_id, "typing")
             msg = "权限不足，请授予删除消息及封禁用户权限以使用 Guard 插件。"
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(30, status["chat"]["id"], status["message_id"])
             return False
 
         new_chat_members = message["new_chat_members"]
@@ -158,8 +151,7 @@ def Guard(message):
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
 
-                timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-                timer.start()
+                bot.message_deletor(30, status["chat"]["id"], status["message_id"])
             else:
                 status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
                 msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 您好，本群已开启人机验证，请在 <b>"+ str(gap) +"</b> 秒内从下方选出与图片一致的验证码。"
@@ -167,7 +159,7 @@ def Guard(message):
                 reply_markup = reply_markup_dict(captcha_text=captcha_text)
                 status = bot.sendPhoto(chat_id=chat_id, photo=bytes_image, caption=msg, parse_mode="HTML", reply_markup=reply_markup)
                 db.insert(chat_id=chat_id, user_id=user_id, message_id=status["message_id"], authcode=captcha_text)
-                timer = Timer(gap + 1, timer_func, args=[gap, chat_id, user_id, first_name, last_name])
+                timer = Timer(gap + 1, timer_func, args=[bot, gap, chat_id, user_id, first_name, last_name])
                 timer.start()
 
     elif "left_chat_member" in message.keys():
@@ -180,8 +172,7 @@ def Guard(message):
             status = bot.sendChatAction(chat_id, "typing")
             msg = "权限不足，请授予删除消息及封禁用户权限以使用 Guard 插件。"
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(30, status["chat"]["id"], status["message_id"])
             return False
 
         result = db.select(chat_id=message["chat"]["id"], user_id=message["left_chat_member"]["id"])
@@ -209,8 +200,7 @@ def Guard(message):
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
 
-            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(30, status["chat"]["id"], status["message_id"])
 
     elif "text" in message.keys():
         text = message["text"]
@@ -226,19 +216,17 @@ def Guard(message):
                 count += 1
 
         if count > 0 or text[1:len(prefix)+1] == prefix: #在命令列表则删除用户指令
-            timer = Timer(gap, timer_func_for_del, args=[chat_id, message_id])
-            timer.start()
+            bot.message_deletor(gap, chat_id, message_id)
 
         if message["chat"]["type"] != "private":
-            admins = administrators(chat_id=chat_id)
-            if str(config["root"]) not in admins:
-                admins.append(str(config["root"])) #root permission
+            admins = administrators(bot=bot, chat_id=chat_id)
+            if str(bot.config["root"]) not in admins:
+                admins.append(str(bot.config["root"])) #root permission
 
         if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
-            timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
-            timer.start()
+            bot.message_deletor(gap, chat_id, status["message_id"])
         elif text[1:len(prefix)+1] == prefix and count == 0: #菜单
             status = bot.sendChatAction(chat_id, "typing")
             msg = "<b>===== Guard 插件功能 =====</b>%0A%0A" +\
@@ -246,8 +234,7 @@ def Guard(message):
                 "%0A"
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
 
-            timer = Timer(30, timer_func_for_del, args=[chat_id, status["message_id"]])
-            timer.start()
+            bot.message_deletor(30, chat_id, status["message_id"])
         elif count > 0:
             if text[1:len(prefix + command["/guardadd"])+1] == prefix + command["/guardadd"]:
                 if len(text.split(' ')) == 2:
@@ -259,36 +246,27 @@ def Guard(message):
                                 k.write("\n" + keyword)
                             status = bot.sendChatAction(chat_id, "typing")
                             status = bot.sendMessage(chat_id=chat_id, text="关键词添加成功!", parse_mode="text", reply_to_message_id=message["message_id"])
-                            timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
-                            timer.start()
+                            bot.message_deletor(gap, chat_id, status["message_id"])
                         else:
                             status = bot.sendChatAction(chat_id, "typing")
                             status = bot.sendMessage(chat_id=chat_id, text="关键词已经存在于库中!", parse_mode="text", reply_to_message_id=message["message_id"])
-                            timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
-                            timer.start()
+                            bot.message_deletor(gap, chat_id, status["message_id"])
                     elif len(keyword) > 7:
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text="输入的关键词过长!", parse_mode="text", reply_to_message_id=message["message_id"])
-                        timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
-                        timer.start()
+                        bot.message_deletor(gap, chat_id, status["message_id"])
                     else:
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text="您无权操作!", parse_mode="text", reply_to_message_id=message["message_id"])
-                        timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
-                        timer.start()
+                        bot.message_deletor(gap, chat_id, status["message_id"])
                 else:
                     status = bot.sendChatAction(chat_id, "typing")
                     status = bot.sendMessage(chat_id=chat_id, text="操作失败，请检查命令格式!", parse_mode="text", reply_to_message_id=message["message_id"])
-                    timer = Timer(gap, timer_func_for_del, args=[chat_id, status["message_id"]])
-                    timer.start()
+                    bot.message_deletor(gap, chat_id, status["message_id"])
 
 
-def timer_func_for_del(chat_id, message_id):
-    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
-
-
-def timer_func(gap, chat_id, user_id, first_name, last_name):
-    db = SqliteDB()
+def timer_func(bot, gap, chat_id, user_id, first_name, last_name):
+    db = SqliteDB(bot)
     result = db.select(chat_id=chat_id, user_id=user_id)
     if result != False and result[2] == str(user_id) != "private":
         if int(time.time()) > result[5] + gap:
@@ -299,11 +277,10 @@ def timer_func(gap, chat_id, user_id, first_name, last_name):
             msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b> 没能通过人机验证。"
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
 
-            timer = Timer(30, timer_func_for_del, args=[status["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(30, status["chat"]["id"], status["message_id"])
 
 
-def administrators(chat_id):
+def administrators(bot, chat_id):
     admins = []
     results = bot.getChatAdministrators(chat_id=chat_id)
     if results != False:
@@ -383,7 +360,7 @@ def reply_markup_dict(captcha_text):
     return reply_markup
 
 class SqliteDB(object):
-    def __init__(self):
+    def __init__(self, bot):
         '''
         Open the connection
         '''

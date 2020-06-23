@@ -1,19 +1,14 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-6-15
-last_modify: 2020-6-16
+last_modify: 2020-6-23
 '''
-from teelebot import Bot
-from teelebot.handler import config
-from threading import Timer
 from threading import Lock
 import os
 
-bot = Bot()
-config = config()
 lock = Lock()
 
-def PluginCTL(message):
+def PluginCTL(bot, message):
     message_id = message["message_id"]
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
@@ -35,15 +30,14 @@ def PluginCTL(message):
             count += 1
 
     if message["chat"]["type"] != "private":
-        admins = administrators(chat_id=chat_id)
-        if str(config["root"]) not in admins:
-            admins.append(str(config["root"])) #root permission
+        admins = administrators(bot=bot, chat_id=chat_id)
+        if str(bot.config["root"]) not in admins:
+            admins.append(str(bot.config["root"])) #root permission
 
     if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
         status = bot.sendChatAction(chat_id, "typing")
         status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
-        timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-        timer.start()
+        bot.message_deletor(15, chat_id, status["message_id"])
     elif text[1:len(prefix)+1] == prefix and count == 0:
         status = bot.sendChatAction(chat_id, "typing")
         msg = "<b>==== PluginCTL 插件功能 ====</b>%0A%0A" +\
@@ -54,8 +48,7 @@ def PluginCTL(message):
             "<b>/pluginctloff:all</b> - 禁用所有插件，但必须的插件将被保留 %0A" +\
             "<b>%0A同时操作多个插件请用英文逗号分隔</b>%0A"
         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
-        timer = Timer(30, timer_func_for_del, args=[chat_id, status["message_id"]])
-        timer.start()
+        bot.message_deletor(30, chat_id, status["message_id"])
     elif "reply_markup" in message.keys():
         click_user_id = message["click_user"]["id"]
         from_user_id = message["reply_to_message"]["from"]["id"]
@@ -130,8 +123,7 @@ def PluginCTL(message):
         if str(user_id) not in admins:
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text="抱歉，您无权操作!", parse_mode="HTML", reply_to_message_id=message_id)
-            timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-            timer.start()
+            bot.message_deletor(15, chat_id, status["message_id"])
         elif text[1:len(prefix + command["/pluginctlshow"])+1] == prefix + command["/pluginctlshow"]:
             inlineKeyboard = [
                 [
@@ -164,8 +156,7 @@ def PluginCTL(message):
             msg_on += "%0A<b>nil</b> 代表无指令的插件"
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg_on + "%0A", parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
-            timer = Timer(60, timer_func_for_del, args=[chat_id, status["message_id"]])
-            timer.start()
+            bot.message_deletor(60, chat_id, status["message_id"])
         elif text[1:len(prefix + command["/pluginctlon"])+1] == prefix + command["/pluginctlon"]:
             plugin_list = list(bot.plugin_bridge.keys())
             if len(text.split(':')) == 2:
@@ -181,8 +172,7 @@ def PluginCTL(message):
                         msg = "插件指令 <b>" + str(p) + "</b> 不存在，请重试!"
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
-                        timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                        timer.start()
+                        bot.message_deletor(15, chat_id, status["message_id"])
                         return False
                 if plug_set == "all":
                     lock.acquire()
@@ -191,8 +181,7 @@ def PluginCTL(message):
                     lock.release()
                     status = bot.sendChatAction(chat_id, "typing")
                     status = bot.sendMessage(chat_id=chat_id, text="<b>已启用全部插件。</b>", parse_mode="HTML", reply_to_message_id=message_id)
-                    timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                    timer.start()
+                    bot.message_deletor(15, chat_id, status["message_id"])
                     return False
                 elif len(plug_set.split(',')) >= 2:
                     with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
@@ -222,13 +211,11 @@ def PluginCTL(message):
                     lock.release()
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text="<b>启用成功!</b>", parse_mode="HTML", reply_to_message_id=message_id)
-                timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                timer.start()
+                bot.message_deletor(15, chat_id, status["message_id"])
             else:
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
-                timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                timer.start()
+                bot.message_deletor(15, chat_id, status["message_id"])
 
         elif text[1:len(prefix + command["/pluginctloff"])+1] == prefix + command["/pluginctloff"]:
             default_plugin = ["/start", "/about", "/pluginctl"]
@@ -246,8 +233,7 @@ def PluginCTL(message):
                         msg = "插件指令 <b>" + str(p) + "</b> 不存在，请重试!"
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
-                        timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                        timer.start()
+                        bot.message_deletor(15, chat_id, status["message_id"])
                         return False
                 if type(plug_set) == str and plug_set == "all":
                     plugin_list_alloff = []
@@ -262,8 +248,7 @@ def PluginCTL(message):
                     lock.release()
                     status = bot.sendChatAction(chat_id, "typing")
                     status = bot.sendMessage(chat_id=chat_id, text="<b>已禁用全部插件。</b>", parse_mode="HTML", reply_to_message_id=message_id)
-                    timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                    timer.start()
+                    bot.message_deletor(15, chat_id, status["message_id"])
                     return False
                 elif len(plug_set.split(',')) >= 2:
                     for i, p in enumerate(plug_set.split(',')):
@@ -271,8 +256,7 @@ def PluginCTL(message):
                             status = bot.sendChatAction(chat_id, "typing")
                             msg = "插件命令 <b>" + str(p) + "</b> 不支持禁用!"
                             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
-                            timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                            timer.start()
+                            bot.message_deletor(15, chat_id, status["message_id"])
                             return False
                     with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
                         plugin_setting = f.read().strip()
@@ -297,24 +281,21 @@ def PluginCTL(message):
                     lock.release()
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text="<b>禁用成功!</b>", parse_mode="HTML", reply_to_message_id=message_id)
-                timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                timer.start()
+                bot.message_deletor(15, chat_id, status["message_id"])
             else:
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
-                timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-                timer.start()
+                bot.message_deletor(15, chat_id, status["message_id"])
 
 
     else:
         status = bot.sendChatAction(chat_id, "typing")
         status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
-        timer = Timer(15, timer_func_for_del, args=[chat_id, status["message_id"]])
-        timer.start()
+        bot.message_deletor(15, chat_id, status["message_id"])
 
 
 
-def administrators(chat_id):
+def administrators(bot, chat_id):
     admins = []
     results = bot.getChatAdministrators(chat_id=chat_id)
     if results != False:
@@ -325,7 +306,3 @@ def administrators(chat_id):
         admins = False
 
     return admins
-
-
-def timer_func_for_del(chat_id, message_id):
-    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
