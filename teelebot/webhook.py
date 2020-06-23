@@ -31,7 +31,7 @@ def __MakeRequestHandler(bot):
                 messages = bot._washUpdates(results)
                 if messages != None and messages != False:
                     for message in messages:
-                        bot._pluginRun(message)
+                        bot._pluginRun(bot, message)
             else:
                 data = {'status':'false'}
                 data = json.dumps(data)
