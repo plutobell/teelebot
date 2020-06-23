@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-23
 @author github:plutobell
-@version: 1.7.5_dev
+@version: 1.8.0_dev
 '''
 import time
 import sys
@@ -17,43 +17,51 @@ import requests
 from .handler import config
 from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-config = config()
-requests.adapters.DEFAULT_RETRIES = 5
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 class Bot(object):
     "机器人的基类"
 
     def __init__(self, key=""):
+        self.config = config()
+
         if key != "":
             self.key = key
+            self.config["key"] = key
         elif key == "":
-            self.key = config["key"]
+            self.key = self.config["key"]
         self.basic_url = "https://api.telegram.org/"
         self.url = self.basic_url + r"bot" + self.key + r"/"
-        self.webhook = config["webhook"]
-        self.__thread_pool = ThreadPoolExecutor(max_workers=int(config["pool_size"]))
-        self.timeout = config["timeout"]
+        self.webhook = self.config["webhook"]
+        self.timeout = self.config["timeout"]
         self.offset = 0
-        self.debug = config["debug"]
+        self.debug = self.config["debug"]
 
-        self.plugin_dir = config["plugin_dir"]
-        self.plugin_bridge = config["plugin_bridge"]
+        self.plugin_dir = self.config["plugin_dir"]
+        self.plugin_bridge = self.config["plugin_bridge"]
 
-        self.VERSION = config["version"]
-        self.AUTHOR = config["author"]
+        self.VERSION = self.config["version"]
+        self.AUTHOR = self.config["author"]
 
-        self.__session = requests.session()
-        self.__session.keep_alive = False #此句无效，很奇怪
-        self.__session.headers["Connection"] = "close"
-        self.__session.verify = False
+        self.__thread_pool = ThreadPoolExecutor(max_workers=int(self.config["pool_size"]))
+        self.__session = self.__connection_session(pool_connections=int(self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"])*2)
 
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
         self.__session.close()
 
     #teelebot method
+    def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
+        session = requests.Session()
+        session.verify = False
+
+        adapter = requests.adapters.HTTPAdapter(pool_connections = pool_connections,
+                pool_maxsize = pool_maxsize, max_retries = max_retries)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+
+        return session
+
     def __threadpool_exception(self, fur):
         now_time = time.strftime("%Y/%m/%d %H:%M:%S")
         if self.debug == True:
@@ -69,9 +77,11 @@ class Bot(object):
 
         return Module
 
-    def _pluginRun(self, message):
+    def _pluginRun(self, bot, message):
         if message == None:
             return
+        if bot.debug == True:
+            print(message)
 
         plugin_list = self.plugin_bridge.keys()
         plugin_bridge = self.plugin_bridge
@@ -127,23 +137,8 @@ class Bot(object):
             if message.get(message_type)[:len(plugin)] == plugin:
                 Module = self.__import_module(plugin_bridge[plugin])
                 pluginFunc = getattr(Module, plugin_bridge[plugin])
-                fur = self.__thread_pool.submit(pluginFunc, message)
+                fur = self.__thread_pool.submit(pluginFunc, bot, message)
                 fur.add_done_callback(self.__threadpool_exception)
-
-    def _runUpdates(self):
-        #print("debug=" + str(self.debug))
-        plugin_list = self.plugin_bridge.keys()
-        while True:
-            try:
-                results = self.getUpdates() #获取消息队列messages
-                messages = self._washUpdates(results)
-                if messages == None or messages == False:
-                    continue
-                for message in messages: #获取单条消息记录message
-                    self._pluginRun(message)
-                time.sleep(0.2) #经测试，延时0.2s较为合理
-            except KeyboardInterrupt: #判断键盘输入，终止循环
-                sys.exit("程序终止") #退出存在问题，待修复
 
     def _washUpdates(self, results):
         '''
@@ -183,6 +178,12 @@ class Bot(object):
         else:
             return None
 
+    def message_deletor(self, time_gap, chat_id, message_id):
+        def message_deletor_func(chat_id, message_id):
+            self.deleteMessage(chat_id=chat_id, message_id=message_id)
+
+        timer = threading.Timer(time_gap, message_deletor_func, args=[chat_id, message_id])
+        timer.start()
 
     #Getting updates
     def getUpdates(self, limit=100, allowed_updates=None):
@@ -267,8 +268,6 @@ class Bot(object):
         command = "getMe"
         addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
         with self.__session.post(self.url + addr) as req:
-            if self.debug is True:
-                print(req.text)
 
             if req.json().get("ok") == True:
                 return req.json().get("result")
@@ -282,8 +281,6 @@ class Bot(object):
         command = "getFile"
         addr = command + "?file_id=" + file_id
         with self.__session.post(self.url + addr) as req:
-            if self.debug is True:
-                print(req.text)
 
             if req.json().get("ok") == True:
                 return req.json().get("result")
@@ -316,8 +313,6 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
         with self.__session.post(self.url + addr) as req:
-            if self.debug is True:
-                print(req.text)
 
             if req.json().get("ok") == True:
                 return req.json().get("result")

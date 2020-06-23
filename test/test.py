@@ -3,10 +3,9 @@ import sys
 sys.path.append("..")
 
 import teelebot
-from teelebot.handler import config
 
-config = config()
 bot = teelebot.Bot()
+config = bot.config
 user_id = config['root']
 chat_id = config['chat_id']
 
