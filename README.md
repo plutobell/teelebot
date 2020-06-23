@@ -383,6 +383,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新历史 ##
 
+#### 2020-6-23
+
+* v1.7.5 : 重构 requests 请求方式；完善日志显示
+
 #### 2020-6-21
 
 * v1.7.3 : 修复Guard插件长时间运行后 占用 100% CPU 的bug，感谢 [ZHLH](https://github.com/ZHLHZHU) 、[Macronut](https://github.com/macronut) 和 某位匿名朋友 的帮助
