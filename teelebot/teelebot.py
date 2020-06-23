@@ -80,7 +80,7 @@ class Bot(object):
     def _pluginRun(self, bot, message):
         if message == None:
             return
-        if bot.debug == True:
+        if self.debug == True:
             print(message)
 
         plugin_list = self.plugin_bridge.keys()
