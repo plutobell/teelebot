@@ -1,12 +1,8 @@
 # -*- coding:utf-8 -*-
 import requests
 import time
-from threading import Timer
-from teelebot import Bot
 
-bot = Bot()
-
-def Bing(message):
+def Bing(bot, message):
     prefix = "bing"
     text = message["text"]
 
@@ -22,13 +18,11 @@ def Bing(message):
         else:
             status = bot.sendChatAction(message["chat"]["id"], "typing")
             status = bot.sendMessage(chat_id=message["chat"]["id"], text="获取失败，请重试!", parse_mode="HTML", reply_to_message_id=message["message_id"])
-            timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(15, chat_id, status["message_id"])
     else:
         status = bot.sendChatAction(chat_id, "typing")
         status = bot.sendMessage(chat_id=message["chat"]["id"], text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message["message_id"])
-        timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
-        timer.start()
+        bot.message_deletor(15, chat_id, status["message_id"])
 
 def bing_img():
     url = "https://api.asilu.com/bg/"
@@ -39,6 +33,3 @@ def bing_img():
             return req.json().get("images")[0]
         else:
             return False
-
-def timer_func(chat_id, message_id):
-    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)

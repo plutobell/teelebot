@@ -1,16 +1,12 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-19
+last_modify: 2020-6-23
 '''
 import requests
 import urllib.parse as ubp
-from teelebot import Bot
-from threading import Timer
 
-bot = Bot()
-
-def Translate(message):
+def Translate(bot, message):
     prefix = "translate"
 
     if message["text"][1:len(prefix)+1] != prefix or len(message["text"].split(':')) != 2:
@@ -29,13 +25,11 @@ def Translate(message):
         if not req.status_code == requests.codes.ok:
             status = bot.sendChatAction(message["chat"]["id"], "typing")
             status = bot.sendMessage(chat_id=message["chat"]["id"], text="获取失败，请重试!", parse_mode="HTML", reply_to_message_id=message["message_id"])
-            timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(15, message["chat"]["id"], status["message_id"])
         elif req.json().get("type", "UNSUPPORTED") == "UNSUPPORTED":  # 翻译的源文字未成功识别语言
             bot.sendChatAction(message["chat"]["id"], "typing")
             status = bot.sendMessage(chat_id=message["chat"]["id"], text="没看出来这是什么语言%0A%0A" + words, parse_mode="HTML", reply_to_message_id=message["message_id"])
-            timer = Timer(15, timer_func, args=[message["chat"]["id"], status["message_id"]])
-            timer.start()
+            bot.message_deletor(15, message["chat"]["id"], status["message_id"])
         else:
             types = {
                 "ZH_CN2EN": "中文　»　英语",
@@ -61,6 +55,3 @@ def Translate(message):
 
             status = bot.sendChatAction(message["chat"]["id"], "typing")
             status = bot.sendMessage(message["chat"]["id"], text="<b>" + types[type_] + "</b>%0A%0A" + result, parse_mode="HTML", reply_to_message_id=message["message_id"])
-
-def timer_func(chat_id, message_id):
-    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
