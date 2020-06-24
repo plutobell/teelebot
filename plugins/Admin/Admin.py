@@ -3,9 +3,9 @@
 creation time: 2020-6-4
 last_modify: 2020-6-23
 '''
-gap = 15
 
 def Admin(bot, message):
+    gap = 15
     message_id = message["message_id"]
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
@@ -166,7 +166,7 @@ def Admin(bot, message):
         status = bot.sendMessage(chat_id=chat_id, text="未指定要操作的对象!", parse_mode="text", reply_to_message_id=message["message_id"])
 
         bot.message_deletor(gap, chat_id, status["message_id"])
-    bot.message_deletor(gap, chat_id, status["message_id"])
+    bot.message_deletor(gap, chat_id, message_id)
 
 
 def administrators(bot, chat_id):
