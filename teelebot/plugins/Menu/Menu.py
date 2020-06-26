@@ -1,21 +1,32 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2019-8-15
-last_modify: 2020-6-8
+last_modify: 2020-6-23
 '''
-
 import os
-from teelebot import Bot
-from threading import Timer
 
-bot = Bot()
-
-def Menu(message):
+def Menu(bot, message):
     prefix = "start"
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
+    chat_type = message["chat"]["type"]
 
     plugin_list = bot.plugin_bridge.values()
+    if chat_type != "private" and "/pluginctl" in bot.plugin_bridge.keys() and bot.plugin_bridge["/pluginctl"] == "PluginCTL":
+        if os.path.exists(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"):
+            with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                plugin_setting = f.read().strip()
+            plugin_list_off = plugin_setting.split(',')
+            plugin_list_value = {}
+            for plug in bot.plugin_bridge.keys():
+                plugin_temp = plug
+                if plug == "" or plug == " ":
+                    plug = "nil"
+                if plug not in plugin_list_off:
+                    plug = plugin_temp
+                    plugin_list_value[plug] = bot.plugin_bridge[plug]
+            plugin_list = plugin_list_value.values()
+
     plugin_count = len(plugin_list)
     page_size = 5
     page_total = int((plugin_count + page_size - 1) / page_size) # 总页数=（总数+每页数量-1）/每页数量
@@ -34,7 +45,7 @@ def Menu(message):
         if callback_query_data[:len(page_callback_command)] == page_callback_command:
             if click_user_id == from_user_id:
                 page = int(callback_query_data.split('=')[1])
-                page, menu_str = menu_text(page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
+                page, menu_str = menu_text(bot, page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
                 previous_page = page - 1
                 if previous_page < 1:
                     previous_page = 1
@@ -97,16 +108,14 @@ def Menu(message):
             "inline_keyboard": inlineKeyboard
         }
 
-        page, menu_str = menu_text(page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
+        page, menu_str = menu_text(bot=bot, page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
 
         status = bot.sendChatAction(chat_id, "typing")
         status = bot.sendMessage(chat_id=chat_id, text=menu_str, parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
 
-        timer = Timer(wait_time, timer_func, args=[message["chat"]["id"], status["message_id"]])
-        timer.start()
+        bot.message_deletor(wait_time, message["chat"]["id"], status["message_id"])
 
-
-def menu_text(page, page_total, page_size, plugin_list):
+def menu_text(bot, page, page_total, page_size, plugin_list):
 
     if page < 1:
         page = 1
@@ -130,6 +139,3 @@ def menu_text(page, page_total, page_size, plugin_list):
         menu_str = "<b>===== 插件列表 [" + str(page) + "/" + str(page_total) + "] =====</b>%0A%0A" + menu_str + "%0A<b><i>v" + bot.VERSION + "</i></b>"
 
         return page, menu_str
-
-def timer_func(chat_id, message_id):
-    status = bot.deleteMessage(chat_id=chat_id, message_id=message_id)
