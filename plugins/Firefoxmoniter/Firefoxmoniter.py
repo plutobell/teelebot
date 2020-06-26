@@ -9,7 +9,7 @@ def Firefoxmoniter(bot, message):
     if len(message["text"]) < len(h):
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A邮件地址为空!", parse_mode="HTML", reply_to_message_id=message["message_id"])
-        bot.message_deletor(15, chat_id, status["message_id"])
+        bot.message_deletor(15, message["chat"]["id"], status["message_id"])
         return False
     email = message["text"][len(h)-1:]
     email = email.strip()
@@ -19,7 +19,7 @@ def Firefoxmoniter(bot, message):
     else:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
         status = bot.sendMessage(message["chat"]["id"], "查询失败！%0A请检查邮件格式!", parse_mode="HTML", reply_to_message_id=message["message_id"])
-        bot.message_deletor(15, chat_id, status["message_id"])
+        bot.message_deletor(15, message["chat"]["id"], status["message_id"])
         return False
 
     if str(message["from"]["id"]) == bot.config["root"]:
@@ -41,7 +41,7 @@ def Firefoxmoniter(bot, message):
     with r_session.get(url, proxies=proxies) as page:
         if not page.status_code == requests.codes.ok:
             status = bot.editMessageText(chat_id=message["chat"]["id"],message_id=txt_message_id, text="查询失败！%0A操作过于频繁，请稍后再试!", parse_mode="text")
-            bot.message_deletor(15, chat_id, status["message_id"])
+            bot.message_deletor(15, message["chat"]["id"], status["message_id"])
             return False
         page.encoding = "utf-8"
         session = page.cookies["session"]
@@ -76,10 +76,10 @@ def Firefoxmoniter(bot, message):
             result += source + date + data + "%0A"
 
         status = bot.editMessageText(chat_id=message["chat"]["id"],message_id=txt_message_id, text=result, parse_mode="text")
-        bot.message_deletor(60, chat_id, status["message_id"])
+        bot.message_deletor(60, message["chat"]["id"], status["message_id"])
     else:
         status = bot.editMessageText(chat_id=message["chat"]["id"], text="查询失败！%0A请检测命令格式!", parse_mode="text")
-        bot.message_deletor(15, chat_id, status["message_id"])
+        bot.message_deletor(15, message["chat"]["id"], status["message_id"])
 
 def get_ip():
     url = u"http://ip.jiangxianli.com/api/proxy_ip"
