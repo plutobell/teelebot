@@ -1,10 +1,14 @@
 # -*- coding:utf-8 -*-
+'''
+@creation date: 2019-8-23
+@last modify: 2020-6-26
+'''
 import configparser
 import os
 import sys
 
 def config():
-    __version__ = "1.8.0_dev"
+    __version__ = "1.8.3_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -43,13 +47,23 @@ def config():
         webhook_args = ["cert_pub", "server_address", "server_port", "local_address" ,"local_port"]
         for w in webhook_args:
             if w not in config.keys():
-                print("请在配置文件中指定公钥路径!")
+                print("请检查配置文件中是否存在以下字段：\n" +\
+                    "cert_pub server_address server_port local_address local_port")
                 return False
 
     if "plugin_dir" in config.keys():
         plugin_dir = os.path.abspath(config["plugin_dir"]) + r'/'
     else:
         plugin_dir = os.path.dirname(os.path.abspath(__file__)) + "/plugins/"
+
+    if not os.path.isdir(plugin_dir): #插件目录检测
+        #os.makedirs(plugin_dir)
+        os.mkdir(plugin_dir)
+        with open(plugin_dir + "__init__.py", "w") as f:
+            pass
+    elif not os.path.exists(plugin_dir + "__init__.py"):
+        with open(plugin_dir + "__init__.py", "w") as f:
+            pass
 
     if "pool_size" in config.keys():
         if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
