@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-23
+@last modify: 2020-6-26
 @author github:plutobell
-@version: 1.8.0_dev
+@version: 1.8.3_dev
 '''
 import time
 import sys
@@ -12,9 +12,11 @@ import os
 import json
 import importlib
 import threading
-
 import requests
+
 from .handler import config
+from datetime import timedelta
+from traceback import extract_stack
 from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -43,6 +45,7 @@ class Bot(object):
         self.VERSION = self.config["version"]
         self.AUTHOR = self.config["author"]
 
+        self.__start_time = int(time.time())
         self.__thread_pool = ThreadPoolExecutor(max_workers=int(self.config["pool_size"]))
         self.__session = self.__connection_session(pool_connections=int(self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"])*2)
 
@@ -66,7 +69,7 @@ class Bot(object):
         now_time = time.strftime("%Y/%m/%d %H:%M:%S")
         if self.debug == True:
             print("\n\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19 + "\n")
-            print(fur.result())
+            #print(fur.result())
         elif fur.exception() != None:
             print("\n\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19 + "\n")
             print(fur.result())
@@ -80,8 +83,8 @@ class Bot(object):
     def _pluginRun(self, bot, message):
         if message == None:
             return
-        if self.debug == True:
-            print(message)
+        # if self.debug == True:
+        #     print(message)
 
         plugin_list = self.plugin_bridge.keys()
         plugin_bridge = self.plugin_bridge
@@ -178,12 +181,56 @@ class Bot(object):
         else:
             return None
 
-    def message_deletor(self, time_gap, chat_id, message_id):
-        def message_deletor_func(chat_id, message_id):
-            self.deleteMessage(chat_id=chat_id, message_id=message_id)
+    def __debug_info(self, result):
+        if self.debug == True and result.get("ok") == False:
+            os.system("") #"玄学"解决Windows下颜色显示失效的问题...
+            stack_info = extract_stack()
+            if len(stack_info) == 8: #插件内
+                print("\033[1;31;40mRequest failed!")
+                print(len(stack_info))
+                print(" From : " + stack_info[-3][2])
+                print(" Path : " + stack_info[5][0])
+                print(" Line : " + str(stack_info[5][1]))
+                print("Method: " + stack_info[6][2])
+                print("Result: " + str(result))
+                print("\033[0m")
+            elif len(stack_info) == 3: #外部调用
+                print("\033[1;31;40mRequest failed!")
+                print(" From : " + stack_info[0][0])
+                print(" Path : " + stack_info[1][0])
+                print(" Line : " + str(stack_info[0][1]))
+                print("Method: " + stack_info[1][2])
+                print("Result: " + str(result))
+                print("\033[0m")
 
-        timer = threading.Timer(time_gap, message_deletor_func, args=[chat_id, message_id])
-        timer.start()
+    def message_deletor(self, time_gap, chat_id, message_id):
+        '''
+        定时删除一条消息，时间范围：[0, 900],单位秒
+        '''
+        if time_gap < 0 or time_gap > 900:
+            return "time_error"
+        else:
+            def message_deletor_func(chat_id, message_id):
+                self.deleteMessage(chat_id=chat_id, message_id=message_id)
+            if time_gap == 0:
+                message_deletor_func(chat_id, message_id)
+            else:
+                timer = threading.Timer(time_gap, message_deletor_func, args=[chat_id, message_id])
+                timer.start()
+            return "ok"
+
+    def uptime(self, time_format="second"):
+        '''
+        获取框架的持续运行时间
+        '''
+        second = int(time.time()) - self.__start_time
+        if time_format == "second":
+            return second
+        elif time_format == "format":
+            format_time = timedelta(seconds=second)
+            return format_time
+        else:
+            return False
 
     #Getting updates
     def getUpdates(self, limit=100, allowed_updates=None):
@@ -196,12 +243,14 @@ class Bot(object):
 
         if allowed_updates != None:
             with self.__session.get(self.url + addr, json=allowed_updates) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.get(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -231,6 +280,7 @@ class Bot(object):
         else:
             req = self.__session.post(self.url + addr, files=file_data)
 
+        self.__debug_info(req.json())
         if req.json().get("ok") == True:
             return req.json().get("result")
         elif req.json().get("ok") == False:
@@ -244,6 +294,7 @@ class Bot(object):
         addr = command
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -257,6 +308,7 @@ class Bot(object):
         addr = command
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -269,6 +321,7 @@ class Bot(object):
         addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -282,6 +335,7 @@ class Bot(object):
         addr = command + "?file_id=" + file_id
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -314,6 +368,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -345,12 +400,14 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -385,12 +442,14 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -427,12 +486,14 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -467,12 +528,14 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -507,12 +570,14 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -547,12 +612,14 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -603,6 +670,8 @@ class Bot(object):
 
         headers = {'Content-Type': 'application/json'}
         with self.__session.post(self.url + addr, headers=headers, data=json.dumps(medias)) as req:
+
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -634,12 +703,16 @@ class Bot(object):
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
+
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
         else:
             with self.__session.post(self.url + addr, files=file_data) as req:
+
+                self.__debug_info(req.json())
                 if req.json().get("ok") == True:
                     return req.json().get("result")
                 elif req.json().get("ok") == False:
@@ -650,6 +723,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -663,6 +737,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -676,6 +751,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -689,6 +765,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -708,6 +785,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -721,6 +799,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -734,6 +813,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id) + "&title=" + str(title)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -747,6 +827,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -762,6 +843,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr, files=file_data) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -775,6 +857,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -799,6 +882,7 @@ class Bot(object):
         addr = command + "?chat_id=" +str(chat_id)
         with self.__session.post(self.url + addr, data = json.dumps(permissions)) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -830,6 +914,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr, json = permissions) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -873,6 +958,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -889,6 +975,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -902,6 +989,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -917,6 +1005,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -937,6 +1026,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -956,6 +1046,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -976,6 +1067,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id) + "&action=" + str(action)
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -993,6 +1085,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1014,6 +1107,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1038,6 +1132,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1052,6 +1147,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1086,6 +1182,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1100,6 +1197,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1114,6 +1212,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1128,6 +1227,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1162,6 +1262,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1192,6 +1293,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1226,6 +1328,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr, json=media) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1252,6 +1355,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1269,6 +1373,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1283,6 +1388,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1310,6 +1416,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr, json=results) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:
@@ -1370,6 +1477,7 @@ class Bot(object):
 
         with self.__session.post(self.url + addr) as req:
 
+            self.__debug_info(req.json())
             if req.json().get("ok") == True:
                 return req.json().get("result")
             elif req.json().get("ok") == False:

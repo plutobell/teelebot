@@ -167,3 +167,7 @@ results = {
 # print(req)
 req = bot.getWebhookInfo()
 print(req)
+
+bot.sendPhoto("123456789", "123456789")
+
+print(bot.uptime(time_format="format"))
