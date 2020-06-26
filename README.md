@@ -14,6 +14,7 @@ Python实现的Telegram Bot机器人框架
 * Menu - 自动生成的插件菜单
 *   Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
 *   About - 关于
+*   Uptime - 获取Bot持续运行时间
 *   PluginCTL - 插件开关控制
 *  Hello - Hello World插件例子
 *  Firefoxmoniter - 调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
@@ -119,7 +120,9 @@ Python实现的Telegram Bot机器人框架
 * _washUpdates
 * _pluginRun
 * __connection_session
+* __debug_info
 * message_deletor
+* uptime
 
 
 
@@ -151,7 +154,7 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 
 #### 一、运行模式
 
-`teelebot` 支持以 `Webhook` 模式和 `getUpdates` 模式运行。生产环境推荐使用 `Webhook` 模式，而 `getUpdates` 则仅用于开发环境。
+`teelebot` 支持以 `Webhook` 模式和 `Polling` 模式运行。生产环境推荐使用 `Webhook` 模式，而 `Polling` 则仅用于开发环境。
 
 ##### 1、Webhook 模式
 
@@ -171,9 +174,9 @@ local_port=webhook local port ////Optional while webhook is False
 
 推荐搭配 `nginx` 使用。
 
-##### 2、getUpdates 模式
+##### 2、Polling 模式
 
-要以 getUpdates 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。
+要以 Polling 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。
 
 
 
@@ -316,7 +319,7 @@ def Hello(bot, message):
 
 ##### 资源路径
 
-若想在插件内进行打开文件等操作，需要使用的路径应当遵循以下的格式：
+若要打开某个插件目录下的文件资源，需要使用的路径应当遵循以下的格式：
 
 ```python
 bot.plugin_dir + "<plugin dir name>/<resource address>"
@@ -383,6 +386,17 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新日志 ##
 
+#### 2020-6-26
+
+* v1.8.3 : 
+  * Bot类新增方法 `__debug_info`，在debug模式开启的情况下将显示详细错误信息
+  * Bot类新增方法 `uptime` ,可获取框架持续运行时间
+  * 新增插件 `Uptime` 
+  * 完善插件目录检测
+  * 优化消息自毁方法 `message_deletor`
+  * 运行模式 `getUpdates` 更名为 `Polling`
+  * 提升 `Polling` 模式响应速度
+
 #### 2020-6-23
 
 * v1.8.0 : 
@@ -393,7 +407,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
   * 新增函数 `__connection_session()` ，引入连接池，统一管理连接
   * 新增消息自毁函数 `message_deletor()` ，消息自毁不再需要手动实现
   * 完善日志显示和 debug 模式
-* 现有插件适配此版本框架，此版本框架不再向下兼容为旧版框架编写的插件
+  * 现有插件适配此版本框架，此版本开始不再向下兼容旧版框架的插件
   
 * v1.7.5 : 重构 requests 请求方式；完善日志显示
 

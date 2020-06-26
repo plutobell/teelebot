@@ -80,6 +80,28 @@ class Bot(object):
 
         return Module
 
+    def __debug_info(self, result):
+        if self.debug == True and result.get("ok") == False:
+            os.system("") #"玄学"解决Windows下颜色显示失效的问题...
+            stack_info = extract_stack()
+            if len(stack_info) == 8: #插件内
+                print("\033[1;31;40mRequest failed!")
+                print(len(stack_info))
+                print(" From : " + stack_info[-3][2])
+                print(" Path : " + stack_info[5][0])
+                print(" Line : " + str(stack_info[5][1]))
+                print("Method: " + stack_info[6][2])
+                print("Result: " + str(result))
+                print("\033[0m")
+            elif len(stack_info) == 3: #外部调用
+                print("\033[1;31;40mRequest failed!")
+                print(" From : " + stack_info[0][0])
+                print(" Path : " + stack_info[1][0])
+                print(" Line : " + str(stack_info[0][1]))
+                print("Method: " + stack_info[1][2])
+                print("Result: " + str(result))
+                print("\033[0m")
+
     def _pluginRun(self, bot, message):
         if message == None:
             return
@@ -180,28 +202,6 @@ class Bot(object):
             return False
         else:
             return None
-
-    def __debug_info(self, result):
-        if self.debug == True and result.get("ok") == False:
-            os.system("") #"玄学"解决Windows下颜色显示失效的问题...
-            stack_info = extract_stack()
-            if len(stack_info) == 8: #插件内
-                print("\033[1;31;40mRequest failed!")
-                print(len(stack_info))
-                print(" From : " + stack_info[-3][2])
-                print(" Path : " + stack_info[5][0])
-                print(" Line : " + str(stack_info[5][1]))
-                print("Method: " + stack_info[6][2])
-                print("Result: " + str(result))
-                print("\033[0m")
-            elif len(stack_info) == 3: #外部调用
-                print("\033[1;31;40mRequest failed!")
-                print(" From : " + stack_info[0][0])
-                print(" Path : " + stack_info[1][0])
-                print(" Line : " + str(stack_info[0][1]))
-                print("Method: " + stack_info[1][2])
-                print("Result: " + str(result))
-                print("\033[0m")
 
     def message_deletor(self, time_gap, chat_id, message_id):
         '''
