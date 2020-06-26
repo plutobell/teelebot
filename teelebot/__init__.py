@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
-
+'''
+@creation date: 2019-8-23
+@last modify: 2020-6-25
+'''
 name = "teelebot"
 __all__ = ['Bot']
 
@@ -37,5 +40,5 @@ def main():
         else:
             print("获取运行模式失败!")
 
-        print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION, "\n * 运行模式: getUpdates", "\n * 最大线程: " + str(bot.config["pool_size"]))
+        print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION, "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]))
         runUpdates(bot=bot)
