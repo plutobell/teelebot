@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-6-23
+@last modify: 2020-6-26
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 #from socketserver import ThreadingMixIn
@@ -18,13 +18,6 @@ def __MakeRequestHandler(bot):
                 req_data = self.rfile.read(int(self.headers['content-length']))
                 res = req_data.decode('utf-8')
 
-                data = {'status':'ok'}
-                data = json.dumps(data)
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(data.encode('utf-8'))
-
                 message = json.loads(res)
                 results = []
                 results.append(message)
@@ -32,6 +25,13 @@ def __MakeRequestHandler(bot):
                 if messages != None and messages != False:
                     for message in messages:
                         bot._pluginRun(bot, message)
+
+                data = {'status':'ok'}
+                data = json.dumps(data)
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(data.encode('utf-8'))
             else:
                 data = {'status':'false'}
                 data = json.dumps(data)
@@ -59,9 +59,3 @@ def runWebhook(bot, host, port):
         server.server_close()
         sys.exit("程序终止")
 
-
-if __name__ == '__main__':
-    try:
-        runWebhook()
-    except KeyboardInterrupt:
-        sys.exit("exit")
