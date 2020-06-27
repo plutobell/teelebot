@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-6-27
 @author github:plutobell
-@version: 1.8.5_dev
+@version: 1.8.6_dev
 '''
 import time
 import sys
@@ -14,7 +14,7 @@ import importlib
 import threading
 import requests
 
-from .handler import config
+from .handler import config, bridge
 from datetime import timedelta
 from traceback import extract_stack
 from concurrent.futures import ThreadPoolExecutor
@@ -115,6 +115,10 @@ class Bot(object):
             return
         # if self.debug == True:
         #     print(message)
+
+        now_plugin_bridge = bridge(self.plugin_dir) #动态装载插件
+        if now_plugin_bridge != self.plugin_bridge:
+            self.plugin_bridge = now_plugin_bridge
 
         plugin_list = self.plugin_bridge.keys()
         plugin_bridge = self.plugin_bridge

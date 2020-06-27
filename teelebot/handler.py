@@ -8,7 +8,7 @@ import os
 import sys
 
 def config():
-    __version__ = "1.8.5_dev"
+    __version__ = "1.8.6_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -85,13 +85,13 @@ def config():
     config["author"] = __author__
     config["version"] = __version__
     config["plugin_dir"] = plugin_dir
-    config["plugin_bridge"] = __bridge(config["plugin_dir"])
+    config["plugin_bridge"] = bridge(config["plugin_dir"])
     config["plugin_info"] = __plugin_info(config["plugin_bridge"].values(), config["plugin_dir"])
 
     #print(config)
     return config
 
-def __bridge(plugin_dir):
+def bridge(plugin_dir):
     plugin_bridge = {}
     plugin_list = []
 
@@ -115,4 +115,6 @@ def __plugin_info(plugin_list, plugin_dir):
         plugin_info[plugin] = mtime
 
     return plugin_info
+
+
 
