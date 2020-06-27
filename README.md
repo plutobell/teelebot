@@ -388,6 +388,8 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 #### 2020-6-27
 
+* v1.8.6 : 插件支持在框架运行的状态下安装和卸载
+
 * v1.8.5 : 插件支持热更新；调整插件 Uptime 文案
 
 #### 2020-6-26
