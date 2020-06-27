@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-6-26
+@last modify: 2020-6-27
 '''
 import configparser
 import os
 import sys
 
 def config():
-    __version__ = "1.8.3_dev"
+    __version__ = "1.8.5_dev"
     __author__ = "github:plutobell"
 
     config = {}
@@ -86,6 +86,7 @@ def config():
     config["version"] = __version__
     config["plugin_dir"] = plugin_dir
     config["plugin_bridge"] = __bridge(config["plugin_dir"])
+    config["plugin_info"] = __plugin_info(config["plugin_bridge"].values(), config["plugin_dir"])
 
     #print(config)
     return config
@@ -106,3 +107,12 @@ def __bridge(plugin_dir):
 
     #print(plugin_bridge)
     return plugin_bridge
+
+def __plugin_info(plugin_list, plugin_dir):
+    plugin_info = {}
+    for plugin in plugin_list:
+        mtime = os.stat(plugin_dir + plugin + "/" + plugin + ".py").st_mtime
+        plugin_info[plugin] = mtime
+
+    return plugin_info
+

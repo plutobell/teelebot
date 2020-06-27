@@ -15,7 +15,7 @@ def Uptime(bot, message):
         time_format = bot.uptime(time_format="format")
         time_second = bot.uptime(time_format="second")
         status = bot.sendChatAction(chat_id, "typing")
-        msg = "感谢您的关心 <b>(￣ε ￣)</b> %0A%0A我已经稳定运行 <b>" +  str(time_second) + "</b> 秒%0A" +\
-                "%0A也就是：<b>" + str(time_format) + "</b>%0A%0A"
+        msg = "感谢您的关心 <b>(￣ε ￣)</b> %0A%0A我已经运行 <b>" +  str(time_second) + "</b> 秒%0A" +\
+                "%0A即：<b>" + str(time_format) + "</b>%0A%0A"
         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
         bot.message_deletor(15, chat_id, status["message_id"])

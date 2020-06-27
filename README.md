@@ -386,6 +386,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新日志 ##
 
+#### 2020-6-27
+
+* v1.8.5 : 插件支持热更新；调整插件 Uptime 文案
+
 #### 2020-6-26
 
 * v1.8.3 : 
