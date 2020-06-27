@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-26
+@last modify: 2020-6-27
 @author github:plutobell
-@version: 1.8.3_dev
+@version: 1.8.5_dev
 '''
 import time
 import sys
@@ -42,17 +42,20 @@ class Bot(object):
         self.plugin_dir = self.config["plugin_dir"]
         self.plugin_bridge = self.config["plugin_bridge"]
 
+
         self.VERSION = self.config["version"]
         self.AUTHOR = self.config["author"]
 
         self.__start_time = int(time.time())
         self.__thread_pool = ThreadPoolExecutor(max_workers=int(self.config["pool_size"]))
         self.__session = self.__connection_session(pool_connections=int(self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"])*2)
+        self.__plugin_info = self.config["plugin_info"]
+
+        del self.config["plugin_info"]
 
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
         self.__session.close()
-
     #teelebot method
     def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
         session = requests.Session()
@@ -76,7 +79,12 @@ class Bot(object):
 
     def __import_module(self, plugin_name):
         sys.path.append(self.plugin_dir + plugin_name + r"/")
-        Module = importlib.import_module(plugin_name) #模块检测，待完善
+        Module = importlib.import_module(plugin_name) #模块检测
+
+        now_mtime = mtime = os.stat(self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
+        if now_mtime != self.__plugin_info[plugin_name]: #插件热更新
+            self.__plugin_info[plugin_name] = now_mtime
+            importlib.reload(Module)
 
         return Module
 
