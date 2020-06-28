@@ -123,6 +123,7 @@ Python实现的Telegram Bot机器人框架
 * __debug_info
 * message_deletor
 * uptime
+* response_times
 
 
 
@@ -221,10 +222,12 @@ plugin_dir=your plugin dir   //[Optional]
 Linux 和 Windows 都可在命令行通过参数手动指定配置文件路径，命令格式：
 
 ```
-python -m teelebot -c/-C <configure file path>
+python -m teelebot -c/--config <configure file path>
 ```
 
 路径必须为绝对路径。
+
+**更多指令请通过 `-h/--help` 查看。**
 
 
 
@@ -238,7 +241,7 @@ python -m teelebot -c/-C <configure file path>
 
 * 对于命令行手动指定配置文件路径的：
 
-  输入`python -m teelebot -c/-C <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+  输入`python -m teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
 
 
 
@@ -272,7 +275,7 @@ python -m teelebot -c/-C <configure file path>
 
 - 对于命令行手动指定配置文件路径的：
 
-  输入`teelebot -c/-C <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
 
 
 
@@ -385,6 +388,15 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新日志 ##
+
+#### 2020-6-28
+
+* v1.8.8 : 
+  * 修复当插件目录下存在非插件文件夹时会报错的bug
+  * 增强命令行命令，使用 `-h/--help` 查看帮助
+  * Bot类新增方法 `response_times` ，以统计框架启动后的累计指令响应次数
+  * 优化插件的 `热更新` 和 `热装载` 
+  * 插件 `Uptime` 新增显示累计指令响应次数
 
 #### 2020-6-27
 
