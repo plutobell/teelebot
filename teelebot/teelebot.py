@@ -2,14 +2,15 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-27
+@last modify: 2020-6-29
 @author github:plutobell
-@version: 1.8.6_dev
+@version: 1.8.8_dev
 '''
 import time
 import sys
 import os
 import json
+import shutil
 import importlib
 import threading
 import requests
@@ -47,6 +48,7 @@ class Bot(object):
         self.AUTHOR = self.config["author"]
 
         self.__start_time = int(time.time())
+        self.__response_times = 0
         self.__thread_pool = ThreadPoolExecutor(max_workers=int(self.config["pool_size"]))
         self.__session = self.__connection_session(pool_connections=int(self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"])*2)
         self.__plugin_info = self.config["plugin_info"]
@@ -83,6 +85,8 @@ class Bot(object):
 
         now_mtime = mtime = os.stat(self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
         if now_mtime != self.__plugin_info[plugin_name]: #插件热更新
+            if os.path.exists(self.plugin_dir + plugin_name + r"/__pycache__"):
+                shutil.rmtree(self.plugin_dir + plugin_name + r"/__pycache__")
             self.__plugin_info[plugin_name] = now_mtime
             importlib.reload(Module)
 
@@ -177,6 +181,8 @@ class Bot(object):
                 fur = self.__thread_pool.submit(pluginFunc, bot, message)
                 fur.add_done_callback(self.__threadpool_exception)
 
+                self.__response_times += 1
+
     def _washUpdates(self, results):
         '''
         清洗消息队列
@@ -243,6 +249,13 @@ class Bot(object):
             return format_time
         else:
             return False
+
+    def response_times(self):
+        '''
+        获取框架启动后响应指令的统计次数
+        '''
+
+        return self.__response_times
 
     #Getting updates
     def getUpdates(self, limit=100, allowed_updates=None):
