@@ -43,9 +43,7 @@ Python实现的Telegram Bot机器人框架
 
 
 
-## Telegram Bot API封装情况
-
-### 已实现 50 + 0.5 * 3 个 ###
+## Telegram Bot API现存方法已全部实现 （2020/6/30）
 
 **Getting updates**
 
@@ -92,35 +90,64 @@ Python实现的Telegram Bot机器人框架
 * unbanChatMember
 * restrictChatMember
 * setChatAdministratorCustomTitle
-* setChatPermissions
 * exportChatInviteLink
 * setChatStickerSet
 * deleteChatStickerSet
-* sendMediaGroup（undone）
+* sendMediaGroup
+* getMyCommands
+* setMyCommands
+* editMessageLiveLocation
+* stopMessageLiveLocation
+
+**Inline mode**
+
 * answerCallbackQuery
 
 **Updating messages**
 
 * editMessageText
 * editMessageCaption
-* editMessageMedia  (undone)
+* editMessageMedia
 * editMessageReplyMarkup
 * stopPoll
 * deleteMessage
 
 **Inline mode**
 
-* answerInlineQuery(undone)
+* answerInlineQuery
+
+**Stickers**
+
+* sendSticker
+* getStickerSet
+* uploadStickerFile
+* createNewStickerSet
+* addStickerToSet
+* setStickerPositionInSet
+* deleteStickerFromSet
+* setStickerSetThumb
+
+**Payments**
+
+* sendInvoice
+* answerShippingQuery
+* answerPreCheckoutQuery
+
+**Telegram Passport**
+
+* setPassportDataErrors
+
+**Games**
+
+* sendGame
+* setGameScore
+* getGameHighScores
 
 
 
 **teelebot method**
 
 *  getFileDownloadPath
-* _washUpdates
-* _pluginRun
-* __connection_session
-* __debug_info
 * message_deletor
 * uptime
 * response_times
@@ -173,7 +200,9 @@ local_port=webhook local port ////Optional while webhook is False
 
 `cert_pub` 为你的公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地IP地址， `local_port` 为 Webhook 本地运行的端口。
 
-推荐搭配 `nginx` 使用。
+推荐搭配 `nginx` 使用，自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
+
+
 
 ##### 2、Polling 模式
 
@@ -388,6 +417,12 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 
 ## 更新日志 ##
+
+#### 2020-6-30
+
+* v1.9.3 : 
+  * Bot类新增 **19个** Telegram Bot API方法，Telegram Bot API现存方法已全部实现
+  * 完善Bot类方法 `sendLocate` ；修复Bot类方法 `setChatPermissions` 的bug
 
 #### 2020-6-28
 
