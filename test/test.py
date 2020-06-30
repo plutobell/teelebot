@@ -165,9 +165,61 @@ results = {
 # status = bot.setWebhook("https://telegram_bot.123.com")
 # req = bot.deleteWebhook()
 # print(req)
-req = bot.getWebhookInfo()
-print(req)
+# req = bot.getWebhookInfo()
+# print(req)
 
-bot.sendPhoto("123456789", "123456789")
+# bot.sendPhoto("123456789", "123456789")
 
-print(bot.uptime(time_format="format"))
+# print(bot.uptime(time_format="format"))
+
+
+
+# commands = [
+#     {"command": "start", "description": "插件列表"}
+# ]
+# req = bot.setMyCommands(commands)
+# print(req)
+
+# req = bot.getMyCommands()
+# print(req)
+
+
+# req = bot.sendLocation(chat_id=config["root"],
+#         latitude="38.913611", longitude="77.013222",
+#         live_period=600)
+# print(req)
+# req = bot.editMessageLiveLocation(chat_id=config["root"], message_id=req["message_id"],
+#         latitude="39.913611", longitude="78.013222")
+# print(req)
+# req = bot.stopMessageLiveLocation(chat_id=config["root"], message_id=req["message_id"])
+# print(req)
+
+
+# req1 = bot.getChat(chat_id="")
+# print(req1["permissions"])
+# permissions = {
+#     'can_send_messages':False,
+#     'can_send_media_messages':False,
+#     'can_send_polls':False,
+#     'can_send_other_messages':False,
+#     'can_add_web_page_previews':False,
+#     'can_change_info':False,
+#     'can_invite_users':False,
+#     'can_pin_messages':False
+# }
+# req = bot.setChatPermissions(chat_id="", permissions=permissions)
+# print(req)
+# import time
+# time.sleep(10)
+# req = bot.setChatPermissions(chat_id="", permissions=req1["permissions"])
+# print(req)
+
+
+# req = bot.sendSticker(chat_id=config["root"], sticker="http://wx4.sinaimg.cn/mw690/6a04b428gy1g0gvw312lxg202z02bt8k.gif")
+# print(req)
+# req = bot.getStickerSet(name="Umaru")
+# print(req)
+
+
+from random import randint
+bot.sendSticker(chat_id=config["root"], sticker=bot.plugin_dir + "Uptime/umaru/" + str(randint(1,3)) + ".gif")
