@@ -58,6 +58,7 @@ class Bot(object):
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
         self.__session.close()
+
     #teelebot method
     def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
         '''
