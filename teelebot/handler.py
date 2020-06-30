@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-6-29
+@last modify: 2020-6-30
 '''
 import configparser
 import argparse
@@ -9,7 +9,7 @@ import os
 import sys
 import shutil
 
-__version__ = "1.8.8_dev"
+__version__ = "1.9.3_dev"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
@@ -26,6 +26,9 @@ if len(sys.argv) == 2 and args.version:
     sys.exit(0)
 
 def config():
+    '''
+    获取bot配置信息
+    '''
     config = {}
 
     if len(sys.argv) == 3 and args.config:
@@ -114,6 +117,9 @@ def config():
     return config
 
 def bridge(plugin_dir):
+    '''
+    获取插件和指令的映射
+    '''
     plugin_bridge = {}
     plugin_list = []
 
@@ -131,6 +137,9 @@ def bridge(plugin_dir):
     return plugin_bridge
 
 def __plugin_info(plugin_list, plugin_dir):
+    '''
+    获取插件修改状态
+    '''
     plugin_info = {}
     for plugin in plugin_list:
         mtime = os.stat(plugin_dir + plugin + "/" + plugin + ".py").st_mtime
