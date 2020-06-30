@@ -422,7 +422,7 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 * v1.9.3 : 
   * Bot类新增 **19个** Telegram Bot API方法，Telegram Bot API现存方法已全部实现
-  * 完善Bot类方法 `sendLocate` ；修复Bot类方法 `setChatPermissions` 的bug
+  * 完善Bot类方法 `sendLocation` ；修复Bot类方法 `setChatPermissions` 的bug
 
 #### 2020-6-28
 
