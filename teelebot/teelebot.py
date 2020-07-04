@@ -403,7 +403,6 @@ class Bot(object):
         发送文本消息
         '''
         command = sys._getframe().f_code.co_name
-        print(command, type(command))
         addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
