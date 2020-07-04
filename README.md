@@ -418,6 +418,10 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新日志 ##
 
+#### 2020-7-4
+
+* v1.9.4 : 优化Bot类代码
+
 #### 2020-6-30
 
 * v1.9.3 : 

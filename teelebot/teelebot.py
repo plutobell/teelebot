@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-6-30
+@last modify: 2020-7-4
 @author github:plutobell
-@version: 1.9.3_dev
+@version: 1.9.4_dev
 '''
 import time
 import sys
@@ -291,7 +291,7 @@ class Bot(object):
         '''
         获取消息队列
         '''
-        command = "getUpdates"
+        command = sys._getframe().f_code.co_name
         addr = command + "?offset=" + str(self.offset) +\
             "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
 
@@ -315,7 +315,7 @@ class Bot(object):
         设置Webhook
         Ports currently supported for Webhooks: 443, 80, 88, 8443.
         '''
-        command = "setWebhook"
+        command = sys._getframe().f_code.co_name
         addr = command + "?url=" + str(url)
         if max_connections != None:
             addr += "&max_connections=" + str(max_connections)
@@ -344,7 +344,7 @@ class Bot(object):
         '''
         删除设置的Webhook
         '''
-        command = "deleteWebhook"
+        command = sys._getframe().f_code.co_name
         addr = command
         with self.__session.post(self.url + addr) as req:
 
@@ -358,7 +358,7 @@ class Bot(object):
         '''
         获取当前的Webhook状态
         '''
-        command = "getWebhookInfo"
+        command = sys._getframe().f_code.co_name
         addr = command
         with self.__session.post(self.url + addr) as req:
 
@@ -374,7 +374,7 @@ class Bot(object):
         '''
         获取机器人基本信息
         '''
-        command = "getMe"
+        command = sys._getframe().f_code.co_name
         addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
         with self.__session.post(self.url + addr) as req:
 
@@ -388,7 +388,7 @@ class Bot(object):
         '''
         获取文件信息
         '''
-        command = "getFile"
+        command = sys._getframe().f_code.co_name
         addr = command + "?file_id=" + file_id
         with self.__session.post(self.url + addr) as req:
 
@@ -402,7 +402,8 @@ class Bot(object):
         '''
         发送文本消息
         '''
-        command = "sendMessage"
+        command = sys._getframe().f_code.co_name
+        print(command, type(command))
         addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
@@ -423,7 +424,7 @@ class Bot(object):
         '''
         发送音频消息 .ogg
         '''
-        command = "sendVoice"
+        command = sys._getframe().f_code.co_name
         if voice[:7] == "http://" or voice[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
@@ -465,7 +466,7 @@ class Bot(object):
         '''
         发送动画 gif/mp4
         '''
-        command = "sendAnimation"
+        command = sys._getframe().f_code.co_name
         if animation[:7] == "http://" or animation[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
@@ -507,7 +508,7 @@ class Bot(object):
         '''
         发送音频 mp3
         '''
-        command = "sendAudio"
+        command = sys._getframe().f_code.co_name
         if audio[:7] == "http://" or audio[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
@@ -551,7 +552,7 @@ class Bot(object):
         '''
         发送图片
         '''
-        command = "sendPhoto"
+        command = sys._getframe().f_code.co_name
         if photo[:7] == "http://" or photo[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
@@ -593,7 +594,7 @@ class Bot(object):
         '''
         发送视频
         '''
-        command = "sendVideo"
+        command = sys._getframe().f_code.co_name
         if video[:7] == "http://" or video[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
@@ -635,7 +636,7 @@ class Bot(object):
         '''
         发送圆形或方形视频？
         '''
-        command = "sendVideoNote"
+        command = sys._getframe().f_code.co_name
         if video_note[:7] == "http://" or video_note[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
@@ -707,7 +708,7 @@ class Bot(object):
         duration
         supports_streaming
         '''
-        command = "sendMediaGroup"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
@@ -729,7 +730,7 @@ class Bot(object):
         '''
         发送文件
         '''
-        command = "sendDocument"
+        command = sys._getframe().f_code.co_name
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
@@ -773,7 +774,7 @@ class Bot(object):
         '''
         退出群组
         '''
-        command = "leaveChat"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
@@ -787,7 +788,7 @@ class Bot(object):
         '''
         获取群组基本信息
         '''
-        command = "getChat"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
@@ -801,7 +802,7 @@ class Bot(object):
         '''
         获取群组所有管理员信息
         '''
-        command = "getChatAdministrators"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
@@ -815,7 +816,7 @@ class Bot(object):
         '''
         获取群组成员总数
         '''
-        command = "getChatMembersCount"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
@@ -829,7 +830,7 @@ class Bot(object):
         '''
         获取用户头像
         '''
-        command = "getUserProfilePhotos"
+        command = sys._getframe().f_code.co_name
         addr = command + "?user_id=" + str(user_id)
 
         if offset != None:
@@ -849,7 +850,7 @@ class Bot(object):
         '''
         获取群组特定用户信息
         '''
-        command = "getChatMember"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
         with self.__session.post(self.url + addr) as req:
 
@@ -863,7 +864,7 @@ class Bot(object):
         '''
         设置群组标题
         '''
-        command = "setChatTitle"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&title=" + str(title)
         with self.__session.post(self.url + addr) as req:
 
@@ -877,7 +878,7 @@ class Bot(object):
         '''
         设置群组简介（测试好像无效。。）
         '''
-        command = "setChatDescription"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
         with self.__session.post(self.url + addr) as req:
 
@@ -891,7 +892,7 @@ class Bot(object):
         '''
         设置群组头像
         '''
-        command = "setChatPhoto"
+        command = sys._getframe().f_code.co_name
         file_data = {"photo" : open(photo, 'rb')}
         addr = command + "?chat_id=" + str(chat_id)
 
@@ -907,7 +908,7 @@ class Bot(object):
         '''
         删除群组头像
         '''
-        command = "deleteChatPhoto"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
@@ -932,7 +933,7 @@ class Bot(object):
         }
         '''
         import json
-        command = "setChatPermissions"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" +str(chat_id)
         permissions = {"permissions": permissions}
         with self.__session.post(url=self.url + addr, json=permissions) as req:
@@ -959,7 +960,7 @@ class Bot(object):
         until_date format:
         timestamp + offset
         '''
-        command = "restrictChatMember"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
         if len(permissions) != 8:
             return False
@@ -991,7 +992,7 @@ class Bot(object):
         'can_promote_members':False
         }
         '''
-        command = "promoteChatMember"
+        command = sys._getframe().f_code.co_name
 
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
         if can_change_info != None:
@@ -1023,7 +1024,7 @@ class Bot(object):
         '''
         置顶消息
         '''
-        command = "pinChatMessage"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
         if disable_notification != None:
             addr += "&disable_notification=" + str(disable_notification)
@@ -1040,7 +1041,7 @@ class Bot(object):
         '''
         取消置顶消息
         '''
-        command = "unpinChatMessage"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         with self.__session.post(self.url + addr) as req:
 
@@ -1054,7 +1055,7 @@ class Bot(object):
         '''
         发送地图定位，经纬度
         '''
-        command = "sendLocation"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude))
         if live_period != None:
             addr += "&live_period=" + str(live_period)
@@ -1077,7 +1078,7 @@ class Bot(object):
         '''
         发送联系人信息
         '''
-        command = "sendContact"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(first_name)
         if last_name != None:
             addr += "&last_name=" + str(last_name)
@@ -1098,7 +1099,7 @@ class Bot(object):
         '''
         发送地点，显示在地图上
         '''
-        command = "sendVenue"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude)) + \
             "&title=" + str(title) + "&address=" + str(address)
         if reply_to_message_id is not None:
@@ -1125,7 +1126,7 @@ class Bot(object):
             find_location :for location data,
             record_video_note/upload_video_note :for video notes.
         '''
-        command = "sendChatAction"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&action=" + str(action)
         with self.__session.post(self.url + addr) as req:
 
@@ -1139,7 +1140,7 @@ class Bot(object):
         '''
         转发消息
         '''
-        command = "forwardMessage"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&from_chat_id=" + str(from_chat_id) \
             + "&message_id=" + str(message_id)
         if disable_notification != None:
@@ -1160,7 +1161,7 @@ class Bot(object):
         timestamp + offset
         '''
 
-        command = "kickChatMember"
+        command = sys._getframe().f_code.co_name
         if until_date is not None:
             until_date = int(time.time()) + int(until_date)
             addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
@@ -1189,7 +1190,7 @@ class Bot(object):
         can_pin_messages
         '''
 
-        command = "unbanChatMember"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
 
         with self.__session.post(self.url + addr) as req:
@@ -1204,7 +1205,7 @@ class Bot(object):
         '''
         为群组的管理员设置自定义头衔
         '''
-        command = "setChatAdministratorCustomTitle"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + str(custom_title)
 
         with self.__session.post(self.url + addr) as req:
@@ -1219,7 +1220,7 @@ class Bot(object):
         '''
         使用此方法生成新的群组分享链接，旧有分享链接全部失效,成功返回分享链接
         '''
-        command = "exportChatInviteLink"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
 
         with self.__session.post(self.url + addr) as req:
@@ -1234,7 +1235,7 @@ class Bot(object):
         '''
         为一个超级群组设置贴纸集
         '''
-        command = "setChatStickerSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
 
         with self.__session.post(self.url + addr) as req:
@@ -1249,7 +1250,7 @@ class Bot(object):
         '''
         删除超级群组的贴纸集
         '''
-        command = "deleteChatStickerSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
 
         with self.__session.post(self.url + addr) as req:
@@ -1265,7 +1266,7 @@ class Bot(object):
         使用此方法编辑实时位置消息
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "editMessageLiveLocation"
+        command = sys._getframe().f_code.co_name
 
         if inline_message_id == None:
             if message_id == None or chat_id == None:
@@ -1295,7 +1296,7 @@ class Bot(object):
         使用此方法可在活动期间到期前停止更新活动位置消息
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "stopMessageLiveLocation"
+        command = sys._getframe().f_code.co_name
 
         if inline_message_id == None:
             if message_id == None or chat_id == None:
@@ -1327,7 +1328,7 @@ class Bot(object):
             {"command": "bing", "description": "获取每日Bing壁纸"}
         ]
         '''
-        command = "setMyCommands"
+        command = sys._getframe().f_code.co_name
         addr = command
         commands = {"commands": commands}
         with self.__session.post(url=self.url + addr, json=commands) as req:
@@ -1342,7 +1343,7 @@ class Bot(object):
         '''
         使用此方法获取机器人当前的命令列表
         '''
-        command = "getMyCommands"
+        command = sys._getframe().f_code.co_name
         addr = command
         with self.__session.post(self.url + addr) as req:
 
@@ -1359,7 +1360,7 @@ class Bot(object):
         编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "editMessageText"
+        command = sys._getframe().f_code.co_name
 
         if inline_message_id == None:
             if message_id == None or chat_id == None:
@@ -1392,7 +1393,7 @@ class Bot(object):
         编辑消息的Caption。成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "editMessageCaption"
+        command = sys._getframe().f_code.co_name
         if inline_message_id == None:
             if message_id == None or chat_id == None:
                 return False
@@ -1431,7 +1432,7 @@ class Bot(object):
             }
         }
         '''
-        command = "editMessageMedia"
+        command = sys._getframe().f_code.co_name
         if inline_message_id == None:
             if message_id == None or chat_id == None:
                 return False
@@ -1458,7 +1459,7 @@ class Bot(object):
         编辑MessageReplyMarkup
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "editMessageReplyMarkup"
+        command = sys._getframe().f_code.co_name
         if inline_message_id == None:
             if message_id == None or chat_id == None:
                 return False
@@ -1484,7 +1485,7 @@ class Bot(object):
         '''
         停止投票？并返回最终结果
         '''
-        command = "stopPoll"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id" + str(chat_id) + "&message_id=" + str(message_id)
 
         if reply_markup != None:
@@ -1502,7 +1503,7 @@ class Bot(object):
         '''
         删除一条消息，机器人必须具备恰当的权限
         '''
-        command = "deleteMessage"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
 
         with self.__session.post(self.url + addr) as req:
@@ -1520,7 +1521,7 @@ class Bot(object):
         '''
         使用此方法发送Inline mode的应答
         '''
-        command = "answerInlineQuery"
+        command = sys._getframe().f_code.co_name
         addr = command + "?inline_query_id=" + str(inline_query_id)
         if cache_time is not None:
             addr += "&cache_time=" + str(cache_time)
@@ -1583,7 +1584,7 @@ class Bot(object):
         "selective": bool("true")
         }
         '''
-        command = "answerCallbackQuery"
+        command = sys._getframe().f_code.co_name
         addr = command + "?callback_query_id=" + str(callback_query_id)
         if text != None:
             addr += "&text=" + str(text)
@@ -1607,7 +1608,7 @@ class Bot(object):
         '''
         使用此方法发送静态、webp或动画、tgs贴纸
         '''
-        command = "sendSticker"
+        command = sys._getframe().f_code.co_name
 
         if sticker[:7] == "http://" or sticker[:7] == "https:/":
             file_data = None
@@ -1648,7 +1649,7 @@ class Bot(object):
         '''
         使用此方法获取贴纸集
         '''
-        command = "getStickerSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?name=" + str(name)
 
         with self.__session.post(self.url + addr) as req:
@@ -1665,7 +1666,7 @@ class Bot(object):
         以供以后在createNewStickerSet和addStickerToSet方法中使用
         （可以多次使用）
         '''
-        command = "uploadStickerFile"
+        command = sys._getframe().f_code.co_name
 
         if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
             file_data = None
@@ -1701,7 +1702,7 @@ class Bot(object):
         机器人将能够编辑由此创建的贴纸集
         png_sticker或tgs_sticker字段只能且必须存在一个
         '''
-        command = "createNewStickerSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?user_id=" + str(user_id)
         addr += "&name=" + str(name)
         addr += "&title=" + str(title)
@@ -1757,7 +1758,7 @@ class Bot(object):
         可以将动画贴纸添加到动画贴纸集中，并且只能添加到它们
         动画贴纸集最多可以包含50个贴纸。 静态贴纸集最多可包含120个贴纸
         '''
-        command = "addStickerToSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?user_id=" + str(user_id)
         addr += "&name=" + str(name)
         addr += "&emojis=" + str(emojis)
@@ -1809,7 +1810,7 @@ class Bot(object):
         '''
         使用此方法将机器人创建的一组贴纸移动到特定位置
         '''
-        command = "setStickerPositionInSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?sticker=" + str(sticker)
         addr += "&position=" + str(position)
 
@@ -1825,7 +1826,7 @@ class Bot(object):
         '''
         使用此方法从机器人创建的集合中删除贴纸
         '''
-        command = "deleteStickerFromSet"
+        command = sys._getframe().f_code.co_name
         addr = command + "?sticker=" + str(sticker)
 
         with self.__session.post(self.url + addr) as req:
@@ -1841,7 +1842,7 @@ class Bot(object):
         使用此方法设置贴纸集的缩略图
         只能为动画贴纸集设置动画缩略图
         '''
-        command = "setStickerSetThumb"
+        command = sys._getframe().f_code.co_name
         addr = command + "?name=" + str(name)
         addr += "&user_id=" + str(user_id)
 
@@ -1883,7 +1884,7 @@ class Bot(object):
         '''
         使用此方法发送发票
         '''
-        command = "sendInvoice"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         addr += "&title=" + str(title)
         addr += "&description=" + str(description)
@@ -1936,7 +1937,7 @@ class Bot(object):
         '''
         使用此方法可以答复运输查询
         '''
-        command = "answerShippingQuery"
+        command = sys._getframe().f_code.co_name
         addr  = command + "?shipping_query_id=" + str(shipping_query_id)
         addr += "&ok=" + str(ok)
 
@@ -1957,7 +1958,7 @@ class Bot(object):
         '''
         使用此方法来响应此类预结帐查询
         '''
-        command = "answerPreCheckoutQuery"
+        command = sys._getframe().f_code.co_name
         addr = command + "?pre_checkout_query_id=" + str(pre_checkout_query_id)
         addr += "&ok=" + str(ok)
 
@@ -1980,7 +1981,7 @@ class Bot(object):
         在错误纠正之前，用户将无法重新提交其护照
         （错误返回字段的内容必须更改）
         '''
-        command = "setPassportDataErrors"
+        command = sys._getframe().f_code.co_name
         addr = command + "?user_id=" + str(user_id)
         addr += "&errors=" + json.dumps(errors)
 
@@ -1999,7 +2000,7 @@ class Bot(object):
         '''
         使用此方法发送游戏
         '''
-        command = "sendGame"
+        command = sys._getframe().f_code.co_name
         addr = command + "?chat_id=" + str(chat_id)
         addr += "&game_short_name=" + str(game_short_name)
 
@@ -2024,7 +2025,7 @@ class Bot(object):
         使用此方法设置游戏中指定用户的分数
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "setGameScore"
+        command = sys._getframe().f_code.co_name
 
         if inline_message_id == None:
             if message_id == None or chat_id == None:
@@ -2058,7 +2059,7 @@ class Bot(object):
         将返回指定用户及其在游戏中几个邻居的分数
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         '''
-        command = "getGameHighScores"
+        command = sys._getframe().f_code.co_name
 
         if inline_message_id == None:
             if message_id == None or chat_id == None:
