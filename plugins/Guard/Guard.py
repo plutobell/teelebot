@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-6-23
+last_modify: 2020-7-11
 '''
 
 from collections import defaultdict
@@ -82,6 +82,7 @@ def Guard(bot, message):
             status = bot.restrictChatMember(chat_id=chat_id, user_id=result[2], permissions=permissions)
             status = bot.deleteMessage(chat_id=chat_id, message_id=result[3])
             db.delete(chat_id=chat_id, user_id=user_id)
+            rr = db.user_insert(chat_id=chat_id, user_id=user_id)
             msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + "</a></b>, 欢迎加入 <b>" + str(chat_title) + "</b>。"
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
@@ -214,6 +215,27 @@ def Guard(bot, message):
         for c in command.keys():
             if c in str(text):
                 count += 1
+
+        if message["chat"]["type"] != "private": #监测群链接广告
+            req = db.user_select(chat_id, user_id)
+            if req != False:
+                req = list(req)
+                if req[3] < 3:
+                    req[3] += 1
+                    db.user_update(chat_id=chat_id, user_id=user_id, message_times=req[3], spam_times=req[4])
+                    if "t.me/" in text:
+                        req[4] += 1
+                        db.user_update(chat_id=chat_id, user_id=user_id, message_times=req[3], spam_times=req[4])
+                    if (req[3] == 1 and req[4] == 1) or req[4] >= 2:
+                        bot.kickChatMember(chat_id=req[1], user_id=req[2], until_date=35)
+                        bot.deleteMessage(chat_id=req[1], message_id=message_id)
+                        msg = "<b><a href='tg://user?id="+ str(user_id) + "'>"+ str(user_id) +"</a></b> 的消息<b> 违规</b>，已驱逐出境。"
+                        status = bot.sendChatAction(chat_id, "typing")
+                        status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
+                        bot.message_deletor(30, status["chat"]["id"], status["message_id"])
+                        db.user_delete(chat_id, user_id)
+                else:
+                    db.user_delete(chat_id, user_id)
 
         if count > 0 or text[1:len(prefix)+1] == prefix: #在命令列表则删除用户指令
             bot.message_deletor(gap, chat_id, message_id)
@@ -367,6 +389,7 @@ class SqliteDB(object):
         self.conn = sqlite3.connect(bot.plugin_dir + "Guard/captcha.db", check_same_thread=False) #只读模式加上uri=True
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE IF NOT EXISTS captcha_list (id INTEGER PRIMARY KEY autoincrement, chat_id TEXT, user_id TEXT, message_id TEXT, authcode TEXT, timestamp INTEGER)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS new_user_list (id INTEGER PRIMARY KEY autoincrement, chat_id TEXT, user_id TEXT, message_times INTEGER, spam_times INTEGER)")
 
     def __del__(self):
         '''
@@ -422,6 +445,55 @@ class SqliteDB(object):
             self.cursor.execute("UPDATE captcha_list SET message_id=?, authcode=? WHERE chat_id=? and user_id=?", (message_id, authcode, chat_id, user_id))
         else:
             self.cursor.execute("UPDATE captcha_list SET message_id=?, authcode=?, timestamp=? WHERE chat_id=? and user_id=?", (message_id, authcode, int(timestamp), chat_id, user_id))
+
+        if self.cursor.rowcount == 1:
+            return True
+        else:
+            return False
+
+    #new_user_list
+    def user_insert(self, chat_id, user_id):
+        '''
+        User Insert
+        '''
+        message_times = spam_times = 0
+        self.cursor.execute("INSERT INTO new_user_list (chat_id, user_id, message_times, spam_times) VALUES (?,?,?,?)", (chat_id, user_id, message_times, spam_times))
+
+        if self.cursor.rowcount == 1:
+            return True
+        else:
+            return False
+
+    def user_select(self, chat_id, user_id):
+        '''
+        User Select
+        '''
+        self.cursor.execute("SELECT * FROM new_user_list WHERE chat_id=? AND user_id=?", (chat_id, user_id))
+        result = self.cursor.fetchall()
+
+        if result:
+            result = result[0]
+        else:
+            result = False
+
+        return result
+
+    def user_delete(self, chat_id, user_id):
+        '''
+        User Delete
+        '''
+        self.cursor.execute("DELETE FROM new_user_list WHERE chat_id=? AND user_id=?", (chat_id, user_id))
+
+        if self.cursor.rowcount == 1:
+            return True
+        else:
+            return False
+
+    def user_update(self, chat_id, user_id, message_times, spam_times):
+        '''
+        User Update
+        '''
+        self.cursor.execute("UPDATE new_user_list SET message_times=?, spam_times=? WHERE chat_id=? and user_id=?", (message_times, spam_times, chat_id, user_id))
 
         if self.cursor.rowcount == 1:
             return True
