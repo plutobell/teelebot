@@ -418,6 +418,12 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新日志 ##
 
+#### 2020-7-11
+
+* v1.9.5 : 
+  * 框架代码优化
+  * Guard 插件新增功能：检测并封禁群链接广告
+
 #### 2020-7-4
 
 * v1.9.4 : 优化Bot类代码
