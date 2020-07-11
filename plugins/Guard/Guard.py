@@ -223,7 +223,7 @@ def Guard(bot, message):
                 if req[3] < 3:
                     req[3] += 1
                     db.user_update(chat_id=chat_id, user_id=user_id, message_times=req[3], spam_times=req[4])
-                    if "t.me/" in text:
+                    if "t.me/" in text.strip().replace('"', "").replace("'", ""):
                         req[4] += 1
                         db.user_update(chat_id=chat_id, user_id=user_id, message_times=req[3], spam_times=req[4])
                     if (req[3] == 1 and req[4] == 1) or req[4] >= 2:
