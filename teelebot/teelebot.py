@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-4
+@last modify: 2020-7-11
 @author github:plutobell
-@version: 1.9.4_dev
+@version: 1.9.5_dev
 '''
 import time
 import sys
@@ -21,6 +21,7 @@ from traceback import extract_stack
 from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 
 class Bot(object):
     "机器人的基类"
@@ -43,14 +44,15 @@ class Bot(object):
         self.plugin_dir = self.config["plugin_dir"]
         self.plugin_bridge = self.config["plugin_bridge"]
 
-
         self.VERSION = self.config["version"]
         self.AUTHOR = self.config["author"]
 
         self.__start_time = int(time.time())
         self.__response_times = 0
-        self.__thread_pool = ThreadPoolExecutor(max_workers=int(self.config["pool_size"]))
-        self.__session = self.__connection_session(pool_connections=int(self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"])*2)
+        self.__thread_pool = ThreadPoolExecutor(
+            max_workers=int(self.config["pool_size"]))
+        self.__session = self.__connection_session(pool_connections=int(
+            self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"])*2)
         self.__plugin_info = self.config["plugin_info"]
 
         del self.config["plugin_info"]
@@ -59,7 +61,7 @@ class Bot(object):
         self.__thread_pool.shutdown(wait=True)
         self.__session.close()
 
-    #teelebot method
+    # teelebot method
     def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
         '''
         全局连接池
@@ -67,8 +69,8 @@ class Bot(object):
         session = requests.Session()
         session.verify = False
 
-        adapter = requests.adapters.HTTPAdapter(pool_connections = pool_connections,
-                pool_maxsize = pool_maxsize, max_retries = max_retries)
+        adapter = requests.adapters.HTTPAdapter(pool_connections=pool_connections,
+                                                pool_maxsize=pool_maxsize, max_retries=max_retries)
         session.mount('http://', adapter)
         session.mount('https://', adapter)
 
@@ -81,7 +83,7 @@ class Bot(object):
         now_time = time.strftime("%Y/%m/%d %H:%M:%S")
         if self.debug == True:
             print("\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19)
-            #print(fur.result())
+            # print(fur.result())
         elif fur.exception() != None:
             print("\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19)
             print(fur.result())
@@ -91,10 +93,11 @@ class Bot(object):
         动态导入模块及热更新
         '''
         sys.path.append(self.plugin_dir + plugin_name + r"/")
-        Module = importlib.import_module(plugin_name) #模块检测
+        Module = importlib.import_module(plugin_name)  # 模块检测
 
-        now_mtime = mtime = os.stat(self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
-        if now_mtime != self.__plugin_info[plugin_name]: #插件热更新
+        now_mtime = mtime = os.stat(
+            self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
+        if now_mtime != self.__plugin_info[plugin_name]:  # 插件热更新
             if os.path.exists(self.plugin_dir + plugin_name + r"/__pycache__"):
                 shutil.rmtree(self.plugin_dir + plugin_name + r"/__pycache__")
             self.__plugin_info[plugin_name] = now_mtime
@@ -107,9 +110,9 @@ class Bot(object):
         debug模式
         '''
         if self.debug == True and result.get("ok") == False:
-            os.system("") #"玄学"解决Windows下颜色显示失效的问题...
+            os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
-            if len(stack_info) == 8: #插件内
+            if len(stack_info) == 8:  # 插件内
                 print("\033[1;31mRequest failed!")
                 print(" From : " + stack_info[-3][2])
                 print(" Path : " + stack_info[5][0])
@@ -117,7 +120,7 @@ class Bot(object):
                 print("Method: " + stack_info[6][2])
                 print("Result: " + str(result))
                 print("\033[0m\n")
-            elif len(stack_info) == 3: #外部调用
+            elif len(stack_info) == 3:  # 外部调用
                 print("\033[1;31mRequest failed!")
                 print(" From : " + stack_info[0][0])
                 print(" Path : " + stack_info[1][0])
@@ -133,7 +136,7 @@ class Bot(object):
         if message == None:
             return
 
-        now_plugin_bridge = bridge(self.plugin_dir) #动态装载插件
+        now_plugin_bridge = bridge(self.plugin_dir)  # 动态装载插件
         if now_plugin_bridge != self.plugin_bridge:
             self.plugin_bridge = now_plugin_bridge
 
@@ -159,11 +162,11 @@ class Bot(object):
                 plugin_list = plugin_bridge.keys()
 
         for plugin in plugin_list:
-            if "callback_query_id" in message.keys(): #callback query
+            if "callback_query_id" in message.keys():  # callback query
                 message_type = "callback_query_data"
             elif ("new_chat_members" in message.keys()) or ("left_chat_member" in message.keys()):
                 message_type = "text"
-                message["text"] = "" #default prefix of command
+                message["text"] = ""  # default prefix of command
             elif "photo" in message.keys():
                 message["message_type"] = "photo"
                 message_type = "message_type"
@@ -220,9 +223,12 @@ class Bot(object):
 
             if query_or_message == "callback_query":
                 callback_query = result.get(query_or_message).get("message")
-                callback_query["click_user"] = result.get(query_or_message)["from"]
-                callback_query["callback_query_id"] = result.get(query_or_message).get("id")
-                callback_query["callback_query_data"] = result.get(query_or_message).get("data")
+                callback_query["click_user"] = result.get(query_or_message)[
+                    "from"]
+                callback_query["callback_query_id"] = result.get(
+                    query_or_message).get("id")
+                callback_query["callback_query_data"] = result.get(
+                    query_or_message).get("data")
                 messages.append(callback_query)
             else:
                 messages.append(result.get(query_or_message))
@@ -246,7 +252,8 @@ class Bot(object):
             if time_gap == 0:
                 message_deletor_func(chat_id, message_id)
             else:
-                timer = threading.Timer(time_gap, message_deletor_func, args=[chat_id, message_id])
+                timer = threading.Timer(time_gap, message_deletor_func, args=[
+                                        chat_id, message_id])
                 timer.start()
             return "ok"
 
@@ -285,8 +292,8 @@ class Bot(object):
         else:
             return False
 
+    # Getting updates
 
-    #Getting updates
     def getUpdates(self, limit=100, allowed_updates=None):
         '''
         获取消息队列
@@ -325,9 +332,9 @@ class Bot(object):
         file_data = None
         if certificate != None:
             if type(certificate) == bytes:
-                file_data = {"certificate" : certificate}
+                file_data = {"certificate": certificate}
             else:
-                file_data = {"certificate" : open(certificate, 'rb')}
+                file_data = {"certificate": open(certificate, 'rb')}
 
         if file_data == None:
             req = self.__session.post(self.url + addr)
@@ -368,14 +375,15 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
+    # Available methods
 
-    #Available methods
     def getMe(self):
         '''
         获取机器人基本信息
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?" + "offset=" + str(self.offset) + "&timeout=" + str(self.timeout)
+        addr = command + "?" + "offset=" + \
+            str(self.offset) + "&timeout=" + str(self.timeout)
         with self.__session.post(self.url + addr) as req:
 
             self.__debug_info(req.json())
@@ -428,13 +436,13 @@ class Bot(object):
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
         elif type(voice) == bytes:
-            file_data = {"voice" : voice}
+            file_data = {"voice": voice}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(voice) == str and '.' not in voice:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
         else:
-            file_data = {"voice" : open(voice, 'rb')}
+            file_data = {"voice": open(voice, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -468,15 +476,17 @@ class Bot(object):
         command = sys._getframe().f_code.co_name
         if animation[:7] == "http://" or animation[:7] == "https:/":
             file_data = None
-            addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&animation=" + animation
         elif type(animation) == bytes:
-            file_data = {"animation" : animation}
+            file_data = {"animation": animation}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(animation) == str and '.' not in animation:
             file_data = None
-            addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&animation=" + animation
         else:
-            file_data = {"animation" : open(animation, 'rb')}
+            file_data = {"animation": open(animation, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -512,13 +522,13 @@ class Bot(object):
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
         elif type(audio) == bytes:
-            file_data = {"audio" : audio}
+            file_data = {"audio": audio}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(audio) == str and '.' not in audio:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
         else:
-            file_data = {"audio" : open(audio, 'rb')}
+            file_data = {"audio": open(audio, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -547,7 +557,7 @@ class Bot(object):
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
 
-    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None): #发送图片
+    def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):  # 发送图片
         '''
         发送图片
         '''
@@ -556,13 +566,13 @@ class Bot(object):
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
         elif type(photo) == bytes:
-            file_data = {"photo" : photo}
+            file_data = {"photo": photo}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(photo) == str and '.' not in photo:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
         else:
-            file_data = {"photo" : open(photo, 'rb')}
+            file_data = {"photo": open(photo, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -598,13 +608,13 @@ class Bot(object):
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
         elif type(video) == bytes:
-            file_data = {"video" : video}
+            file_data = {"video": video}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(video) == str and '.' not in video:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
         else:
-            file_data = {"video" : open(video, 'rb')}
+            file_data = {"video": open(video, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -638,15 +648,17 @@ class Bot(object):
         command = sys._getframe().f_code.co_name
         if video_note[:7] == "http://" or video_note[:7] == "https:/":
             file_data = None
-            addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&video_note=" + video_note
         elif type(video_note) == bytes:
-            file_data = {"video_note" : video_note}
+            file_data = {"video_note": video_note}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(video_note) == str and '.' not in video_note:
             file_data = None
-            addr = command + "?chat_id=" + str(chat_id) + "&video_note=" + video_note
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&video_note=" + video_note
         else:
-            file_data = {"video_note" : open(video_note, 'rb')}
+            file_data = {"video_note": open(video_note, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -673,7 +685,7 @@ class Bot(object):
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
 
-    def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None, reply_markup=None): #暂未弄懂格式。
+    def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None, reply_markup=None):  # 暂未弄懂格式。
         '''
         以类似图集的方式发送图片或者视频(目前只支持http链接和文件id，暂不支持上传文件)
         media的格式：（同时请求需要加入header头，指定传送参数为json类型，并且将data由字典转为json字符串传送）
@@ -732,15 +744,17 @@ class Bot(object):
         command = sys._getframe().f_code.co_name
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
-            addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&document=" + document
         elif type(document) == bytes:
-            file_data = {"document" : document}
+            file_data = {"document": document}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(document) == str and '.' not in document:
             file_data = None
-            addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&document=" + document
         else:
-            file_data = {"document" : open(document, 'rb')}
+            file_data = {"document": open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption != None:
@@ -834,7 +848,7 @@ class Bot(object):
 
         if offset != None:
             addr += "&offset=" + str(offset)
-        if limit != None and limit in list(range(1,101)):
+        if limit != None and limit in list(range(1, 101)):
             addr += "&limit=" + str(limit)
 
         with self.__session.post(self.url + addr) as req:
@@ -878,7 +892,8 @@ class Bot(object):
         设置群组简介（测试好像无效。。）
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&description=" + str(description)
         with self.__session.post(self.url + addr) as req:
 
             self.__debug_info(req.json())
@@ -892,7 +907,7 @@ class Bot(object):
         设置群组头像
         '''
         command = sys._getframe().f_code.co_name
-        file_data = {"photo" : open(photo, 'rb')}
+        file_data = {"photo": open(photo, 'rb')}
         addr = command + "?chat_id=" + str(chat_id)
 
         with self.__session.post(self.url + addr, files=file_data) as req:
@@ -933,7 +948,7 @@ class Bot(object):
         '''
         import json
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" +str(chat_id)
+        addr = command + "?chat_id=" + str(chat_id)
         permissions = {"permissions": permissions}
         with self.__session.post(url=self.url + addr, json=permissions) as req:
 
@@ -960,14 +975,15 @@ class Bot(object):
         timestamp + offset
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&user_id=" + str(user_id)
         if len(permissions) != 8:
             return False
         if until_date is not None:
             until_date = int(time.time()) + int(until_date)
             addr += "&until_date=" + str(until_date)
 
-        with self.__session.post(self.url + addr, json = permissions) as req:
+        with self.__session.post(self.url + addr, json=permissions) as req:
 
             self.__debug_info(req.json())
             if req.json().get("ok") == True:
@@ -975,9 +991,9 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
-    def promoteChatMember(self, uid, chat_id, can_change_info=None, can_post_messages=None, \
-        can_edit_messages=None, can_delete_messages=None, can_invite_users=None, \
-        can_restrict_members=None, can_pin_messages=None, can_promote_members=None):
+    def promoteChatMember(self, uid, chat_id, can_change_info=None, can_post_messages=None,
+                          can_edit_messages=None, can_delete_messages=None, can_invite_users=None,
+                          can_restrict_members=None, can_pin_messages=None, can_promote_members=None):
         '''
         修改管理员权限(只能修改由机器人任命的管理员的权限,范围为机器人权限的子集)
         {
@@ -1024,7 +1040,8 @@ class Bot(object):
         置顶消息
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&message_id=" + str(message_id)
         if disable_notification != None:
             addr += "&disable_notification=" + str(disable_notification)
 
@@ -1036,7 +1053,7 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
-    def unpinChatMessage(self,chat_id):
+    def unpinChatMessage(self, chat_id):
         '''
         取消置顶消息
         '''
@@ -1055,7 +1072,8 @@ class Bot(object):
         发送地图定位，经纬度
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(float(longitude))
+        addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(
+            float(latitude)) + "&longitude=" + str(float(longitude))
         if live_period != None:
             addr += "&live_period=" + str(live_period)
         if disable_notification != None:
@@ -1078,7 +1096,9 @@ class Bot(object):
         发送联系人信息
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(first_name)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&phone_number=" + str(phone_number) + \
+            "&first_name=" + str(first_name)
         if last_name != None:
             addr += "&last_name=" + str(last_name)
         if reply_to_message_id is not None:
@@ -1163,9 +1183,12 @@ class Bot(object):
         command = sys._getframe().f_code.co_name
         if until_date is not None:
             until_date = int(time.time()) + int(until_date)
-            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&user_id=" + str(user_id) + \
+                "&until_date=" + str(until_date)
         if until_date is None:
-            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+            addr = command + "?chat_id=" + \
+                str(chat_id) + "&user_id=" + str(user_id)
 
         with self.__session.post(self.url + addr) as req:
 
@@ -1190,7 +1213,8 @@ class Bot(object):
         '''
 
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&user_id=" + str(user_id)
 
         with self.__session.post(self.url + addr) as req:
 
@@ -1205,7 +1229,9 @@ class Bot(object):
         为群组的管理员设置自定义头衔
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + str(custom_title)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&user_id=" + str(user_id) + \
+            "&custom_title=" + str(custom_title)
 
         with self.__session.post(self.url + addr) as req:
 
@@ -1235,7 +1261,8 @@ class Bot(object):
         为一个超级群组设置贴纸集
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
 
         with self.__session.post(self.url + addr) as req:
 
@@ -1352,9 +1379,9 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
-    #Updating messages
-    def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None, \
-            parse_mode=None, disable_web_page_preview=None, reply_markup=None):
+    # Updating messages
+    def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None,
+                        parse_mode=None, disable_web_page_preview=None, reply_markup=None):
         '''
         编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
@@ -1375,7 +1402,8 @@ class Bot(object):
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + str(parse_mode)
         if disable_web_page_preview is not None:
-            addr += "&disable_web_page_preview=" + str(disable_web_page_preview)
+            addr += "&disable_web_page_preview=" + \
+                str(disable_web_page_preview)
         if reply_markup != None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
@@ -1485,7 +1513,8 @@ class Bot(object):
         停止投票？并返回最终结果
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id" + str(chat_id) + "&message_id=" + str(message_id)
+        addr = command + "?chat_id" + \
+            str(chat_id) + "&message_id=" + str(message_id)
 
         if reply_markup != None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
@@ -1503,7 +1532,8 @@ class Bot(object):
         删除一条消息，机器人必须具备恰当的权限
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
+        addr = command + "?chat_id=" + \
+            str(chat_id) + "&message_id=" + str(message_id)
 
         with self.__session.post(self.url + addr) as req:
 
@@ -1513,10 +1543,10 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
+    # Inline mode
 
-    #Inline mode
-    def answerInlineQuery(self, inline_query_id, results, cache_time=None, \
-                is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
+    def answerInlineQuery(self, inline_query_id, results, cache_time=None,
+                          is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
         '''
         使用此方法发送Inline mode的应答
         '''
@@ -1602,7 +1632,7 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
-    #Stickers
+    # Stickers
     def sendSticker(self, chat_id, sticker, disable_notification=None, reply_to_message_id=None, reply_markup=None):
         '''
         使用此方法发送静态、webp或动画、tgs贴纸
@@ -1613,13 +1643,13 @@ class Bot(object):
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&sticker=" + sticker
         elif type(sticker) == bytes:
-            file_data = {"sticker" : sticker}
+            file_data = {"sticker": sticker}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(sticker) == str and '.' not in sticker:
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&sticker=" + sticker
         else:
-            file_data = {"sticker" : open(sticker, 'rb')}
+            file_data = {"sticker": open(sticker, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
         if disable_notification != None:
@@ -1669,15 +1699,17 @@ class Bot(object):
 
         if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
             file_data = None
-            addr = command + "?user_id=" + str(chat_id) + "&png_sticker=" + png_sticker
+            addr = command + "?user_id=" + \
+                str(chat_id) + "&png_sticker=" + png_sticker
         elif type(png_sticker) == bytes:
-            file_data = {"png_sticker" : png_sticker}
+            file_data = {"png_sticker": png_sticker}
             addr = command + "?user_id=" + str(chat_id)
         elif type(png_sticker) == str and '.' not in png_sticker:
             file_data = None
-            addr = command + "?user_id=" + str(chat_id) + "&png_sticker=" + png_sticker
+            addr = command + "?user_id=" + \
+                str(chat_id) + "&png_sticker=" + png_sticker
         else:
-            file_data = {"png_sticker" : open(png_sticker, 'rb')}
+            file_data = {"png_sticker": open(png_sticker, 'rb')}
             addr = command + "?user_id=" + str(chat_id)
 
         if file_data == None:
@@ -1717,23 +1749,23 @@ class Bot(object):
                 file_data = None
                 addr += "&png_sticker=" + png_sticker
             elif type(png_sticker) == bytes:
-                file_data = {"png_sticker" : png_sticker}
+                file_data = {"png_sticker": png_sticker}
             elif type(png_sticker) == str and '.' not in png_sticker:
                 file_data = None
                 addr += "&png_sticker=" + png_sticker
             else:
-                file_data = {"png_sticker" : open(png_sticker, 'rb')}
+                file_data = {"png_sticker": open(png_sticker, 'rb')}
         elif tgs_sticker != None:
             if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
                 file_data = None
                 addr += "&tgs_sticker=" + tgs_sticker
             elif type(tgs_sticker) == bytes:
-                file_data = {"tgs_sticker" : tgs_sticker}
+                file_data = {"tgs_sticker": tgs_sticker}
             elif type(tgs_sticker) == str and '.' not in tgs_sticker:
                 file_data = None
                 addr += "&tgs_sticker=" + tgs_sticker
             else:
-                file_data = {"tgs_sticker" : open(tgs_sticker, 'rb')}
+                file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
@@ -1772,23 +1804,23 @@ class Bot(object):
                 file_data = None
                 addr += "&png_sticker=" + png_sticker
             elif type(png_sticker) == bytes:
-                file_data = {"png_sticker" : png_sticker}
+                file_data = {"png_sticker": png_sticker}
             elif type(png_sticker) == str and '.' not in png_sticker:
                 file_data = None
                 addr += "&png_sticker=" + png_sticker
             else:
-                file_data = {"png_sticker" : open(png_sticker, 'rb')}
+                file_data = {"png_sticker": open(png_sticker, 'rb')}
         elif tgs_sticker != None:
             if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
                 file_data = None
                 addr += "&tgs_sticker=" + tgs_sticker
             elif type(tgs_sticker) == bytes:
-                file_data = {"tgs_sticker" : tgs_sticker}
+                file_data = {"tgs_sticker": tgs_sticker}
             elif type(tgs_sticker) == str and '.' not in tgs_sticker:
                 file_data = None
                 addr += "&tgs_sticker=" + tgs_sticker
             else:
-                file_data = {"tgs_sticker" : open(tgs_sticker, 'rb')}
+                file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
@@ -1850,12 +1882,12 @@ class Bot(object):
                 file_data = None
                 addr += "&thumb=" + thumb
             elif type(thumb) == bytes:
-                file_data = {"thumb" : thumb}
+                file_data = {"thumb": thumb}
             elif type(thumb) == str and '.' not in thumb:
                 file_data = None
                 addr += "&thumb=" + thumb
             else:
-                file_data = {"thumb" : open(thumb, 'rb')}
+                file_data = {"thumb": open(thumb, 'rb')}
 
         if file_data == None:
             with self.__session.post(self.url + addr) as req:
@@ -1872,7 +1904,7 @@ class Bot(object):
                 elif req.json().get("ok") == False:
                     return req.json().get("ok")
 
-    #Payments
+    # Payments
     def sendInvoice(self, chat_id, title, description, payload, provider_token, start_parameter,
                     currency, prices, provider_data=None, photo_url=None,
                     photo_size=None, photo_width=None, photo_height=None,
@@ -1912,7 +1944,8 @@ class Bot(object):
         if need_shipping_address != None:
             addr += "&need_shipping_address=" + str(need_shipping_address)
         if send_phone_number_to_provider != None:
-            addr += "&send_phone_number_to_provider=" + str(send_phone_number_to_provider)
+            addr += "&send_phone_number_to_provider=" + \
+                str(send_phone_number_to_provider)
         if send_email_to_provider != None:
             addr += "&send_email_to_provider=" + str(send_email_to_provider)
         if is_flexible != None:
@@ -1937,7 +1970,7 @@ class Bot(object):
         使用此方法可以答复运输查询
         '''
         command = sys._getframe().f_code.co_name
-        addr  = command + "?shipping_query_id=" + str(shipping_query_id)
+        addr = command + "?shipping_query_id=" + str(shipping_query_id)
         addr += "&ok=" + str(ok)
 
         if shipping_options != None:
@@ -1972,8 +2005,8 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
+    # Telegram Passport
 
-    #Telegram Passport
     def setPassportDataErrors(self, user_id, errors):
         '''
         通知用户他们提供的某些Telegram Passport元素包含错误
@@ -1992,10 +2025,10 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
+    # Games
 
-    #Games
     def sendGame(self, chat_id, game_short_name, disable_notification=None,
-                reply_to_message_id=None, reply_markup=None):
+                 reply_to_message_id=None, reply_markup=None):
         '''
         使用此方法发送游戏
         '''
@@ -2019,7 +2052,7 @@ class Bot(object):
                 return req.json().get("ok")
 
     def setGameScore(self, user_id, score, force=None, disable_edit_message=None,
-                    chat_id=None, message_id=None, inline_message_id=None):
+                     chat_id=None, message_id=None, inline_message_id=None):
         '''
         使用此方法设置游戏中指定用户的分数
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数

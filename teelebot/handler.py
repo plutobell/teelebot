@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-7-4
+@last modify: 2020-7-11
 '''
 import configparser
 import argparse
@@ -9,13 +9,16 @@ import os
 import sys
 import shutil
 
-__version__ = "1.9.4_dev"
+__version__ = "1.9.5_dev"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
-parser.add_argument("-c", "--config", type=str, help="specify the configuration file path")
-parser.add_argument("-d", "--debug", help="run teelebot in debug mode", action="store_true")
-parser.add_argument("-v", "--version", help="view the current version of teelebot", action="store_true")
+parser.add_argument("-c", "--config", type=str,
+                    help="specify the configuration file path")
+parser.add_argument(
+    "-d", "--debug", help="run teelebot in debug mode", action="store_true")
+parser.add_argument(
+    "-v", "--version", help="view the current version of teelebot", action="store_true")
 args = parser.parse_args()
 
 if len(sys.argv) == 2 and args.version:
@@ -24,6 +27,7 @@ if len(sys.argv) == 2 and args.version:
     print("author: \033[1;36;40m" + __author__ + "\033[0m")
     print("")
     sys.exit(0)
+
 
 def config():
     '''
@@ -36,7 +40,8 @@ def config():
     elif len(sys.argv) == 1 or args.debug or len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel", "bdist_rpm"):
         if not os.path.exists(os.path.abspath(os.path.expanduser('~')) + "/.teelebot"):
             os.mkdir(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")
-        config_dir = os.path.abspath(os.path.expanduser('~')) + "/.teelebot/config.cfg"
+        config_dir = os.path.abspath(
+            os.path.expanduser('~')) + "/.teelebot/config.cfg"
         #config_dir = os.path.dirname(os.path.abspath(__file__)) + "/config.cfg"
     else:
         sys.exit("参数缺失或错误!")
@@ -57,16 +62,17 @@ def config():
     for option in options:
         config[str(option)] = conf.get("config", option)
 
-    if any([ "version" in config.keys(), "author" in config.keys() ]):
+    if any(["version" in config.keys(), "author" in config.keys()]):
         print("配置文件存在错误!")
         os._exit(0)
 
     if config["webhook"] == "True":
-        webhook_args = ["cert_pub", "server_address", "server_port", "local_address" ,"local_port"]
+        webhook_args = ["cert_pub", "server_address",
+                        "server_port", "local_address", "local_port"]
         for w in webhook_args:
             if w not in config.keys():
-                print("请检查配置文件中是否存在以下字段：\n" +\
-                    "cert_pub server_address server_port local_address local_port")
+                print("请检查配置文件中是否存在以下字段：\n" +
+                      "cert_pub server_address server_port local_address local_port")
                 return False
 
     if "plugin_dir" in config.keys():
@@ -75,11 +81,11 @@ def config():
         plugin_dir = os.path.dirname(os.path.abspath(__file__)) + r"/plugins/"
 
     if os.path.exists(os.path.dirname(os.path.abspath(__file__)) + r"/__pycache__"):
-        shutil.rmtree(os.path.dirname(os.path.abspath(__file__)) + r"/__pycache__")
+        shutil.rmtree(os.path.dirname(
+            os.path.abspath(__file__)) + r"/__pycache__")
 
-
-    if not os.path.isdir(plugin_dir): #插件目录检测
-        #os.makedirs(plugin_dir)
+    if not os.path.isdir(plugin_dir):  # 插件目录检测
+        # os.makedirs(plugin_dir)
         os.mkdir(plugin_dir)
         with open(plugin_dir + "__init__.py", "w") as f:
             pass
@@ -108,13 +114,15 @@ def config():
     config["version"] = __version__
     config["plugin_dir"] = plugin_dir
     config["plugin_bridge"] = bridge(config["plugin_dir"])
-    config["plugin_info"] = __plugin_info(config["plugin_bridge"].values(), config["plugin_dir"])
+    config["plugin_info"] = __plugin_info(
+        config["plugin_bridge"].values(), config["plugin_dir"])
 
     if args.debug:
         config["debug"] = True
 
-    #print(config)
+    # print(config)
     return config
+
 
 def bridge(plugin_dir):
     '''
@@ -130,11 +138,12 @@ def bridge(plugin_dir):
     for plugin in plugin_list:
         with open(plugin_dir + plugin + r"/__init__.py", encoding="utf-8") as f:
             row_one = f.readline().strip()[1:]
-            if row_one != "~~": #Hidden plugin
+            if row_one != "~~":  # Hidden plugin
                 plugin_bridge[row_one] = plugin
 
-    #print(plugin_bridge)
+    # print(plugin_bridge)
     return plugin_bridge
+
 
 def __plugin_info(plugin_list, plugin_dir):
     '''
@@ -146,7 +155,3 @@ def __plugin_info(plugin_list, plugin_dir):
         plugin_info[plugin] = mtime
 
     return plugin_info
-
-
-
-

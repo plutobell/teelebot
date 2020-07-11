@@ -1,17 +1,18 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-6-26
+@last modify: 2020-7-11
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 #from socketserver import ThreadingMixIn
 import json
 import sys
 
+
 def __MakeRequestHandler(bot):
     class RequestHandler(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
-                super(RequestHandler, self).__init__(*args, **kwargs)
+            super(RequestHandler, self).__init__(*args, **kwargs)
 
         def do_POST(self):
             if self.command == "POST" and self.path == "/bot" + str(bot.key):
@@ -26,14 +27,14 @@ def __MakeRequestHandler(bot):
                     for message in messages:
                         bot._pluginRun(bot, message)
 
-                data = {'status':'ok'}
+                data = {'status': 'ok'}
                 data = json.dumps(data)
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(data.encode('utf-8'))
             else:
-                data = {'status':'false'}
+                data = {'status': 'false'}
                 data = json.dumps(data)
                 self.send_response(400)
                 self.send_header('Content-type', 'application/json')
@@ -58,4 +59,3 @@ def runWebhook(bot, host, port):
     except KeyboardInterrupt:
         server.server_close()
         sys.exit("程序终止")
-
