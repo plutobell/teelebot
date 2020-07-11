@@ -176,11 +176,14 @@ def Guard(bot, message):
             bot.message_deletor(30, status["chat"]["id"], status["message_id"])
             return False
 
+        req = db.user_select(chat_id=message["chat"]["id"], user_id=message["left_chat_member"]["id"])
+        if req != False:
+            db.user_delete(chat_id=message["chat"]["id"], user_id=message["left_chat_member"]["id"])
+
         result = db.select(chat_id=message["chat"]["id"], user_id=message["left_chat_member"]["id"])
         if  result != False and result[2] == str(user_id) and result[1] == str(chat_id) and message["chat"]["type"] != "private":
             status = bot.deleteMessage(chat_id=message["chat"]["id"], message_id=result[3])
             db.delete(chat_id=message["chat"]["id"], user_id=message["left_chat_member"]["id"])
-
         user_id = message["left_chat_member"]["id"]
         if "first_name" in message["left_chat_member"]:
             first_name = message["left_chat_member"]["first_name"].strip()
@@ -232,7 +235,7 @@ def Guard(bot, message):
                         msg = "<b><a href='tg://user?id="+ str(user_id) + "'>"+ str(user_id) +"</a></b> 的消息<b> 违规</b>，已驱逐出境。"
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML")
-                        bot.message_deletor(30, status["chat"]["id"], status["message_id"])
+                        #bot.message_deletor(30, status["chat"]["id"], status["message_id"])
                         db.user_delete(chat_id, user_id)
                 else:
                     db.user_delete(chat_id, user_id)
