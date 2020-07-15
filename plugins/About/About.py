@@ -26,9 +26,13 @@ def About(bot, message):
             "<b>teelebot</b> 是基于 Telegram Bot API 的 Bot 框架，具有插件系统，扩展方便。%0A%0A"
 
         req = bot.getUserProfilePhotos(user_id=str(bot_id), limit=1)
-        bot_icon = req.get("photos")[0][0]["file_id"]
-        if type(bot_icon) == str and len(bot_icon) > 50:
-            photo = bot_icon
+        if req.get("photos", "notphotos") != "notphotos":
+            bot_icon = req.get("photos")[0][0]["file_id"]
+            if type(bot_icon) == str and len(bot_icon) > 50:
+                photo = bot_icon
+            else:
+                with open(bot.plugin_dir + "About/icon.png", "rb") as p:
+                    photo = p.read()
         else:
             with open(bot.plugin_dir + "About/icon.png", "rb") as p:
                 photo = p.read()
