@@ -418,6 +418,12 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新日志 ##
 
+#### 2020-7-17
+
+* v1.9.6 : 
+  * 框架新增在未安装任何插件时的提示消息
+  * 修复插件 About 的bug
+
 #### 2020-7-11
 
 * v1.9.5 : 
