@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-11
+@last modify: 2020-7-17
 @author github:plutobell
-@version: 1.9.5_dev
+@version: 1.9.6_dev
 '''
 import time
 import sys
@@ -139,6 +139,10 @@ class Bot(object):
         now_plugin_bridge = bridge(self.plugin_dir)  # 动态装载插件
         if now_plugin_bridge != self.plugin_bridge:
             self.plugin_bridge = now_plugin_bridge
+
+        if len(self.plugin_bridge) == 0:
+            os.system("")
+            print("\033[1;31m未安装任何插件!\033[0m")
 
         plugin_list = self.plugin_bridge.keys()
         plugin_bridge = self.plugin_bridge
