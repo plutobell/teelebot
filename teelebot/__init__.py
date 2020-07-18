@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-7-11
+@last modify: 2020-7-18
 '''
 from .polling import runUpdates
 from .webhook import runWebhook
@@ -30,7 +30,7 @@ def main():
             print("获取运行模式失败!")
 
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
-              "\n * 运行模式: Webhook", "\n * 最大线程: " + str(bot.config["pool_size"]))
+              "\n * 运行模式: Webhook", "\n * 最大线程: " + str(bot.config["pool_size"]) + "\n")
         runWebhook(bot=bot, host=bot.config["local_address"], port=int(
             bot.config["local_port"]))
     else:
@@ -46,5 +46,5 @@ def main():
             print("获取运行模式失败!")
 
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
-              "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]))
+              "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]) + "\n")
         runUpdates(bot=bot)
