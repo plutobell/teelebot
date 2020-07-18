@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-17
+@last modify: 2020-7-18
 @author github:plutobell
-@version: 1.9.6_dev
+@version: 1.9.9_dev
 '''
 import time
 import sys
@@ -14,6 +14,7 @@ import shutil
 import importlib
 import threading
 import requests
+import logging
 
 from .handler import config, bridge
 from datetime import timedelta
@@ -22,6 +23,11 @@ from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+logging.basicConfig(level=logging.DEBUG,
+                    datefmt='%Y/%m/%d %H:%M:%S',
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 class Bot(object):
     "机器人的基类"
@@ -80,13 +86,11 @@ class Bot(object):
         '''
         线程池异常回调
         '''
-        now_time = time.strftime("%Y/%m/%d %H:%M:%S")
-        if self.debug == True:
-            print("\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19)
-            # print(fur.result())
-        elif fur.exception() != None:
-            print("\n" + "_" * 19 + " " + str(now_time) + " " + "_" * 19)
-            print(fur.result())
+        # if self.debug == True:
+        #     logger.debug("OK")
+        #     # print(fur.result())
+        if fur.exception() != None:
+            logger.debug("EXCEPTION" + " - " + str(fur.result()))
 
     def __import_module(self, plugin_name):
         '''
@@ -113,21 +117,23 @@ class Bot(object):
             os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
             if len(stack_info) == 8:  # 插件内
-                print("\033[1;31mRequest failed!")
-                print(" From : " + stack_info[-3][2])
-                print(" Path : " + stack_info[5][0])
-                print(" Line : " + str(stack_info[5][1]))
-                print("Method: " + stack_info[6][2])
-                print("Result: " + str(result))
-                print("\033[0m\n")
+                logger.debug("\033[1;31m" +\
+                "Request failed" + " - " +\
+                "From:" + stack_info[-3][2] + " - " +\
+                "Path:" + stack_info[5][0] + " - " +\
+                "Line:" + str(stack_info[5][1]) + " - " +\
+                "Method:" + stack_info[6][2] + " - " +\
+                "Result:" + str(result) +\
+                "\033[0m")
             elif len(stack_info) == 3:  # 外部调用
-                print("\033[1;31mRequest failed!")
-                print(" From : " + stack_info[0][0])
-                print(" Path : " + stack_info[1][0])
-                print(" Line : " + str(stack_info[0][1]))
-                print("Method: " + stack_info[1][2])
-                print("Result: " + str(result))
-                print("\033[0m\n")
+                logger.debug("\033[1;31m" +\
+                "Request failed" + " - " +\
+                "From:" + stack_info[0][0] + " - " +\
+                "Path:" + stack_info[1][0] + " - " +\
+                "Line:" + str(stack_info[0][1]) + " - " +\
+                "Method:" + stack_info[1][2] + " - " +\
+                "Result:" + str(result) +\
+                "\033[0m")
 
     def _pluginRun(self, bot, message):
         '''
@@ -167,8 +173,10 @@ class Bot(object):
 
         for plugin in plugin_list:
             if "callback_query_id" in message.keys():  # callback query
+                message["message_type"] = "callback_query_data"
                 message_type = "callback_query_data"
             elif ("new_chat_members" in message.keys()) or ("left_chat_member" in message.keys()):
+                message["message_type"] = "text"
                 message_type = "text"
                 message["text"] = ""  # default prefix of command
             elif "photo" in message.keys():
@@ -187,10 +195,13 @@ class Bot(object):
                 message["message_type"] = "document"
                 message_type = "message_type"
             elif "text" in message.keys():
+                message["message_type"] = "text"
                 message_type = "text"
             elif "caption" in message.keys():
+                message["message_type"] = "caption"
                 message_type = "caption"
             elif "query" in message.keys():
+                message["message_type"] = "query"
                 message_type = "query"
             else:
                 continue
@@ -200,6 +211,42 @@ class Bot(object):
                 pluginFunc = getattr(Module, plugin_bridge[plugin])
                 fur = self.__thread_pool.submit(pluginFunc, bot, message)
                 fur.add_done_callback(self.__threadpool_exception)
+
+                title = ""
+                user_name = ""
+                if message["chat"]["type"] == "private":
+                    if "first_name" in message["chat"].keys():
+                        title += message["chat"]["first_name"]
+                    if "last_name" in message["chat"].keys():
+                        if "first_name" in message["chat"].keys():
+                            title += " " + message["chat"]["last_name"]
+                        else:
+                            title += message["chat"]["last_name"]
+                elif "title" in message["chat"].keys():
+                    title = message["chat"]["title"]
+                if "reply_markup" in message.keys():
+                    from_id = message["click_user"]["id"]
+                    if "first_name" in message["click_user"].keys():
+                        user_name += message["click_user"]["first_name"]
+                    if "last_name" in message["click_user"].keys():
+                        if "first_name" in message["click_user"].keys():
+                            user_name += " " + message["click_user"]["last_name"]
+                        else:
+                            user_name += message["chat"]["last_name"]
+                else:
+                    from_id = message["from"]["id"]
+                    if "first_name" in message["from"].keys():
+                        user_name += message["from"]["first_name"]
+                    if "last_name" in message["from"].keys():
+                        if "first_name" in message["from"].keys():
+                            user_name += " " + message["from"]["last_name"]
+                        else:
+                            user_name += message["from"]["last_name"]
+                logger.info(
+                    "From:" + title + "(" +str(message["chat"]["id"]) + ") - " +\
+                    "User:" + user_name + "(" + str(from_id) + ") - " +\
+                    "Plugin: " + str(plugin_bridge[plugin]) + " - " +\
+                    "Type:" + message["message_type"])
 
                 self.__response_times += 1
 
