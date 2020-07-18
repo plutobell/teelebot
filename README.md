@@ -418,6 +418,13 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 
 ## 更新日志 ##
 
+#### 2020-7-18
+
+* v1.9.9 : 
+  * 重构debug模式以及日志系统
+  * 完善自定义消息字段 `message_type`
+  * 细节优化
+
 #### 2020-7-17
 
 * v1.9.6 : 
