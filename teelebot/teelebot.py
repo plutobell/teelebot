@@ -212,7 +212,7 @@ class Bot(object):
                 fur = self.__thread_pool.submit(pluginFunc, bot, message)
                 fur.add_done_callback(self.__threadpool_exception)
 
-                title = ""
+                title = "" #INFO日志
                 user_name = ""
                 if message["chat"]["type"] == "private":
                     if "first_name" in message["chat"].keys():
