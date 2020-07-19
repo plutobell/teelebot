@@ -2,7 +2,7 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-18
+@last modify: 2020-7-19
 @author github:plutobell
 @version: 1.9.9_dev
 '''
@@ -212,6 +212,8 @@ class Bot(object):
                 fur = self.__thread_pool.submit(pluginFunc, bot, message)
                 fur.add_done_callback(self.__threadpool_exception)
 
+                self.__response_times += 1
+
                 title = "" #INFO日志
                 user_name = ""
                 if message["chat"]["type"] == "private":
@@ -247,8 +249,6 @@ class Bot(object):
                     "User:" + user_name + "(" + str(from_id) + ") - " +\
                     "Plugin: " + str(plugin_bridge[plugin]) + " - " +\
                     "Type:" + message["message_type"])
-
-                self.__response_times += 1
 
     def _washUpdates(self, results):
         '''
