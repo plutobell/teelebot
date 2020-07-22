@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-19
+@last modify: 2020-7-22
 @author github:plutobell
-@version: 1.9.9_dev
+@version: 1.9.10_dev
 '''
 import time
 import sys
@@ -106,6 +106,7 @@ class Bot(object):
                 shutil.rmtree(self.plugin_dir + plugin_name + r"/__pycache__")
             self.__plugin_info[plugin_name] = now_mtime
             importlib.reload(Module)
+            logger.info("The plugin " + plugin_name + " has been updated")
 
         return Module
 
@@ -143,7 +144,14 @@ class Bot(object):
             return
 
         now_plugin_bridge = bridge(self.plugin_dir)  # 动态装载插件
+
         if now_plugin_bridge != self.plugin_bridge:
+            for plugin in now_plugin_bridge:
+                if plugin not in self.plugin_bridge:
+                    logger.info("The plugin " + now_plugin_bridge[plugin] + " has been installed")
+            for plugin in self.plugin_bridge:
+                if plugin not in now_plugin_bridge:
+                    logger.info("The plugin " + self.plugin_bridge[plugin] + " has been uninstalled")
             self.plugin_bridge = now_plugin_bridge
 
         if len(self.plugin_bridge) == 0:
@@ -226,7 +234,8 @@ class Bot(object):
                             title += message["chat"]["last_name"]
                 elif "title" in message["chat"].keys():
                     title = message["chat"]["title"]
-                if "reply_markup" in message.keys():
+                if "reply_markup" in message.keys() and\
+                    message["message_type"] == "callback_query_data":
                     from_id = message["click_user"]["id"]
                     if "first_name" in message["click_user"].keys():
                         user_name += message["click_user"]["first_name"]
