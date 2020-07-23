@@ -26,7 +26,6 @@ def Sticker(bot, message):
                     photo = file_dl_path
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendPhoto(chat_id=chat_id, photo=photo, caption="本消息不久将被销毁，请尽快保存。" , reply_to_message_id=message_id)
-                print(status)
                 bot.message_deletor(30, chat_id, status["message_id"])
             else:
                 status = bot.sendChatAction(chat_id, "typing")
