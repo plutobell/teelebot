@@ -2,7 +2,7 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-23
+@last modify: 2020-7-24
 @author github:plutobell
 @version: 1.9.11_dev
 '''
@@ -919,12 +919,12 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
-    def getChatMember(self, uid, chat_id):
+    def getChatMember(self, user_id, chat_id):
         '''
         获取群组特定用户信息
         '''
         command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
         with self.__session.post(self.url + addr) as req:
 
             self.__debug_info(req.json())
@@ -1051,7 +1051,7 @@ class Bot(object):
             elif req.json().get("ok") == False:
                 return req.json().get("ok")
 
-    def promoteChatMember(self, uid, chat_id, can_change_info=None, can_post_messages=None,
+    def promoteChatMember(self, user_id, chat_id, can_change_info=None, can_post_messages=None,
                           can_edit_messages=None, can_delete_messages=None, can_invite_users=None,
                           can_restrict_members=None, can_pin_messages=None, can_promote_members=None):
         '''
@@ -1069,7 +1069,7 @@ class Bot(object):
         '''
         command = sys._getframe().f_code.co_name
 
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(uid)
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
         if can_change_info != None:
             addr += "&can_change_info=" + str(can_change_info)
         if can_post_messages != None:
