@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-24
+@last modify: 2020-7-29
 @author github:plutobell
-@version: 1.9.11_dev
+@version: 1.9.13_dev
 '''
 import time
 import sys
@@ -16,7 +16,7 @@ import threading
 import requests
 import logging
 
-from .handler import config, bridge
+from .handler import config, bridge, plugin_info
 from datetime import timedelta
 from traceback import extract_stack
 from concurrent.futures import ThreadPoolExecutor
@@ -144,7 +144,6 @@ class Bot(object):
             return
 
         now_plugin_bridge = bridge(self.plugin_dir)  # 动态装载插件
-
         if now_plugin_bridge != self.plugin_bridge:
             for plugin in now_plugin_bridge:
                 if plugin not in self.plugin_bridge:
@@ -153,6 +152,10 @@ class Bot(object):
                 if plugin not in now_plugin_bridge:
                     logger.info("The plugin " + self.plugin_bridge[plugin] + " has been uninstalled")
             self.plugin_bridge = now_plugin_bridge
+
+        now_plugin_info = plugin_info(self.plugin_bridge.values(), self.plugin_dir) #动态更新插件信息
+        if now_plugin_info != self.__plugin_info:
+            self.__plugin_info = now_plugin_info
 
         if len(self.plugin_bridge) == 0:
             os.system("")

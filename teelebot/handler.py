@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-7-23
+@last modify: 2020-7-29
 '''
 import configparser
 import argparse
@@ -9,7 +9,7 @@ import os
 import sys
 import shutil
 
-__version__ = "1.9.11_dev"
+__version__ = "1.9.13_dev"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
@@ -114,7 +114,7 @@ def config():
     config["version"] = __version__
     config["plugin_dir"] = plugin_dir
     config["plugin_bridge"] = bridge(config["plugin_dir"])
-    config["plugin_info"] = __plugin_info(
+    config["plugin_info"] = plugin_info(
         config["plugin_bridge"].values(), config["plugin_dir"])
 
     if args.debug:
@@ -145,7 +145,7 @@ def bridge(plugin_dir):
     return plugin_bridge
 
 
-def __plugin_info(plugin_list, plugin_dir):
+def plugin_info(plugin_list, plugin_dir):
     '''
     获取插件修改状态
     '''
