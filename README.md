@@ -28,6 +28,7 @@ Python实现的Telegram Bot机器人框架，拥有插件系统，插件支持�
 *  TodayInHistory - TodayInHistory插件，调用 [Kate.API](https://api.66mz8.com/) 查看历史上的今天
 *  Dwz - Dwz插件，调用 [ALAPI](https://www.alapi.net/) 生成短网址
 *  Acg - Acg插件，调用 [ALAPI](https://www.alapi.net/) 随机获取一张ACG图
+*  Whois - Whois插件，调用 [ALAPI](https://www.alapi.net/) 查询域名whois信息
 
 
 
