@@ -2,9 +2,9 @@
 '''
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-7-29
+@last modify: 2020-7-31
 @author github:plutobell
-@version: 1.9.13_dev
+@version: 1.9.14_dev
 '''
 import time
 import sys
@@ -99,8 +99,9 @@ class Bot(object):
         sys.path.append(self.plugin_dir + plugin_name + r"/")
         Module = importlib.import_module(plugin_name)  # 模块检测
 
-        now_mtime = mtime = os.stat(
+        now_mtime = os.stat(
             self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
+        print(now_mtime, self.__plugin_info[plugin_name])
         if now_mtime != self.__plugin_info[plugin_name]:  # 插件热更新
             if os.path.exists(self.plugin_dir + plugin_name + r"/__pycache__"):
                 shutil.rmtree(self.plugin_dir + plugin_name + r"/__pycache__")
@@ -154,7 +155,7 @@ class Bot(object):
             self.plugin_bridge = now_plugin_bridge
 
         now_plugin_info = plugin_info(self.plugin_bridge.values(), self.plugin_dir) #动态更新插件信息
-        if now_plugin_info != self.__plugin_info:
+        if len(now_plugin_info) != len(self.__plugin_info):
             self.__plugin_info = now_plugin_info
 
         if len(self.plugin_bridge) == 0:
