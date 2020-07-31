@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-3-21
-last_modify: 2020-7-27
+last_modify: 2020-7-31
 '''
 import requests
 
@@ -45,7 +45,7 @@ def Top(bot, message):
                     avail_memory = Swap["avail_memory"]
                     Cpu_temperature = contents.get("Cpu_temperature")
                     Hard_disk = contents.get("Hard_disk")
-                    hd_total = Hard_disk[0]
+                    hd_used = Hard_disk[0]
                     hd_avail = Hard_disk[1]
 
                     msg = "<b>服务器：" + str(Hostname) + "</b>%0A" + \
@@ -56,7 +56,7 @@ def Top(bot, message):
                         "CPU温度：<b>" + str(Cpu_temperature) + " ℃</b>%0A" + \
                         "CPU用量：<b>" + str(round(100.0-float(cpu_id), 2)) + "</b> 已用，<b>" + str(round(float(cpu_id), 2)) + "</b> 空闲%0A" + \
                         "内存用量：<b>" + str(round((float(memory_total)-float(avail_memory))/1024, 2)) + "G</b> 已用，<b>" + str(round(float(avail_memory)/1024,2)) + "G</b> 空闲%0A" + \
-                        "硬盘用量：<b>" + str(int(float(hd_total)-float(hd_avail))) + "G</b> 已用，<b>" + str(hd_avail) + "G</b> 空闲"
+                        "硬盘用量：<b>" + str(hd_used) + "</b> 已用，<b>" + str(hd_avail) + "</b> 空闲"
 
                     status = bot.editMessageText(chat_id=message["chat"]["id"], message_id=txt_message_id, text=msg, parse_mode="HTML")
                     bot.message_deletor(60, message["chat"]["id"], txt_message_id)
