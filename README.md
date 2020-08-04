@@ -227,7 +227,7 @@ local_port=webhook local port ////Optional while webhook is False
 
 ```python
 [config]
-key=your key
+key=bot key
 pool_size=40 //the thread pool size, default 40, range(1, 101)
 webhook=False
 cert_pub=your public certificate dir //Optional while webhook is False
