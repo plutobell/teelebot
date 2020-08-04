@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-7-23
+last_modify: 2020-8-4
 '''
 from collections import defaultdict
 import re
@@ -280,7 +280,7 @@ def Guard(bot, message):
                                    message_times=req[3], spam_times=req[4])
 
                     result = DFA.filter(text.strip(), repl)
-                    if (repl in result and len(text) > 9) or (len(text) > 25):
+                    if (repl in result and len(text) > 9) or (len(text) > 35):
                         req[4] += 2
                         db.user_update(chat_id=chat_id, user_id=user_id,
                                        message_times=req[3], spam_times=req[4])
