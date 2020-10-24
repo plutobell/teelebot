@@ -316,7 +316,7 @@ class Bot(object):
             elif not req.json().get("ok"):
                 return req.json().get("ok")
 
-    def __post(self, addr, file_data):
+    def __postFile(self, addr, file_data):
         with self.__session.post(self.url + addr, files=file_data) as req:
             self.__debug_info(req.json())
             if req.json().get("ok"):
@@ -429,7 +429,7 @@ class Bot(object):
         if file_data is None:
             req = self.__session.post(self.url + addr)
         else:
-            req = self.__session.post(self.url + addr, files=file_data)
+            req = self.__session.postFile(self.url + addr, files=file_data)
 
         self.__debug_info(req.json())
         if req.json().get("ok"):
@@ -517,7 +517,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None,
                       reply_markup=None):
@@ -550,7 +550,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            self.__post(addr, file_data)
+            self.__postFile(addr, file_data)
 
     def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None,
                   reply_markup=None):
@@ -585,7 +585,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None,
                   reply_markup=None):  # 发送图片
@@ -618,7 +618,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
         """
@@ -650,7 +650,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text", reply_to_message_id=None,
                       reply_markup=None):
@@ -684,7 +684,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None,
                        reply_markup=None):  # 暂未弄懂格式。
@@ -770,7 +770,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def leaveChat(self, chat_id):
         """
@@ -850,7 +850,7 @@ class Bot(object):
         file_data = {"photo": open(photo, 'rb')}
         addr = command + "?chat_id=" + str(chat_id)
 
-        return self.__post(addr, file_data)
+        return self.__postFile(addr, file_data)
 
     def deleteChatPhoto(self, chat_id):
         """
@@ -1415,7 +1415,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def getStickerSet(self, name):
         """
@@ -1451,7 +1451,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def createNewStickerSet(self, user_id, name, title, emojis, png_sticker=None, tgs_sticker=None):
         """
@@ -1496,7 +1496,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def addStickerToSet(self, user_id, name, emojis, png_sticker=None, tgs_sticker=None):
         """
@@ -1541,7 +1541,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     def setStickerPositionInSet(self, sticker, position):
         """
@@ -1586,7 +1586,7 @@ class Bot(object):
         if file_data is None:
             return self.__post(addr)
         else:
-            return self.__post(addr, file_data)
+            return self.__postFile(addr, file_data)
 
     # Payments
     def sendInvoice(self, chat_id, title, description, payload, provider_token, start_parameter,
