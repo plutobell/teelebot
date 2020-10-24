@@ -6,6 +6,7 @@
 @author github:plutobell
 @version: 1.9.14_dev
 """
+import inspect
 import time
 import sys
 import os
@@ -397,7 +398,7 @@ class Bot(object):
         """
         获取消息队列
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?offset=" + str(self.offset) + \
                "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
 
@@ -411,7 +412,7 @@ class Bot(object):
         设置Webhook
         Ports currently supported for Webhooks: 443, 80, 88, 8443.
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?url=" + str(url)
         if max_connections is not None:
             addr += "&max_connections=" + str(max_connections)
@@ -440,7 +441,7 @@ class Bot(object):
         """
         删除设置的Webhook
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command
         return self.__post(addr)
 
@@ -448,7 +449,7 @@ class Bot(object):
         """
         获取当前的Webhook状态
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command
         return self.__post(addr)
 
@@ -458,7 +459,7 @@ class Bot(object):
         """
         获取机器人基本信息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?" + "offset=" + \
                str(self.offset) + "&timeout=" + str(self.timeout)
         return self.__post(addr)
@@ -467,7 +468,7 @@ class Bot(object):
         """
         获取文件信息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?file_id=" + file_id
         return self.__post(addr)
 
@@ -475,7 +476,7 @@ class Bot(object):
         """
         发送文本消息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
@@ -490,7 +491,7 @@ class Bot(object):
         """
         发送音频消息 .ogg
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if voice[:7] == "http://" or voice[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&voice=" + voice
@@ -523,18 +524,16 @@ class Bot(object):
         """
         发送动画 gif/mp4
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if animation[:7] == "http://" or animation[:7] == "https:/":
             file_data = None
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&animation=" + animation
+            addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
         elif type(animation) == bytes:
             file_data = {"animation": animation}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(animation) == str and '.' not in animation:
             file_data = None
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&animation=" + animation
+            addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
         else:
             file_data = {"animation": open(animation, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -558,7 +557,7 @@ class Bot(object):
         """
         发送音频 mp3
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if audio[:7] == "http://" or audio[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
@@ -593,7 +592,7 @@ class Bot(object):
         """
         发送图片
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if photo[:7] == "http://" or photo[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&photo=" + photo
@@ -625,7 +624,7 @@ class Bot(object):
         """
         发送视频
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if video[:7] == "http://" or video[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
@@ -658,21 +657,20 @@ class Bot(object):
         """
         发送圆形或方形视频？
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
+        char_id_str = str(chat_id)
         if video_note[:7] == "http://" or video_note[:7] == "https:/":
             file_data = None
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&video_note=" + video_note
+            addr = command + "?chat_id=" + char_id_str + "&video_note=" + video_note
         elif type(video_note) == bytes:
             file_data = {"video_note": video_note}
-            addr = command + "?chat_id=" + str(chat_id)
+            addr = command + "?chat_id=" + char_id_str
         elif type(video_note) == str and '.' not in video_note:
             file_data = None
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&video_note=" + video_note
+            addr = command + "?chat_id=" + char_id_str + "&video_note=" + video_note
         else:
             file_data = {"video_note": open(video_note, 'rb')}
-            addr = command + "?chat_id=" + str(chat_id)
+            addr = command + "?chat_id=" + char_id_str
 
         if caption is not None:
             addr += "&caption=" + caption
@@ -723,7 +721,7 @@ class Bot(object):
         duration
         supports_streaming
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
@@ -746,18 +744,16 @@ class Bot(object):
         """
         发送文件
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&document=" + document
+            addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
         elif type(document) == bytes:
             file_data = {"document": document}
             addr = command + "?chat_id=" + str(chat_id)
         elif type(document) == str and '.' not in document:
             file_data = None
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&document=" + document
+            addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
         else:
             file_data = {"document": open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
@@ -780,7 +776,7 @@ class Bot(object):
         """
         退出群组
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         return self.__post(addr)
 
@@ -788,7 +784,7 @@ class Bot(object):
         """
         获取群组基本信息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         return self.__post(addr)
 
@@ -796,7 +792,7 @@ class Bot(object):
         """
         获取群组所有管理员信息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         return self.__post(addr)
 
@@ -804,7 +800,7 @@ class Bot(object):
         """
         获取群组成员总数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         return self.__post(addr)
 
@@ -812,7 +808,7 @@ class Bot(object):
         """
         获取用户头像
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
 
         if offset is not None:
@@ -825,7 +821,7 @@ class Bot(object):
         """
         获取群组特定用户信息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
         return self.__post(addr)
 
@@ -833,7 +829,7 @@ class Bot(object):
         """
         设置群组标题
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&title=" + str(title)
         return self.__post(addr)
 
@@ -842,16 +838,15 @@ class Bot(object):
         设置群组简介（测试好像无效。。）
         //FIXME
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + \
-               str(chat_id) + "&description=" + str(description)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
         return self.__post(addr)
 
     def setChatPhoto(self, chat_id, photo):
         """
         设置群组头像
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         file_data = {"photo": open(photo, 'rb')}
         addr = command + "?chat_id=" + str(chat_id)
 
@@ -861,7 +856,7 @@ class Bot(object):
         """
         删除群组头像
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         return self.__post(addr)
 
@@ -879,7 +874,7 @@ class Bot(object):
             'can_pin_messages':False
         }
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         permissions = {"permissions": permissions}
         return self.__postJson(addr, permissions)
@@ -900,7 +895,7 @@ class Bot(object):
         until_date format:
         timestamp + offset
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + \
                str(chat_id) + "&user_id=" + str(user_id)
         if len(permissions) != 8:
@@ -927,7 +922,7 @@ class Bot(object):
         'can_promote_members':False
         }
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
         if can_change_info is not None:
@@ -953,9 +948,8 @@ class Bot(object):
         """
         置顶消息
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + \
-               str(chat_id) + "&message_id=" + str(message_id)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
 
@@ -965,7 +959,7 @@ class Bot(object):
         """
         取消置顶消息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         return self.__post(addr)
 
@@ -974,7 +968,7 @@ class Bot(object):
         """
         发送地图定位，经纬度
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(
             float(latitude)) + "&longitude=" + str(float(longitude))
         if live_period is not None:
@@ -993,10 +987,8 @@ class Bot(object):
         """
         发送联系人信息
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + \
-               str(chat_id) + "&phone_number=" + str(phone_number) + \
-               "&first_name=" + str(first_name)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(first_name)
         if last_name is not None:
             addr += "&last_name=" + str(last_name)
         if reply_to_message_id is not None:
@@ -1010,10 +1002,9 @@ class Bot(object):
         """
         发送地点，显示在地图上
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(
-            float(longitude)) + \
-               "&title=" + str(title) + "&address=" + str(address)
+            float(longitude)) + "&title=" + str(title) + "&address=" + str(address)
         if reply_to_message_id is not None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
@@ -1032,7 +1023,7 @@ class Bot(object):
             find_location :for location data,
             record_video_note/upload_video_note :for video notes.
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&action=" + str(action)
         return self.__post(addr)
 
@@ -1040,7 +1031,7 @@ class Bot(object):
         """
         转发消息
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&from_chat_id=" + str(from_chat_id) \
                + "&message_id=" + str(message_id)
         if disable_notification is not None:
@@ -1055,12 +1046,10 @@ class Bot(object):
         timestamp + offset
         """
 
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if until_date is not None:
             until_date = int(time.time()) + int(until_date)
-            addr = command + "?chat_id=" + \
-                   str(chat_id) + "&user_id=" + str(user_id) + \
-                   "&until_date=" + str(until_date)
+            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
         if until_date is None:
             addr = command + "?chat_id=" + \
                    str(chat_id) + "&user_id=" + str(user_id)
@@ -1081,7 +1070,7 @@ class Bot(object):
         can_pin_messages
         """
 
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + \
                str(chat_id) + "&user_id=" + str(user_id)
 
@@ -1091,10 +1080,8 @@ class Bot(object):
         """
         为群组的管理员设置自定义头衔
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + \
-               str(chat_id) + "&user_id=" + str(user_id) + \
-               "&custom_title=" + str(custom_title)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + str(custom_title)
 
         return self.__post(addr)
 
@@ -1102,7 +1089,7 @@ class Bot(object):
         """
         使用此方法生成新的群组分享链接，旧有分享链接全部失效,成功返回分享链接
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
 
         return self.__post(addr)
@@ -1111,9 +1098,8 @@ class Bot(object):
         """
         为一个超级群组设置贴纸集
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + \
-               str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
 
         return self.__post(addr)
 
@@ -1121,7 +1107,7 @@ class Bot(object):
         """
         删除超级群组的贴纸集
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
 
         return self.__post(addr)
@@ -1132,7 +1118,7 @@ class Bot(object):
         使用此方法编辑实时位置消息
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         if inline_message_id is None:
             if message_id is None or chat_id is None:
@@ -1156,7 +1142,7 @@ class Bot(object):
         使用此方法可在活动期间到期前停止更新活动位置消息
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         if inline_message_id is None:
             if message_id is None or chat_id is None:
@@ -1182,7 +1168,7 @@ class Bot(object):
             {"command": "bing", "description": "获取每日Bing壁纸"}
         ]
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command
         commands = {"commands": commands}
         return self.__postJson(addr, commands)
@@ -1191,7 +1177,7 @@ class Bot(object):
         """
         使用此方法获取机器人当前的命令列表
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command
         return self.__post(addr)
 
@@ -1202,7 +1188,7 @@ class Bot(object):
         编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         if inline_message_id is None:
             if message_id is None or chat_id is None:
@@ -1231,9 +1217,9 @@ class Bot(object):
         编辑消息的Caption。成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if inline_message_id is None:
-            if message_id is None or chat_id == None:
+            if message_id is None or chat_id is None:
                 return False
 
         if inline_message_id is not None:
@@ -1264,7 +1250,7 @@ class Bot(object):
             }
         }
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if inline_message_id is None:
             if message_id is None or chat_id is None:
                 return False
@@ -1285,7 +1271,7 @@ class Bot(object):
         编辑MessageReplyMarkup
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         if inline_message_id is None:
             if message_id is None or chat_id is None:
                 return False
@@ -1305,9 +1291,8 @@ class Bot(object):
         """
         停止投票？并返回最终结果
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id" + \
-               str(chat_id) + "&message_id=" + str(message_id)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id" + str(chat_id) + "&message_id=" + str(message_id)
 
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
@@ -1318,9 +1303,8 @@ class Bot(object):
         """
         删除一条消息，机器人必须具备恰当的权限
         """
-        command = sys._getframe().f_code.co_name
-        addr = command + "?chat_id=" + \
-               str(chat_id) + "&message_id=" + str(message_id)
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
 
         return self.__post(addr)
 
@@ -1331,7 +1315,7 @@ class Bot(object):
         """
         使用此方法发送Inline mode的应答
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?inline_query_id=" + str(inline_query_id)
         if cache_time is not None:
             addr += "&cache_time=" + str(cache_time)
@@ -1388,7 +1372,7 @@ class Bot(object):
         "selective": bool("true")
         }
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?callback_query_id=" + str(callback_query_id)
         if text is not None:
             addr += "&text=" + str(text)
@@ -1406,7 +1390,7 @@ class Bot(object):
         """
         使用此方法发送静态、webp或动画、tgs贴纸
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         if sticker[:7] == "http://" or sticker[:7] == "https:/":
             file_data = None
@@ -1437,7 +1421,7 @@ class Bot(object):
         """
         使用此方法获取贴纸集
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?name=" + str(name)
 
         return self.__post(addr)
@@ -1448,22 +1432,21 @@ class Bot(object):
         以供以后在createNewStickerSet和addStickerToSet方法中使用
         （可以多次使用）
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
+        user_id_str = str(user_id)
         if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
             file_data = None
-            addr = command + "?user_id=" + \
-                   str(user_id) + "&png_sticker=" + png_sticker
+            addr = command + "?user_id=" + user_id_str + "&png_sticker=" + png_sticker
         elif type(png_sticker) == bytes:
             file_data = {"png_sticker": png_sticker}
-            addr = command + "?user_id=" + str(user_id)
+            addr = command + "?user_id=" + user_id_str
         elif type(png_sticker) == str and '.' not in png_sticker:
             file_data = None
-            addr = command + "?user_id=" + \
-                   str(user_id) + "&png_sticker=" + png_sticker
+            addr = command + "?user_id=" + user_id_str + "&png_sticker=" + png_sticker
         else:
             file_data = {"png_sticker": open(png_sticker, 'rb')}
-            addr = command + "?user_id=" + str(user_id)
+            addr = command + "?user_id=" + user_id_str
 
         if file_data is None:
             return self.__post(addr)
@@ -1476,7 +1459,7 @@ class Bot(object):
         机器人将能够编辑由此创建的贴纸集
         png_sticker或tgs_sticker字段只能且必须存在一个
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
         addr += "&name=" + str(name)
         addr += "&title=" + str(title)
@@ -1522,7 +1505,7 @@ class Bot(object):
         可以将动画贴纸添加到动画贴纸集中，并且只能添加到它们
         动画贴纸集最多可以包含50个贴纸。 静态贴纸集最多可包含120个贴纸
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
         addr += "&name=" + str(name)
         addr += "&emojis=" + str(emojis)
@@ -1564,7 +1547,7 @@ class Bot(object):
         """
         使用此方法将机器人创建的一组贴纸移动到特定位置
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?sticker=" + str(sticker)
         addr += "&position=" + str(position)
 
@@ -1574,7 +1557,7 @@ class Bot(object):
         """
         使用此方法从机器人创建的集合中删除贴纸
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?sticker=" + str(sticker)
 
         return self.__post(addr)
@@ -1584,7 +1567,7 @@ class Bot(object):
         使用此方法设置贴纸集的缩略图
         只能为动画贴纸集设置动画缩略图
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?name=" + str(name)
         addr += "&user_id=" + str(user_id)
 
@@ -1616,7 +1599,7 @@ class Bot(object):
         """
         使用此方法发送发票
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         addr += "&title=" + str(title)
         addr += "&description=" + str(description)
@@ -1664,7 +1647,7 @@ class Bot(object):
         """
         使用此方法可以答复运输查询
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?shipping_query_id=" + str(shipping_query_id)
         addr += "&ok=" + str(ok)
 
@@ -1679,7 +1662,7 @@ class Bot(object):
         """
         使用此方法来响应此类预结帐查询
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?pre_checkout_query_id=" + str(pre_checkout_query_id)
         addr += "&ok=" + str(ok)
 
@@ -1696,7 +1679,7 @@ class Bot(object):
         在错误纠正之前，用户将无法重新提交其护照
         （错误返回字段的内容必须更改）
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
         addr += "&errors=" + json.dumps(errors)
 
@@ -1709,7 +1692,7 @@ class Bot(object):
         """
         使用此方法发送游戏
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         addr += "&game_short_name=" + str(game_short_name)
 
@@ -1728,7 +1711,7 @@ class Bot(object):
         使用此方法设置游戏中指定用户的分数
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         if inline_message_id is None:
             if message_id is None or chat_id is None:
@@ -1756,7 +1739,7 @@ class Bot(object):
         将返回指定用户及其在游戏中几个邻居的分数
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
         """
-        command = sys._getframe().f_code.co_name
+        command = inspect.stack()[0].function
 
         if inline_message_id is None:
             if message_id is None or chat_id is None:
