@@ -13,7 +13,7 @@ def runUpdates(bot):
         try:
             results = bot.getUpdates()  # 获取消息队列messages
             messages = bot._washUpdates(results)
-            if messages == None or messages == False:
+            if messages is None or not messages:
                 continue
             for message in messages:  # 获取单条消息记录message
                 bot._pluginRun(bot, message)

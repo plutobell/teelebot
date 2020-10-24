@@ -20,10 +20,9 @@ def __MakeRequestHandler(bot):
                 res = req_data.decode('utf-8')
 
                 message = json.loads(res)
-                results = []
-                results.append(message)
+                results = [message]
                 messages = bot._washUpdates(results)
-                if messages != None and messages != False:
+                if messages is not None and messages:
                     for message in messages:
                         bot._pluginRun(bot, message)
 
