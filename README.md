@@ -12,7 +12,7 @@ Python实现的Telegram Bot机器人框架，拥有插件系统，插件支持�
 * Menu - 自动生成的插件菜单
 *   Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
 *   About - 关于
-*   Uptime - 获取Bot持续运行时间
+*   Uptime - 获取Bot运行状态
 *   PluginCTL - 插件开关控制
 *  Hello - Hello World插件例子
 *  Firefoxmoniter - 调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
