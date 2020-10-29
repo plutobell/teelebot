@@ -118,7 +118,7 @@ class Bot(object):
         """
         debug模式
         """
-        if self.debug and result.get("ok") == False:
+        if self.debug and not result.get("ok"):
             os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
             print("#############",len(stack_info))
