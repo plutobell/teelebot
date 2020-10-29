@@ -104,7 +104,7 @@ class Bot(object):
 
         now_mtime = os.stat(
             self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
-        print(now_mtime, self.__plugin_info[plugin_name])
+        # print(now_mtime, self.__plugin_info[plugin_name])
         if now_mtime != self.__plugin_info[plugin_name]:  # 插件热更新
             if os.path.exists(self.plugin_dir + plugin_name + r"/__pycache__"):
                 shutil.rmtree(self.plugin_dir + plugin_name + r"/__pycache__")
@@ -121,7 +121,6 @@ class Bot(object):
         if self.debug and not result.get("ok"):
             os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
-            print("#############",len(stack_info))
             if len(stack_info) > 8:  # 插件内
                 logger.debug("\033[1;31m" + \
                              "Request failed" + " - " + \
