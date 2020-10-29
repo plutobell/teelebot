@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-10-24
+@last modify: 2020-10-29
 @author github:plutobell
-@version: 1.9.15_dev
+@version: 1.9.16_dev
 """
 import inspect
 import time
@@ -118,10 +118,11 @@ class Bot(object):
         """
         debug模式
         """
-        if self.debug and not result.get("ok"):
+        if self.debug and result.get("ok") == False:
             os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
-            if len(stack_info) == 8:  # 插件内
+            print("#############",len(stack_info))
+            if len(stack_info) > 8:  # 插件内
                 logger.debug("\033[1;31m" + \
                              "Request failed" + " - " + \
                              "From:" + stack_info[-3][2] + " - " + \
@@ -130,7 +131,7 @@ class Bot(object):
                              "Method:" + stack_info[6][2] + " - " + \
                              "Result:" + str(result) + \
                              "\033[0m")
-            elif len(stack_info) == 3:  # 外部调用
+            elif len(stack_info) > 3:  # 外部调用
                 logger.debug("\033[1;31m" + \
                              "Request failed" + " - " + \
                              "From:" + stack_info[0][0] + " - " + \
