@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-8-10
+last_modify: 2020-10-29
 '''
 from collections import defaultdict
 import re
@@ -25,7 +25,6 @@ restrict_permissions = {
     'can_pin_messages': False
 }
 
-
 def Guard(bot, message):
     repl = "<*>"
     DFA = DFAFilter()
@@ -38,7 +37,9 @@ def Guard(bot, message):
     bot_id = bot.key.split(':')[0]
 
     with open(bot.plugin_dir + "Guard/config.ini") as f:
-        data_group_id = f.read().strip()
+        config_data = f.read().strip().split(",")
+        data_group_id = config_data[0]
+        log_group_id = config_data[1]
 
     result = db.select(chat_id=chat_id, user_id=user_id)
     if "reply_markup" in message.keys() and\
@@ -178,16 +179,21 @@ def Guard(bot, message):
                     chat_id=chat_id, user_id=user_id, until_date=35)
                 status = bot.deleteMessage(
                     chat_id=chat_id, message_id=message_id)
+                log_status, reply_markup = handle_logging(bot,
+                    content=name, log_group_id=log_group_id,
+                    user_id=user_id, reason="名字违规",
+                    handle="驱逐出境")
                 #status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
                 msg = "<b><a href='tg://user?id=" + \
                     str(user_id) + "'>" + str(user_id) + \
                     "</a></b> 的名字<b> 违规</b>，已驱逐出境。"
                 status = bot.sendChatAction(chat_id, "typing")
                 status = bot.sendMessage(
-                    chat_id=chat_id, text=msg, parse_mode="HTML")
+                    chat_id=chat_id, text=msg, parse_mode="HTML",
+                    reply_markup=reply_markup)
 
-                bot.message_deletor(
-                    30, status["chat"]["id"], status["message_id"])
+                # bot.message_deletor(
+                #     30, status["chat"]["id"], status["message_id"])
             else:
                 status = bot.deleteMessage(
                     chat_id=chat_id, message_id=message_id)
@@ -297,12 +303,17 @@ def Guard(bot, message):
                             chat_id=req[1], user_id=req[2], until_date=35)
                         bot.deleteMessage(
                             chat_id=req[1], message_id=message_id)
+                        log_status, reply_markup = handle_logging(bot,
+                            content=text, log_group_id=log_group_id,
+                            user_id=user_id, reason="消息违规",
+                            handle="驱逐出境")
                         msg = "<b><a href='tg://user?id=" + \
                             str(user_id) + "'>" + str(user_id) + \
                             "</a></b> 的消息<b> 违规</b>，已驱逐出境。"
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(
-                            chat_id=chat_id, text=msg, parse_mode="HTML")
+                            chat_id=chat_id, text=msg, parse_mode="HTML",
+                            reply_markup=reply_markup)
                         #bot.message_deletor(30, status["chat"]["id"], status["message_id"])
                         db.user_delete(chat_id, user_id)
                 else:
@@ -468,6 +479,37 @@ def reply_markup_dict(captcha_text):
     # print(inlineKeyboard)
 
     return reply_markup
+
+
+def handle_logging(bot, content, log_group_id, user_id, reason, handle):
+    status = bot.getChat(log_group_id)
+    chat_username = status["username"]
+    msg = "用户 ID: <i>" + str(user_id) + "</i> %0A" + \
+        "触发原因: <i>" + str(reason) + "</i> %0A" + \
+        "处理方式: <i>" + str(handle) + "</i> %0A" + \
+        "消息内容: %0A <i>" + str(content) + "</i>"
+
+    status = bot.sendMessage(chat_id=log_group_id, text=msg, parse_mode="HTML")
+    if status is not False:
+        inlineKeyboard = [
+            [
+                {"text": "操作日志", "url": "https://t.me/" + str(chat_username) + "/" + str(status["message_id"])}
+            ]
+        ]
+        reply_markup = {
+            "inline_keyboard": inlineKeyboard
+        }
+        return True, reply_markup
+    else:
+        inlineKeyboard = [
+            [
+                {"text": "日志存放失败", "url": ""}
+            ]
+        ]
+        reply_markup = {
+            "inline_keyboard": inlineKeyboard
+        }
+        return False, reply_markup
 
 
 class SqliteDB(object):
