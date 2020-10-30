@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-10-29
+last_modify: 2020-10-30
 '''
 from collections import defaultdict
 import re
@@ -52,10 +52,12 @@ def Guard(bot, message):
 
         if "first_name" in user.keys():  # Optional (first_name or last_name)
             first_name = user["first_name"].strip()
+            first_name = first_name.replace("#", " ")
         else:
             first_name = ""
         if "last_name" in user.keys():
             last_name = user["last_name"].strip()
+            last_name = last_name.replace("#", " ")
         else:
             last_name = ""
 
@@ -165,10 +167,12 @@ def Guard(bot, message):
             user_id = str(new_chat_member["id"])
             if "first_name" in new_chat_member.keys():  # Optional (first_name or last_name)
                 first_name = new_chat_member["first_name"].strip()
+                first_name = first_name.replace("#", " ")
             else:
                 first_name = ""
             if "last_name" in new_chat_member.keys():
                 last_name = new_chat_member["last_name"].strip()
+                last_name = last_name.replace("#", " ")
             else:
                 last_name = ""
             name = str(first_name + last_name).strip()
@@ -241,10 +245,12 @@ def Guard(bot, message):
         user_id = message["left_chat_member"]["id"]
         if "first_name" in message["left_chat_member"]:
             first_name = message["left_chat_member"]["first_name"].strip()
+            first_name = first_name.replace("#", " ")
         else:
             first_name = ""
         if "last_name" in message["left_chat_member"]:
             last_name = message["left_chat_member"]["last_name"].strip()
+            last_name = last_name.replace("#", " ")
         else:
             last_name = ""
         name = str(first_name + last_name).strip()
