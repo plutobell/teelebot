@@ -494,14 +494,17 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, reason, handle)
 
     status = bot.getChat(chat_id)
     chat_titile = status["title"]
-    chat_username = status["username"]
+    chat_username = status.get("username", "null,")
+    if chat_username == "null,":
+        chat_username = chat_id
+    else:
+        chat_username = "@" + chat_username
     timestamp = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
 
     msg = "存档时间: <i>" + str(timestamp) + "</i> %0A" + \
         "违规用户: <i><a href='tg://user?id=" + \
         str(user_id) + "'>" + str(user_id) + "</a></i> %0A" + \
-        "涉及群组: <i><a href='https://t.me/" + str(chat_username) + \
-        "'>" + str(chat_titile) + "</a></i> %0A" + \
+        "涉及群组: <i>" + str(chat_username) + "</i> %0A" + \
         "触发原因: <i>" + str(reason) + "</i> %0A" + \
         "处理方式: <i>" + str(handle) + "</i> %0A" + \
         "消息内容: %0A <i>" + str(content) + "</i>"
