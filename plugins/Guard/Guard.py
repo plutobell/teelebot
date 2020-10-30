@@ -32,6 +32,7 @@ def Guard(bot, message):
     message_id = message["message_id"]
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
+
     db = SqliteDB(bot)
     gap = 60
     bot_id = bot.key.split(':')[0]
@@ -185,8 +186,8 @@ def Guard(bot, message):
                     chat_id=chat_id, message_id=message_id)
                 log_status, reply_markup = handle_logging(bot,
                     content=name, log_group_id=log_group_id,
-                    user_id=user_id, reason="名字违规",
-                    handle="驱逐出境")
+                    user_id=user_id, chat_id=chat_id,
+                    reason="名字违规", handle="驱逐出境")
                 #status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
                 msg = "<b><a href='tg://user?id=" + \
                     str(user_id) + "'>" + str(user_id) + \
@@ -311,8 +312,8 @@ def Guard(bot, message):
                             chat_id=req[1], message_id=message_id)
                         log_status, reply_markup = handle_logging(bot,
                             content=text, log_group_id=log_group_id,
-                            user_id=user_id, reason="消息违规",
-                            handle="驱逐出境")
+                            user_id=user_id, chat_id=chat_id,
+                            reason="消息违规", handle="驱逐出境")
                         msg = "<b><a href='tg://user?id=" + \
                             str(user_id) + "'>" + str(user_id) + \
                             "</a></b> 的消息<b> 违规</b>，已驱逐出境。"
@@ -487,19 +488,28 @@ def reply_markup_dict(captcha_text):
     return reply_markup
 
 
-def handle_logging(bot, content, log_group_id, user_id, reason, handle):
+def handle_logging(bot, content, log_group_id, user_id, chat_id, reason, handle):
     status = bot.getChat(log_group_id)
+    log_chat_username = status["username"]
+
+    status = bot.getChat(chat_id)
+    chat_titile = status["title"]
     chat_username = status["username"]
-    msg = "用户 ID: <i>" + str(user_id) + "</i> %0A" + \
+    timestamp = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
+
+    msg = "存档时间: <i>" + str(timestamp) + "</i> %0A" + \
+        "违规用户: <i><a href='tg://user?id=" + \
+        str(user_id) + "'>" + str(user_id) + "</a></i> %0A" + \
+        "涉及群组: <i><a href='https://t.me/" + str(chat_username) + \
+        "'>" + str(chat_titile) + "</a></i> %0A" + \
         "触发原因: <i>" + str(reason) + "</i> %0A" + \
         "处理方式: <i>" + str(handle) + "</i> %0A" + \
         "消息内容: %0A <i>" + str(content) + "</i>"
-
     status = bot.sendMessage(chat_id=log_group_id, text=msg, parse_mode="HTML")
     if status is not False:
         inlineKeyboard = [
             [
-                {"text": "操作日志", "url": "https://t.me/" + str(chat_username) + "/" + str(status["message_id"])}
+                {"text": "操作日志", "url": "https://t.me/" + str(log_chat_username) + "/" + str(status["message_id"])}
             ]
         ]
         reply_markup = {
