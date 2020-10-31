@@ -472,7 +472,7 @@ class Bot(object):
         addr = command + "?file_id=" + file_id
         return self.__post(addr)
 
-    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
+    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None, reply_markup=None, disable_web_page_preview=None):
         """
         发送文本消息
         """
@@ -484,6 +484,8 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if disable_web_page_preview is not None:
+            addr += "&disable_web_page_preview=" + str(disable_web_page_preview)
 
         return self.__post(addr)
 
