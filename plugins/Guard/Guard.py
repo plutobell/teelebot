@@ -507,7 +507,7 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, rea
     msg = "存档时间: <i>" + str(timestamp) + "</i> %0A" + \
         "事件编号: <i><a href='https://t.me/" + \
         str(chat_username) + "/" + str(message_id) +"'>" + str(message_id) + "</a></i> %0A" + \
-        "违规用户: <i><a href='tg://user?id=" + \
+        "涉及用户: <i><a href='tg://user?id=" + \
         str(user_id) + "'>" + str(user_id) + "</a></i> %0A" + \
         "涉及群组: <i><a href='https://t.me/" + \
         str(chat_username) + "'>" + str(chat_titile) + "</a></i> %0A" + \
