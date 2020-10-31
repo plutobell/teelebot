@@ -294,7 +294,7 @@ def Guard(bot, message):
                                    message_times=req[3], spam_times=req[4])
 
                     result = DFA.filter(text.strip(), repl)
-                    if (repl in result and len(text) > 9) or (len(text) > 50):
+                    if (repl in result and len(text) > 9) or (len(text) > 100):
                         req[4] += 2
                         db.user_update(chat_id=chat_id, user_id=user_id,
                                        message_times=req[3], spam_times=req[4])
@@ -495,12 +495,18 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, rea
     log_chat_username = status["username"]
 
     status = bot.getChat(chat_id)
-    chat_titile = status.get("title", "nulltitle,")
-    chat_username = status.get("username", "nullusername,")
-    if chat_titile == "nulltitle,":
-        chat_titile = chat_id
-    if chat_username == "nullusername,":
+    chat_username = status.get("username", "nullusername,/")
+    chat_title = ""
+
+    if chat_username == "nullusername,/" or len(chat_username) == 0:
         chat_username = chat_id
+        chat_title = chat_id
+    else:
+        chat_title = "@" + chat_username
+
+    content_len_limit = 100
+    if len(content) > content_len_limit:
+        content = content[:content_len_limit] + "..."
 
     timestamp = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
 
@@ -510,7 +516,7 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, rea
         "涉及用户: <i><a href='tg://user?id=" + \
         str(user_id) + "'>" + str(user_id) + "</a></i> %0A" + \
         "涉及群组: <i><a href='https://t.me/" + \
-        str(chat_username) + "'>" + str(chat_titile) + "</a></i> %0A" + \
+        str(chat_username) + "'>" + str(chat_title) + "</a></i> %0A" + \
         "触发原因: <i>" + str(reason) + "</i> %0A" + \
         "处理方式: <i>" + str(handle) + "</i> %0A" + \
         "消息内容: %0A <i>" + str(content) + "</i>"
