@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-10-30
+last_modify: 2020-10-31
 '''
 from collections import defaultdict
 import re
@@ -187,6 +187,7 @@ def Guard(bot, message):
                 log_status, reply_markup = handle_logging(bot,
                     content=name, log_group_id=log_group_id,
                     user_id=user_id, chat_id=chat_id,
+                    message_id=message_id,
                     reason="名字违规", handle="驱逐出境")
                 #status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
                 msg = "<b><a href='tg://user?id=" + \
@@ -313,6 +314,7 @@ def Guard(bot, message):
                         log_status, reply_markup = handle_logging(bot,
                             content=text, log_group_id=log_group_id,
                             user_id=user_id, chat_id=chat_id,
+                            message_id=message_id,
                             reason="消息违规", handle="驱逐出境")
                         msg = "<b><a href='tg://user?id=" + \
                             str(user_id) + "'>" + str(user_id) + \
@@ -488,27 +490,31 @@ def reply_markup_dict(captcha_text):
     return reply_markup
 
 
-def handle_logging(bot, content, log_group_id, user_id, chat_id, reason, handle):
+def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, reason, handle):
     status = bot.getChat(log_group_id)
     log_chat_username = status["username"]
 
     status = bot.getChat(chat_id)
-    chat_titile = status["title"]
-    chat_username = status.get("username", "null,")
-    if chat_username == "null,":
+    chat_titile = status.get("title", "nulltitle,")
+    chat_username = status.get("username", "nullusername,")
+    if chat_titile == "nulltitle,":
+        chat_titile = chat_id
+    if chat_username == "nullusername,":
         chat_username = chat_id
-    else:
-        chat_username = "@" + chat_username
+
     timestamp = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
 
     msg = "存档时间: <i>" + str(timestamp) + "</i> %0A" + \
+        "事件编号: <i><a href='https://t.me/" + \
+        str(chat_username) + "/" + str(message_id) +"'>" + str(message_id) + "</a></i> %0A" + \
         "违规用户: <i><a href='tg://user?id=" + \
         str(user_id) + "'>" + str(user_id) + "</a></i> %0A" + \
-        "涉及群组: <i>" + str(chat_username) + "</i> %0A" + \
+        "涉及群组: <i><a href='https://t.me/" + \
+        str(chat_username) + "'>" + str(chat_titile) + "</a></i> %0A" + \
         "触发原因: <i>" + str(reason) + "</i> %0A" + \
         "处理方式: <i>" + str(handle) + "</i> %0A" + \
         "消息内容: %0A <i>" + str(content) + "</i>"
-    status = bot.sendMessage(chat_id=log_group_id, text=msg, parse_mode="HTML")
+    status = bot.sendMessage(chat_id=log_group_id, text=msg, parse_mode="HTML", disable_web_page_preview=True)
     if status is not False:
         inlineKeyboard = [
             [
