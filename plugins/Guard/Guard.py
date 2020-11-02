@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-10-31
+last_modify: 2020-11-2
 '''
 from collections import defaultdict
 import re
@@ -64,7 +64,7 @@ def Guard(bot, message):
 
         if result != False and message["callback_query_data"] == "/guardupdatingcaptcha" and result[2] == str(user_id) and result[1] == str(chat_id):
             msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + \
-                "</a></b> 验证码已手动刷新，请在 <b>" + \
+                "</a></b> 验证码已手动刷新，请于 <b>" + \
                 str((gap + result[5])-int(time.time())) + \
                 "</b> 秒内从下方选出与图片一致的验证码。"
             bytes_image, captcha_text = captcha_img()
@@ -109,11 +109,17 @@ def Guard(bot, message):
 
             bot.message_deletor(30, status["chat"]["id"], status["message_id"])
 
+            log_status, reply_markup = handle_logging(bot,
+                content=None, log_group_id=log_group_id,
+                user_id=user_id, chat_id=chat_id,
+                message_id=message_id,
+                reason="人机检测", handle="准许入境")
+
         elif result != False and "/guardcaptchafalse" in message["callback_query_data"] and result[2] == str(user_id) and result[1] == str(chat_id):
             status = bot.answerCallbackQuery(
                 message["callback_query_id"], text="不正确", show_alert=bool("true"))
             msg = "<b><a href='tg://user?id=" + str(user_id) + "'>" + first_name + " " + last_name + \
-                "</a></b> 验证码不正确，已刷新，请在 <b>" + \
+                "</a></b> 验证码不正确，已刷新，请于 <b>" + \
                 str((gap + result[5])-int(time.time())) + \
                 "</b> 秒内从下方选出与图片一致的验证码。"
             bytes_image, captcha_text = captcha_img()
@@ -205,7 +211,7 @@ def Guard(bot, message):
                     chat_id=chat_id, message_id=message_id)
                 msg = "<b><a href='tg://user?id=" + \
                     str(user_id) + "'>" + first_name + " " + last_name + \
-                    "</a></b> 您好，本群已开启人机验证，请在 <b>" + \
+                    "</a></b> 您好，本群已启用人机检测，请于 <b>" + \
                     str(gap) + "</b> 秒内从下方选出与图片一致的验证码。"
                 bytes_image, captcha_text = captcha_img()
                 reply_markup = reply_markup_dict(captcha_text=captcha_text)
@@ -214,7 +220,7 @@ def Guard(bot, message):
                 db.insert(chat_id=chat_id, user_id=user_id,
                           message_id=status["message_id"], authcode=captcha_text)
                 timer = Timer(
-                    gap + 1, timer_func, args=[bot, gap, chat_id, user_id, first_name, last_name])
+                    gap + 1, timer_func, args=[bot, gap, chat_id, user_id, first_name, last_name, message_id, log_group_id])
                 timer.start()
 
     elif "left_chat_member" in message.keys():
@@ -388,7 +394,7 @@ def Guard(bot, message):
                     bot.message_deletor(gap, chat_id, status["message_id"])
 
 
-def timer_func(bot, gap, chat_id, user_id, first_name, last_name):
+def timer_func(bot, gap, chat_id, user_id, first_name, last_name, message_id, log_group_id):
     db = SqliteDB(bot)
     result = db.select(chat_id=chat_id, user_id=user_id)
     if result != False and result[2] == str(user_id) != "private":
@@ -400,11 +406,17 @@ def timer_func(bot, gap, chat_id, user_id, first_name, last_name):
             #status = bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
             msg = "<b><a href='tg://user?id=" + \
                 str(user_id) + "'>" + first_name + " " + \
-                last_name + "</a></b> 没能通过人机验证。"
+                last_name + "</a></b> 没能通过人机检测。"
             status = bot.sendMessage(
                 chat_id=chat_id, text=msg, parse_mode="HTML")
 
             bot.message_deletor(30, status["chat"]["id"], status["message_id"])
+
+            log_status, reply_markup = handle_logging(bot,
+                content=None, log_group_id=log_group_id,
+                user_id=user_id, chat_id=chat_id,
+                message_id=message_id,
+                reason="人机检测", handle="拒绝入境")
 
 
 def administrators(bot, chat_id):
@@ -505,7 +517,7 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, rea
         chat_title = "@" + chat_username
 
     content_len_limit = 100
-    if len(content) > content_len_limit:
+    if content is not None and len(content) > content_len_limit:
         content = content[:content_len_limit] + "..."
 
     timestamp = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
@@ -518,8 +530,12 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, rea
         "涉及群组: <i><a href='https://t.me/" + \
         str(chat_username) + "'>" + str(chat_title) + "</a></i> %0A" + \
         "触发原因: <i>" + str(reason) + "</i> %0A" + \
-        "处理方式: <i>" + str(handle) + "</i> %0A" + \
-        "消息内容: %0A <i>" + str(content) + "</i>"
+        "处理方式: <i>" + str(handle) + "</i> %0A"
+
+    if content is not None:
+        msg += "消息内容: %0A <i>" + str(content) + "</i>"
+
+
     status = bot.sendMessage(chat_id=log_group_id, text=msg, parse_mode="HTML", disable_web_page_preview=True)
     if status is not False:
         inlineKeyboard = [
