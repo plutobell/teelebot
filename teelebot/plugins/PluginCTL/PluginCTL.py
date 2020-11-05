@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-6-15
-last_modify: 2020-6-23
+last_modify: 2020-11-5
 '''
 from threading import Lock
+from pathlib import Path
 import os
 
 lock = Lock()
@@ -15,8 +16,11 @@ def PluginCTL(bot, message):
     text = message["text"]
     prefix = "pluginctl"
 
-    if not os.path.exists(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"):
-        with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+    if not os.path.exists(str(Path(bot.plugin_dir + "PluginCTL/db/"))):
+        os.mkdir(str(Path(bot.plugin_dir + "PluginCTL/db/")))
+
+    if message["chat"]["type"] != "private" and not os.path.exists(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"))):
+        with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
             pass
 
     command = {
@@ -58,7 +62,7 @@ def PluginCTL(bot, message):
         pluginctlsho_off_page = "/" + prefix + "showoffpage"
 
         plugin_dict = bot.plugin_bridge
-        with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+        with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
             plugin_setting = f.read().strip()
         plugin_list_off = plugin_setting.split(',')
         plugin_list_temp = {}
@@ -135,7 +139,7 @@ def PluginCTL(bot, message):
             }
 
             plugin_dict = bot.plugin_bridge
-            with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+            with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
                 plugin_setting = f.read().strip()
             plugin_list_off = plugin_setting.split(',')
             plugin_list_temp = {}
@@ -176,7 +180,7 @@ def PluginCTL(bot, message):
                         return False
                 if plug_set == "all":
                     lock.acquire()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
                         f.write('')
                     lock.release()
                     status = bot.sendChatAction(chat_id, "typing")
@@ -184,7 +188,7 @@ def PluginCTL(bot, message):
                     bot.message_deletor(15, chat_id, status["message_id"])
                     return False
                 elif len(plug_set.split(',')) >= 2:
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     for i, plug_s in enumerate(plug_set.split(',')):
@@ -193,12 +197,12 @@ def PluginCTL(bot, message):
                                 if p == plug_s:
                                     del plugin_list_off[i]
                     lock.acquire()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 else:
                     plug_set = plug_set.strip()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     if plug_set in plugin_list_off:
@@ -206,7 +210,7 @@ def PluginCTL(bot, message):
                             if p == plug_set:
                                 del plugin_list_off[i]
                     lock.acquire()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 status = bot.sendChatAction(chat_id, "typing")
@@ -243,7 +247,7 @@ def PluginCTL(bot, message):
                         if p not in default_plugin:
                             plugin_list_alloff.append(p)
                     lock.acquire()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
                         f.write(','.join(plugin_list_alloff))
                     lock.release()
                     status = bot.sendChatAction(chat_id, "typing")
@@ -258,25 +262,25 @@ def PluginCTL(bot, message):
                             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                             bot.message_deletor(15, chat_id, status["message_id"])
                             return False
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     for i, plug_s in enumerate(plug_set.split(',')):
                         if plug_s not in plugin_list_off:
                             plugin_list_off.append(plug_s)
                     lock.acquire()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 else:
                     plug_set = plug_set.strip()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     if plug_set not in plugin_list_off:
                         plugin_list_off.append(plug_set)
                     lock.acquire()
-                    with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "w") as f:
+                    with open(str(Path(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 status = bot.sendChatAction(chat_id, "typing")
