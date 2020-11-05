@@ -1,15 +1,16 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-10-31
+@last modify: 2020-11-5
 '''
 import configparser
 import argparse
 import os
 import sys
 import shutil
+from pathlib import Path
 
-__version__ = "1.9.17_dev"
+__version__ = "1.9.18_dev"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
@@ -38,13 +39,19 @@ def config():
     if len(sys.argv) == 3 and args.config:
         config_dir = os.path.abspath(args.config)
     elif len(sys.argv) == 1 or args.debug or len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel", "bdist_rpm"):
-        if not os.path.exists(os.path.abspath(os.path.expanduser('~')) + "/.teelebot"):
-            os.mkdir(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")
-        config_dir = os.path.abspath(
-            os.path.expanduser('~')) + "/.teelebot/config.cfg"
+        if not os.path.exists(str(Path(os.path.abspath(os.path.expanduser('~')) + "/.teelebot"))):
+            os.mkdir(str(Path(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")))
+        if not os.path.exists(str(Path(os.path.abspath(
+            os.path.expanduser('~')) + "/.teelebot/config.cfg"))):
+            print("配置文件不存在!")
+            os._exit(0)
+        else:
+            config_dir = str(Path(os.path.abspath(
+                os.path.expanduser('~')) + "/.teelebot/config.cfg"))
         #config_dir = os.path.dirname(os.path.abspath(__file__)) + "/config.cfg"
     else:
-        sys.exit("参数缺失或错误!")
+        print("参数缺失或错误!")
+        os._exit(0)
 
     conf = configparser.ConfigParser()
     conf.read(config_dir)
@@ -76,21 +83,21 @@ def config():
                 return False
 
     if "plugin_dir" in config.keys():
-        plugin_dir = os.path.abspath(config["plugin_dir"]) + r'/'
+        plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
     else:
-        plugin_dir = os.path.dirname(os.path.abspath(__file__)) + r"/plugins/"
+        plugin_dir = str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/plugins/")) + os.sep
 
-    if os.path.exists(os.path.dirname(os.path.abspath(__file__)) + r"/__pycache__"):
-        shutil.rmtree(os.path.dirname(
-            os.path.abspath(__file__)) + r"/__pycache__")
+    if os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/__pycache__"))):
+        shutil.rmtree(str(Path(os.path.dirname(
+            os.path.abspath(__file__)) + r"/__pycache__")))
 
     if not os.path.isdir(plugin_dir):  # 插件目录检测
         # os.makedirs(plugin_dir)
         os.mkdir(plugin_dir)
-        with open(plugin_dir + "__init__.py", "w") as f:
+        with open(str(Path(plugin_dir + "__init__.py")), "w") as f:
             pass
-    elif not os.path.exists(plugin_dir + "__init__.py"):
-        with open(plugin_dir + "__init__.py", "w") as f:
+    elif not os.path.exists(str(Path(plugin_dir + "__init__.py"))):
+        with open(str(Path(plugin_dir + "__init__.py")), "w") as f:
             pass
 
     if "pool_size" in config.keys():
@@ -133,10 +140,10 @@ def bridge(plugin_dir):
 
     plugin_lis = os.listdir(plugin_dir)
     for plugi in plugin_lis:
-        if os.path.isdir(plugin_dir + plugi) and plugi != "__pycache__" and plugi[0] != '.':
+        if os.path.isdir(str(Path(plugin_dir + plugi))) and plugi != "__pycache__" and plugi[0] != '.':
             plugin_list.append(plugi)
     for plugin in plugin_list:
-        with open(plugin_dir + plugin + r"/__init__.py", encoding="utf-8") as f:
+        with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
             row_one = f.readline().strip()[1:]
             if row_one != "~~":  # Hidden plugin
                 plugin_bridge[row_one] = plugin
@@ -151,7 +158,7 @@ def plugin_info(plugin_list, plugin_dir):
     '''
     plugin_info = {}
     for plugin in plugin_list:
-        mtime = os.stat(plugin_dir + plugin + "/" + plugin + ".py").st_mtime
+        mtime = os.stat(str(Path(plugin_dir + plugin + "/" + plugin + ".py"))).st_mtime
         plugin_info[plugin] = mtime
 
     return plugin_info

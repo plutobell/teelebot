@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-10-31
+@last modify: 2020-11-5
 @author github:plutobell
-@version: 1.9.17_dev
+@version: 1.9.18_dev
 """
 import inspect
 import time
@@ -20,6 +20,7 @@ import logging
 from .handler import config, bridge, plugin_info
 from datetime import timedelta
 from traceback import extract_stack
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -172,8 +173,8 @@ class Bot(object):
         chat_type = message["chat"]["type"]
         if chat_type != "private" and "/pluginctl" in plugin_bridge.keys() \
                 and plugin_bridge["/pluginctl"] == "PluginCTL":
-            if os.path.exists(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"):
-                with open(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+            if os.path.exists(str(Path(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"))):
+                with open(str(Path(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
                     plugin_setting = f.read().strip()
                 plugin_list_off = plugin_setting.split(',')
                 plugin_bridge_temp = {}
