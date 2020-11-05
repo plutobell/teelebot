@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-11-2
+last_modify: 2020-11-5
 '''
 from collections import defaultdict
 import re
@@ -361,7 +361,8 @@ def Guard(bot, message):
             if text[1:len(prefix + command["/guardadd"])+1] == prefix + command["/guardadd"]:
                 if len(text.split(' ')) == 2:
                     keyword = (text.split(' ')[1]).strip()
-                    if str(user_id) in admins and len(keyword) <= 7:
+                    # if str(user_id) in admins and len(keyword) <= 7:
+                    if str(user_id) == str(bot.config["root"]) and len(keyword) <= 7:
                         result = DFA.filter(keyword, repl)
                         if repl not in result:
                             with open(bot.plugin_dir + "Guard/keywords", "a", encoding="utf-8") as k:
