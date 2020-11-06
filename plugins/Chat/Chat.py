@@ -13,7 +13,8 @@ def Chat(bot, message):
              "Good afternoom", "good evening", "Good evening")
     if message["text"][1:] in hello:
         status = bot.sendChatAction(message["chat"]["id"], "typing")
-        status = bot.sendVoice(message["chat"]["id"], voice=bot.plugin_dir + "Chat/hello.ogg", reply_to_message_id=message["message_id"])
+        status = bot.sendVoice(message["chat"]["id"], voice=bot.path_converter(bot.plugin_dir + "Chat/hello.ogg"),
+            reply_to_message_id=message["message_id"])
     else:
         with requests.post(url + ubp.quote(message["text"][1:])) as req: #urlencode编码
             req.keep_alive = False

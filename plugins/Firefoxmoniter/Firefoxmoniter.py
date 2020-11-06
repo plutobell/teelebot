@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 def Firefoxmoniter(bot, message):
 
-    with open(bot.plugin_dir + "Firefoxmoniter/__init__.py", encoding="utf-8") as f:
+    with open(bot.path_converter(bot.plugin_dir + "Firefoxmoniter/__init__.py"), encoding="utf-8") as f:
         h = f.readline()[1:]
     if len(message["text"]) < len(h):
         status = bot.sendChatAction(message["chat"]["id"], "typing")

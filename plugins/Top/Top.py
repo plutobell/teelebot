@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-3-21
-last_modify: 2020-7-31
+last_modify: 2020-11-7
 '''
 import requests
 
@@ -12,7 +12,7 @@ def Top(bot, message):
     if str(message["from"]["id"]) == bot.config["root"]:
         url = ""
         data = {"Key" : ""}
-        with open(bot.plugin_dir + "Top/key.ini", "r") as f:
+        with open(bot.path_converter(bot.plugin_dir + "Top/key.ini"), "r") as f:
             sets = f.readlines()
             url = sets[0].strip()
             data["Key"] = sets[1].strip()
