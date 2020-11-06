@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-5-28
-last_modify: 2020-11-5
+last_modify: 2020-11-6
 '''
 from collections import defaultdict
 import re
@@ -534,6 +534,7 @@ def handle_logging(bot, content, log_group_id, user_id, chat_id, message_id, rea
         "处理方式: <i>" + str(handle) + "</i> %0A"
 
     if content is not None:
+        content = content.replace("#", " ")
         msg += "消息内容: %0A <i>" + str(content) + "</i>"
 
 
