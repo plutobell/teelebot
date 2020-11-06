@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人
 @creation date: 2019-8-13
-@last modify: 2020-11-5
+@last modify: 2020-11-6
 @author github:plutobell
-@version: 1.9.18_dev
+@version: 1.9.19_dev
 """
 import inspect
 import time
@@ -358,6 +358,16 @@ class Bot(object):
                     chat_id, message_id])
                 timer.start()
             return "ok"
+
+    def path_converter(self, path):
+        """
+        根据操作系统转换URI
+        """
+
+        path = str(Path(path))
+
+        return path
+
 
     def uptime(self, time_format="second"):
         """
