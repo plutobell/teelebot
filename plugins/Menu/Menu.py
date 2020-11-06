@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2019-8-15
-last_modify: 2020-6-23
+last_modify: 2020-11-6
 '''
 import os
 
@@ -13,8 +13,8 @@ def Menu(bot, message):
 
     plugin_list = bot.plugin_bridge.values()
     if chat_type != "private" and "/pluginctl" in bot.plugin_bridge.keys() and bot.plugin_bridge["/pluginctl"] == "PluginCTL":
-        if os.path.exists(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"):
-            with open(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db", "r") as f:
+        if os.path.exists(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
+            with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                 plugin_setting = f.read().strip()
             plugin_list_off = plugin_setting.split(',')
             plugin_list_value = {}
@@ -31,7 +31,15 @@ def Menu(bot, message):
     page_size = 5
     page_total = int((plugin_count + page_size - 1) / page_size) # 总页数=（总数+每页数量-1）/每页数量
     page_callback_command = "/" + prefix + "page?page="
-    with open(bot.plugin_dir + "Menu/config.ini", 'r', encoding="utf-8") as g:
+
+    if not os.path.exists(bot.path_converter(bot.plugin_dir + "Menu/config.ini")):
+        with open(bot.path_converter(bot.plugin_dir + "Menu/config.ini"), "w") as f:
+            f.writelines([
+                "交流群组,https://t.me/teelebot_chat\n",
+                "项目地址,https://github.com/plutobell/teelebot"
+                ])
+
+    with open(bot.path_converter(bot.plugin_dir + "Menu/config.ini"), 'r') as g:
         first_btn = g.readline().strip().split(',')
         last_btn = g.readline().strip().split(',')
 
@@ -127,7 +135,7 @@ def menu_text(bot, page, page_total, page_size, plugin_list):
         plugin_range = range(page*page_size-page_size, page*page_size-1+1)
         for i, plugin in enumerate(plugin_list): #(now_page*page_size-page_size,now_page*page_size-1)
             if i in plugin_range:
-                with open(bot.plugin_dir + plugin + r"/__init__.py", encoding="utf-8") as f:
+                with open(bot.path_converter(bot.plugin_dir + plugin + r"/__init__.py"), encoding="utf-8") as f:
                     line_1 = ""
                     line_2 = ""
                     for i in range(2):
