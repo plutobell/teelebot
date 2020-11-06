@@ -154,6 +154,7 @@ Python实现的Telegram Bot机器人框架，拥有插件系统，插件支持�
 * message_deletor
 * uptime
 * response_times
+* path_converter
 
 
 
@@ -210,6 +211,23 @@ local_port=webhook local port ////Optional while webhook is False
 ##### 2、Polling 模式
 
 要以 Polling 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。
+
+
+
+##### 3、最基本的配置文件 (以Polling模式为例)
+
+```python
+[config]
+key=bot key
+pool_size=40
+webhook=False
+root=your user id
+debug=False
+timeout=60
+plugin_dir=your plugin dir   #[Optional]
+```
+
+
 
 
 

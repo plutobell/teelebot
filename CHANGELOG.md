@@ -1,5 +1,13 @@
 # 更新日志
 
+#### 2020-11-6 ####
+
+* v1.9.19 :
+  * Bot类新增方法 path_converter
+  * 现存插件适配 path_converter
+  * 修复插件 Guard 的bug
+  * 优化插件 Menu 和 About
+
 #### 2020-11-5 ####
 
 * v1.9.18 : 
