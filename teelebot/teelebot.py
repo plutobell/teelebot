@@ -368,7 +368,6 @@ class Bot(object):
 
         return path
 
-
     def uptime(self, time_format="second"):
         """
         获取框架的持续运行时间
@@ -438,15 +437,9 @@ class Bot(object):
                 file_data = {"certificate": open(certificate, 'rb')}
 
         if file_data is None:
-            req = self.__session.post(self.url + addr)
+            return self.__post(addr)
         else:
-            req = self.__session.postFile(self.url + addr, files=file_data)
-
-        self.__debug_info(req.json())
-        if req.json().get("ok"):
-            return req.json().get("result")
-        elif not req.json().get("ok"):
-            return req.json()
+            return self.__postFile(addr, file_data)
 
     def deleteWebhook(self):
         """
@@ -483,7 +476,8 @@ class Bot(object):
         addr = command + "?file_id=" + file_id
         return self.__post(addr)
 
-    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None, reply_markup=None, disable_web_page_preview=None):
+    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None, reply_markup=None,
+                    disable_web_page_preview=None):
         """
         发送文本消息
         """
@@ -1001,7 +995,8 @@ class Bot(object):
         发送联系人信息
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(first_name)
+        addr = command + "?chat_id=" + str(chat_id) + "&phone_number=" + str(phone_number) + "&first_name=" + str(
+            first_name)
         if last_name is not None:
             addr += "&last_name=" + str(last_name)
         if reply_to_message_id is not None:
