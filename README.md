@@ -1,5 +1,5 @@
 # teelebot
-Python实现的Telegram Bot机器人框架，拥有插件系统，插件支持热更新和热装载。
+Python实现的Telegram Bot机器人框架，具有插件系统，插件支持热更新和热装载。
 
 
 
@@ -7,28 +7,22 @@ Python实现的Telegram Bot机器人框架，拥有插件系统，插件支持�
 
 ## 说明 ##
 
-本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，实现了插件系统。目前自带插件有以下几个：
+本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，具有插件系统。目前预置插件有以下几个：
 
-* Menu - 自动生成的插件菜单
-*   Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
-*   About - 关于
-*   Uptime - 获取Bot运行状态
-*   PluginCTL - 插件开关控制
-*  Hello - Hello World插件例子
-*  Firefoxmoniter - 调用 [Firefox Moniter](https://monitor.firefox.com/) ,搜索自2007年起的公开数据外泄事件当中是否包含你的电子邮件
-*  Bing - 调用第三方Bing壁纸接口 [Bing](https://asilu.com) 获取每日必应壁纸
-*  ID - 获取你的用户ID
-*  Top - 调用top命令查看服务器状态
-*  Translate - 调用 [有道翻译](http://fanyi.youdao.com/) API 对文字进行翻译
-*  Guard - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
-*  Admin - 群管插件，管理员可通过指令对群进行管理(踢人、禁言等)
-*  Qrcode - 二维码生成插件，调用 [Goole API](https://google.com) 生成二维码
-*  IPinfo - 查询IP地址信息，调用 [ip-api](https://ip-api.com/) 查询IP信息
-*  Sticker - Sticker插件，获取贴纸图片
-*  TodayInHistory - TodayInHistory插件，调用 [Kate.API](https://api.66mz8.com/) 查看历史上的今天
-*  Dwz - Dwz插件，调用 [ALAPI](https://www.alapi.net/) 生成短网址
-*  Acg - Acg插件，调用 [ALAPI](https://www.alapi.net/) 随机获取一张ACG图
-*  Whois - Whois插件，调用 [ALAPI](https://www.alapi.net/) 查询域名whois信息
+1. Menu - 自动生成的插件菜单
+
+2. Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
+3. About - 关于
+4. Uptime - 获取Bot运行状态
+5. ID - 获取你的用户ID
+6. PluginCTL - 插件开关控制
+7. Hello - Hello World插件例子
+
+
+
+**更多插件请前往：[官方插件仓库](https://github.com/plutobell/teelebot-plugins)**
+
+
 
 
 
@@ -40,7 +34,7 @@ Python实现的Telegram Bot机器人框架，拥有插件系统，插件支持�
 
 ## 更新日志 ##
 
-* [更新日志](./CHANGELOG.md)
+* **[更新日志](./CHANGELOG.md)**
 
 
 
@@ -335,7 +329,7 @@ python -m teelebot -c/--config <configure file path>
 
 
 
-## 插件开发指南 (以 Hello 插件为例) BETA 0.6
+## 插件开发指南 (以 Hello 插件为例) BETA 0.7
 
 #### 一、插件结构
 
@@ -368,15 +362,17 @@ def Hello(bot, message):
 
 
 
-
-
 ##### 资源路径
 
 若要打开某个插件目录下的文件资源，需要使用的路径应当遵循以下的格式：
 
 ```python
-bot.plugin_dir + "<plugin dir name>/<resource address>"
+bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 ```
+
+方法 `path_converter` 根据操作系统转换路径格式。
+
+
 
 #### 三、自定义触发指令
 
@@ -417,6 +413,24 @@ bot.plugin_dir + "<plugin dir name>/<resource address>"
 ```
 
 
+
+#### 四、插件模板创建工具
+
+在 `v1.9.20_dev` 及以上版本，可以通过命令行指令**一键创建**插件模板。
+
+##### 一、源码运行
+
+```python
+python -m teelebot -p/--plugin <plugin name>
+```
+
+##### 二、Pip安装运行
+
+```python
+teelebot -p/--plugin <plugin name>
+```
+
+该指令会使用框架配置文件(config.cfg)中的插件路径作为所创建插件模板的存放路径。
 
 
 
