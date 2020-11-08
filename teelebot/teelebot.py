@@ -437,9 +437,9 @@ class Bot(object):
                 file_data = {"certificate": open(certificate, 'rb')}
 
         if file_data is None:
-            req = self.__post(self.url + addr)
+            self.__post(addr)
         else:
-            req = self.__postFile(self.url + addr, file_data)
+            self.__postFile(addr, file_data)
 
     def deleteWebhook(self):
         """
