@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-8-23
-@last modify: 2020-11-9
+@last modify: 2020-11-10
 """
-from .polling import runUpdates
+from .polling import runUpdates, dropPendingUpdates
 from .webhook import runWebhook
 from .teelebot import Bot
 
@@ -28,10 +28,15 @@ def main():
     if bot.config["webhook"]:
         url = "https://" + str(bot.config["server_address"] + ":" + str(
             bot.config["server_port"]) + "/bot" + str(bot.config["key"]))
-        if status["url"] != url or not status["has_custom_certificate"] or status["max_connections"] != int(
-                bot.config["pool_size"]):
+        if bot.config["drop_pending_updates"] == True \
+            or status["url"] != url or not status["has_custom_certificate"] \
+            or status["max_connections"] != int(bot.config["pool_size"]):
             status = bot.setWebhook(
-                url=url, certificate=bot.config["cert_pub"], max_connections=bot.config["pool_size"])
+                url=url,
+                certificate=bot.config["cert_pub"],
+                max_connections=bot.config["pool_size"],
+                drop_pending_updates=bot.config["drop_pending_updates"]
+            )
             if not status:
                 print("设置Webhook失败!")
                 return False
@@ -52,4 +57,6 @@ def main():
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
               "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]),
               "\n * 连接地址: " + api_server + "\n")
+        if bot.config["drop_pending_updates"] == True:
+            dropPendingUpdates(bot=bot)
         runUpdates(bot=bot)

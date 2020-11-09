@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-9
+@last modify: 2020-11-10
 '''
 import configparser
 import argparse
@@ -10,7 +10,7 @@ import sys
 import shutil
 from pathlib import Path
 
-__version__ = "1.10.0_dev"
+__version__ = "1.10.1_dev"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
@@ -83,7 +83,6 @@ def config():
                 return False
 
     plugin_dir_in_config = False
-
     if "plugin_dir" in config.keys():
         plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
         plugin_dir_in_config = True
@@ -159,15 +158,32 @@ def config():
     else:
         config["local_api_server"] = "False"
 
+    if "drop_pending_updates" in config.keys():
+        if config["drop_pending_updates"] == "True":
+            config["drop_pending_updates"] = True
+        elif config["drop_pending_updates"] == "False":
+            config["drop_pending_updates"] = False
+        else:
+            print("The drop_pending_updates field value in the configuration file is wrong")
+            os._exit(0)
+    else:
+        config["drop_pending_updates"] = False
+
     if config["debug"] == "True":
         config["debug"] = True
     elif config["debug"] == "False":
         config["debug"] = False
+    else:
+        print("The debug field value in the configuration file is wrong")
+        os._exit(0)
 
     if config["webhook"] == "True":
         config["webhook"] = True
     elif config["webhook"] == "False":
         config["webhook"] = False
+    else:
+        print("The webhook field value in the configuration file is wrong")
+        os._exit(0)
 
     config["author"] = __author__
     config["version"] = __version__
