@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-9
+@last modify: 2020-11-10
 @author github:plutobell
-@version: 1.10.0_dev
+@version: 1.10.1_dev
 """
 import inspect
 import time
@@ -64,6 +64,8 @@ class Bot(object):
 
         self.__start_time = int(time.time())
         self.__response_times = 0
+        self.__response_chats = []
+        self.__response_users = []
         self.__thread_pool = ThreadPoolExecutor(
             max_workers=int(self.config["pool_size"]))
         self.__session = self.__connection_session(pool_connections=int(
@@ -129,22 +131,22 @@ class Bot(object):
             stack_info = extract_stack()
             if len(stack_info) > 8:  # 插件内
                 logger.debug("\033[1;31m" + \
-                             "Request failed" + " - " + \
-                             "From:" + stack_info[-3][2] + " - " + \
-                             "Path:" + stack_info[5][0] + " - " + \
-                             "Line:" + str(stack_info[5][1]) + " - " + \
-                             "Method:" + stack_info[6][2] + " - " + \
-                             "Result:" + str(result) + \
-                             "\033[0m")
+                            "Request failed" + " - " + \
+                            "From:" + stack_info[-3][2] + " - " + \
+                            "Path:" + stack_info[5][0] + " - " + \
+                            "Line:" + str(stack_info[5][1]) + " - " + \
+                            "Method:" + stack_info[6][2] + " - " + \
+                            "Result:" + str(result) + \
+                            "\033[0m")
             elif len(stack_info) > 3:  # 外部调用
                 logger.debug("\033[1;31m" + \
-                             "Request failed" + " - " + \
-                             "From:" + stack_info[0][0] + " - " + \
-                             "Path:" + stack_info[1][0] + " - " + \
-                             "Line:" + str(stack_info[0][1]) + " - " + \
-                             "Method:" + stack_info[1][2] + " - " + \
-                             "Result:" + str(result) + \
-                             "\033[0m")
+                            "Request failed" + " - " + \
+                            "From:" + stack_info[0][0] + " - " + \
+                            "Path:" + stack_info[1][0] + " - " + \
+                            "Line:" + str(stack_info[0][1]) + " - " + \
+                            "Method:" + stack_info[1][2] + " - " + \
+                            "Result:" + str(result) + \
+                            "\033[0m")
 
     def _pluginRun(self, bot, message):
         """
@@ -235,6 +237,12 @@ class Bot(object):
                 fur.add_done_callback(self.__threadpool_exception)
 
                 self.__response_times += 1
+
+                if message["chat"]["type"] != "private" and \
+                message["chat"]["id"] not in self.__response_chats:
+                    self.__response_chats.append(message["chat"]["id"])
+                if message["from"]["id"] not in self.__response_users:
+                    self.__response_users.append(message["from"]["id"])
 
                 title = ""  # INFO日志
                 user_name = ""
@@ -392,6 +400,18 @@ class Bot(object):
         """
         return self.__response_times
 
+    def response_chats(self):
+        """
+        获取框架启动后响应的所有群组ID
+        """
+        return self.__response_chats
+
+    def response_users(self):
+        """
+        获取框架启动后响应的所有用户ID
+        """
+        return self.__response_users
+
     def getFileDownloadPath(self, file_id):
         """
         生成文件下载链接
@@ -415,7 +435,7 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?offset=" + str(self.offset) + \
-               "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
+            "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
 
         if allowed_updates is not None:
             return self.__postJson(addr, allowed_updates)
@@ -477,7 +497,7 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?" + "offset=" + \
-               str(self.offset) + "&timeout=" + str(self.timeout)
+            str(self.offset) + "&timeout=" + str(self.timeout)
         return self.__post(addr)
 
     def getFile(self, file_id):
@@ -1609,7 +1629,7 @@ class Bot(object):
     # Inline mode
 
     def answerInlineQuery(self, inline_query_id, results, cache_time=None,
-                          is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
+        is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
         """
         使用此方法发送Inline mode的应答
         """
