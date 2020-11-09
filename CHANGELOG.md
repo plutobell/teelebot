@@ -1,5 +1,31 @@
 # 更新日志
 
+#### 2020-11-9 ####
+
+* v1.10.0 :
+  * 升级至 Bot API 5.0
+    * 配置文件新增字段 local_api_server，用以指定本地API服务器地址
+    * 新增方法 logOut
+    * 新增方法 close
+    * 新增方法 unpinAllChatMessages
+    * 新增方法 copyMessage
+    * 新增方法 sendPoll
+    * 新增方法 sendDice
+    * 新增方法 addStickerToSet
+    * 为部分 消息发送 类型的方法增加字段：allow_sending_without_reply、caption_entities、allow_sending_without_reply
+    * 为unbanChatMember方法增加字段 only_if_banned
+    * 为deleteWebhook-方法增加字段 drop_pending_updates
+    * 为setWebhook方法增加字段：ip_address 、drop_pending_updates
+    * 为sendDocument方法增加字段 disable_content_type_detection
+    * 为sendLocation方法增加字段：heading、horizontal_accuracy
+    * 为editMessageLiveLocation方法增加字段：heading、horizontal_accuracy
+    * 为promoteChatMember方法增加字段 is_anonymous
+    * 为editMessageText方法增加字段 entities
+    * 为editMessageCaption方法增加字段 caption_entities
+    * 为sendMessage方法增加字段 entities
+    * 其他细节调整
+  * 完善Bot类方法 sendVenue
+
 #### 2020-11-8 ####
 
 * v1.9.20 :

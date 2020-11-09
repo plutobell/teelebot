@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 """
-@description:基于Telegram Bot Api 的机器人
+@description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-8
+@last modify: 2020-11-9
 @author github:plutobell
-@version: 1.9.20_dev
+@version: 1.10.0_dev
 """
 import inspect
 import time
@@ -44,8 +44,13 @@ class Bot(object):
             self.config["key"] = key
         elif key == "":
             self.key = self.config["key"]
-        self.basic_url = "https://api.telegram.org/"
+
+        if self.config["local_api_server"] != "False":
+            self.basic_url = self.config["local_api_server"]
+        else:
+            self.basic_url = "https://api.telegram.org/"
         self.url = self.basic_url + r"bot" + self.key + r"/"
+
         self.webhook = self.config["webhook"]
         self.timeout = self.config["timeout"]
         self.offset = 0
@@ -417,17 +422,22 @@ class Bot(object):
         else:
             return self.__get(addr)
 
-    def setWebhook(self, url, certificate=None, max_connections=None, allowed_updates=None):
+    def setWebhook(self, url, certificate=None, ip_address=None,
+        max_connections=None, allowed_updates=None, drop_pending_updates=None):
         """
         设置Webhook
         Ports currently supported for Webhooks: 443, 80, 88, 8443.
         """
         command = inspect.stack()[0].function
         addr = command + "?url=" + str(url)
+        if ip_address is not None:
+            addr += "&ip_address=" + str(ip_address)
         if max_connections is not None:
             addr += "&max_connections=" + str(max_connections)
         if allowed_updates is not None:
             addr += "&allowed_updates=" + str(allowed_updates)
+        if drop_pending_updates is not None:
+            addr += "&drop_pending_updates=" + str(drop_pending_updates)
 
         file_data = None
         if certificate is not None:
@@ -441,12 +451,14 @@ class Bot(object):
         else:
             return self.__postFile(addr, file_data)
 
-    def deleteWebhook(self):
+    def deleteWebhook(self, drop_pending_updates=None):
         """
         删除设置的Webhook
         """
         command = inspect.stack()[0].function
         addr = command
+        if drop_pending_updates is not None:
+            addr += "?drop_pending_updates=" + str(drop_pending_updates)
         return self.__post(addr)
 
     def getWebhookInfo(self):
@@ -476,8 +488,28 @@ class Bot(object):
         addr = command + "?file_id=" + file_id
         return self.__post(addr)
 
-    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None, reply_markup=None,
-                    disable_web_page_preview=None):
+    def logOut(self):
+        """
+        在本地启动机器人之前，使用此方法从云Bot API服务器注销。
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        return self.__post(addr)
+
+    def close(self):
+        """
+        在将bot实例从一个本地服务器移动到另一个本地服务器之前
+        使用此方法关闭它
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        return self.__post(addr)
+
+    def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None,
+        reply_markup=None, disable_web_page_preview=None, entities=None,
+        allow_sending_without_reply=None):
         """
         发送文本消息
         """
@@ -491,10 +523,15 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
         if disable_web_page_preview is not None:
             addr += "&disable_web_page_preview=" + str(disable_web_page_preview)
+        if entities is not None:
+            addr += "&entities=" + json.dumps(entities)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         return self.__post(addr)
 
-    def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
+    def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text", reply_to_message_id=None,
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
         """
         发送音频消息 .ogg
         """
@@ -520,6 +557,10 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
             return self.__post(addr)
@@ -527,7 +568,7 @@ class Bot(object):
             return self.__postFile(addr, file_data)
 
     def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None,
-                      reply_markup=None):
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
         """
         发送动画 gif/mp4
         """
@@ -553,6 +594,10 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
             return self.__post(addr)
@@ -560,7 +605,7 @@ class Bot(object):
             self.__postFile(addr, file_data)
 
     def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None,
-                  reply_markup=None):
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
         """
         发送音频 mp3
         """
@@ -588,6 +633,10 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
             return self.__post(addr)
@@ -595,7 +644,7 @@ class Bot(object):
             return self.__postFile(addr, file_data)
 
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None,
-                  reply_markup=None):  # 发送图片
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None):  # 发送图片
         """
         发送图片
         """
@@ -621,13 +670,18 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
             return self.__post(addr)
         else:
             return self.__postFile(addr, file_data)
 
-    def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None, reply_markup=None):
+    def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None,
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
         """
         发送视频
         """
@@ -653,6 +707,10 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
             return self.__post(addr)
@@ -660,7 +718,7 @@ class Bot(object):
             return self.__postFile(addr, file_data)
 
     def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text", reply_to_message_id=None,
-                      reply_markup=None):
+        reply_markup=None, allow_sending_without_reply=None):
         """
         发送圆形或方形视频？
         """
@@ -687,6 +745,8 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         if file_data is None:
             return self.__post(addr)
@@ -694,10 +754,13 @@ class Bot(object):
             return self.__postFile(addr, file_data)
 
     def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None,
-                       reply_markup=None):  # 暂未弄懂格式。
+        reply_markup=None, allow_sending_without_reply=None):  # 暂未弄懂格式。
         """
-        以类似图集的方式发送图片或者视频(目前只支持http链接和文件id，暂不支持上传文件)
-        media的格式：（同时请求需要加入header头，指定传送参数为json类型，并且将data由字典转为json字符串传送）
+        使用此方法可以将一组照片，视频，文档或音频作为相册发送。
+        文档和音频文件只能在具有相同类型消息的相册中分组。
+        (目前只支持http链接和文件id，暂不支持上传文件)
+        media的格式：（同时请求需要加入header头，指定传送参数为json类型，
+        并且将data由字典转为json字符串传送）
         medias ={
             'caption': 'test',
             'media': [
@@ -736,18 +799,14 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        headers = {'Content-Type': 'application/json'}
-        with self.__session.post(self.url + addr, headers=headers, data=json.dumps(medias)) as req:
+        return __postJson(self, addr, medias)
 
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
-
-    def sendDocument(self, chat_id, document, caption=None, parse_mode="Text", reply_to_message_id=None,
-                     reply_markup=None):
+    def sendDocument(self, chat_id, document, caption=None, parse_mode="Text",
+        reply_to_message_id=None, reply_markup=None, disable_content_type_detection=None,
+        allow_sending_without_reply=None, caption_entities=None):
         """
         发送文件
         """
@@ -773,6 +832,12 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if disable_content_type_detection is not None:
+            addr += "&disable_content_type_detection=" + str(disable_content_type_detection)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
             return self.__post(addr)
@@ -789,7 +854,9 @@ class Bot(object):
 
     def getChat(self, chat_id):
         """
-        获取群组基本信息
+        使用此方法可获取有关聊天的最新信息（一对一对话的用户的当前名称，
+        用户的当前用户名，组或频道等）。
+        成功返回一个Chat对象。
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
@@ -913,11 +980,13 @@ class Bot(object):
 
         return self.__postJson(addr, permissions)
 
-    def promoteChatMember(self, user_id, chat_id, can_change_info=None, can_post_messages=None,
-                          can_edit_messages=None, can_delete_messages=None, can_invite_users=None,
-                          can_restrict_members=None, can_pin_messages=None, can_promote_members=None):
+    def promoteChatMember(self, user_id, chat_id, is_anonymous=None,
+        can_change_info=None, can_post_messages=None, can_edit_messages=None,
+        can_delete_messages=None, can_invite_users=None, can_restrict_members=None,
+        can_pin_messages=None, can_promote_members=None):
         """
-        修改管理员权限(只能修改由机器人任命的管理员的权限,范围为机器人权限的子集)
+        修改管理员权限(只能修改由机器人任命的管理员的权限,
+        范围为机器人权限的子集)
         {
         'can_change_info':False,
         'can_post_messages':False,
@@ -932,6 +1001,9 @@ class Bot(object):
         command = inspect.stack()[0].function
 
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+
+        if is_anonymous is not None:
+            addr += "&is_anonymous=" + str(is_anonymous)
         if can_change_info is not None:
             addr += "&can_change_info=" + str(can_change_info)
         if can_post_messages is not None:
@@ -962,16 +1034,32 @@ class Bot(object):
 
         return self.__post(addr)
 
-    def unpinChatMessage(self, chat_id):
+    def unpinChatMessage(self, chat_id, message_id=None):
         """
-        取消置顶消息
+        使用此方法可以从聊天中的置顶消息列表中删除消息
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
+
+        if message_id is not None:
+            addr += "&message_id=" + str(message_id)
+
         return self.__post(addr)
 
-    def sendLocation(self, chat_id, latitude, longitude, live_period=None, disable_notification=None,
-                     reply_to_message_id=None, reply_markup=None):
+    def unpinAllChatMessages(self, chat_id):
+        """
+        使用此方法可以清除聊天中的置顶消息列表中的所有置顶消息
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id)
+
+        return self.__post(addr)
+
+    def sendLocation(self, chat_id, latitude, longitude,
+        horizontal_accuracy=None, live_period=None,
+        heading=None, disable_notification=None,
+        reply_to_message_id=None, reply_markup=None,
+        allow_sending_without_reply=None):
         """
         发送地图定位，经纬度
         """
@@ -980,17 +1068,23 @@ class Bot(object):
             float(latitude)) + "&longitude=" + str(float(longitude))
         if live_period is not None:
             addr += "&live_period=" + str(live_period)
+        if horizontal_accuracy is not None:
+            addr += "&horizontal_accuracy=" + str(horizontal_accuracy)
+        if heading is not None:
+            addr += "&heading=" + str(heading)
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
         if reply_to_message_id is not None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         return self.__post(addr)
 
     def sendContact(self, chat_id, phone_number, first_name, last_name=None, reply_to_message_id=None,
-                    reply_markup=None):
+        reply_markup=None, allow_sending_without_reply=None):
         """
         发送联系人信息
         """
@@ -1003,20 +1097,116 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         return self.__post(addr)
 
-    def sendVenue(self, chat_id, latitude, longitude, title, address, reply_to_message_id=None, reply_markup=None):
+    def sendPoll(self, chat_id, question, option, is_anonymous=None,
+        type_=None, allows_multiple_answers=None, correct_option_id=None,
+        explanation=None, explanation_parse_mode=None, explanation_entities=None,
+        open_period=None, close_date=None, is_closed=None, disable_notification=None,
+        reply_to_message_id=None, allow_sending_without_reply=None, reply_markup=None):
         """
-        发送地点，显示在地图上
+        使用此方法发起投票
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&question=" + str(question)
+
+        if is_anonymous is not None:
+            addr += "&is_anonymous=" + str(is_anonymous)
+        if type_ is not None:
+                addr += "&type=" + str(type_)
+
+        if type_ is not None and type_ in ("quiz", "regular"):
+            if type_ == "quiz":
+                if allows_multiple_answers is not None:
+                    addr += "&allows_multiple_answers=" + str(allows_multiple_answers)
+                if correct_option_id is not None:
+                    addr += "&correct_option_id=" + str(correct_option_id)
+                if explanation is not None:
+                    addr += "&explanation=" + str(explanation)
+                if explanation_parse_mode is not None:
+                    addr += "&explanation_parse_mode=" + str(explanation_parse_mode)
+                if explanation_entities is not None:
+                    addr += "&explanation_entities=" + json.dumps(explanation_entities)
+
+            if open_period is not None:
+                addr += "&open_period=" + str(open_period)
+            if close_date is not None:
+                addr += "&close_date=" + str(close_date)
+            if is_closed is not None:
+                addr += "&is_closed=" + str(is_closed)
+            if disable_notification is not None:
+                addr += "&disable_notification=" + str(disable_notification)
+            if reply_to_message_id is not None:
+                addr += "&reply_to_message_id=" + str(reply_to_message_id)
+            if allow_sending_without_reply is not None:
+                addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+            if reply_markup is not None:
+                addr += "&reply_markup=" + json.dumps(reply_markup)
+
+            return self.__postJson(addr, option)
+        else:
+            return False
+
+    def sendDice(self, chat_id, emoji, disable_notification=None,
+        reply_to_message_id=None, allow_sending_without_reply=None,
+        reply_markup=None):
+        """
+        使用此方法发送一个动画表情
+        emoji参数必须是以下几种：
+            1.dice(骰子) values 1-6
+            2.darts(飞镖) values 1-6
+            3.basketball(篮球) values 1-5
+            4.football(足球) values 1-5
+            5.slot machine(老虎机) values 1-64
+            默认为骰子
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&emoji=" + str(emoji)
+
+        if disable_notification is not None:
+            addr += "&disable_notification=" + str(disable_notification)
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if reply_markup is not None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
+        return self.__post(addr)
+
+    def sendVenue(self, chat_id, latitude, longitude, title, address, 
+        allow_sending_without_reply=None,
+        foursquare_id=None, foursquare_type=None,
+        google_place_id=None, google_place_type=None,
+        disable_notification=None, reply_to_message_id=None,
+        reply_markup=None):
+        """
+        使用此方法发送关于地点的信息。
+        (发送地点，显示在地图上)
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&latitude=" + str(float(latitude)) + "&longitude=" + str(
             float(longitude)) + "&title=" + str(title) + "&address=" + str(address)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if foursquare_id is not None:
+            addr += "&foursquare_id=" + str(foursquare_id)
+        if foursquare_type is not None:
+            addr += "&foursquare_type=" + str(foursquare_type)
+        if google_place_id is not None:
+            addr += "&google_place_id=" + str(google_place_id)
+        if google_place_type is not None:
+            addr += "&google_place_type=" + str(google_place_type)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + str(disable_notification)
         if reply_to_message_id is not None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+
 
         return self.__post(addr)
 
@@ -1041,11 +1231,44 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&from_chat_id=" + str(from_chat_id) \
-               + "&message_id=" + str(message_id)
+            + "&message_id=" + str(message_id)
+
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
 
         return self.__post(addr)
+
+    def copyMessage(self, chat_id, from_chat_id, message_id,
+        caption=None, parse_mode="Text", caption_entities=None,
+        disable_notification=None, reply_to_message_id=None,
+        allow_sending_without_reply=None, reply_markup=None):
+        """
+        使用此方法可以复制任何类型的消息。
+        该方法类似于forwardMessages方法,
+        但是复制的消息没有指向原始消息的链接。
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&from_chat_id=" + str(from_chat_id) \
+            + "&message_id=" + str(message_id)
+
+        if caption is not None:
+            addr += "&caption=" + caption
+        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
+            addr += "&parse_mode" + parse_mode
+        if disable_notification is not None:
+            addr += "&disable_notification=" + str(disable_notification)
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if reply_markup is not None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
+
+        if caption_entities is not None:
+            return self.__postJson(addr, caption_entities)
+        else:
+            return self.__post(addr)
+
 
     def kickChatMember(self, chat_id, user_id, until_date=None):
         """
@@ -1064,9 +1287,10 @@ class Bot(object):
 
         return self.__post(addr)
 
-    def unbanChatMember(self, chat_id, user_id):
+    def unbanChatMember(self, chat_id, user_id, only_if_banned=None):
         """
-        解除user被设置的until_date
+        使用此方法可以取消超级组或频道中以前被踢过的用户的权限。
+        (解除user被设置的until_date)
         ChatPermissions:
         can_send_messages
         can_send_media_messages
@@ -1080,7 +1304,10 @@ class Bot(object):
 
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + \
-               str(chat_id) + "&user_id=" + str(user_id)
+            str(chat_id) + "&user_id=" + str(user_id)
+
+        if only_if_banned is not None:
+            addr += "&only_if_banned=" + str(only_if_banned)
 
         return self.__post(addr)
 
@@ -1111,6 +1338,56 @@ class Bot(object):
 
         return self.__post(addr)
 
+    def addStickerToSet(self, user_id, name, emojis,
+        png_sticker=None, tgs_sticker=None, mask_position=None):
+        """
+        使用此方法在机器人创建的集合中添加一个新贴纸。
+        必须使用png标签或tgs标签中的一个字段。
+        动画贴纸只能添加到动画贴纸组中。
+        动画贴纸组最多可以有50个贴纸。
+        静态贴纸组最多可以有120个贴纸。
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?user_id=" + str(user_id) + "&name=" + str(name) \
+            + "&emoji=" + str(emoji)
+
+        if png_sticker is not None and tgs_sticker is not None:
+            return False
+        elif png_sticker is None and tgs_sticker is None:
+            return False
+        else:
+            if png_sticker is not None:
+                if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
+                    file_data = None
+                    addr = command + "?chat_id=" + str(chat_id) + "&png_sticker=" + png_sticker
+                elif type(png_sticker) == bytes:
+                    file_data = {"png_sticker": png_sticker}
+                    addr = command + "?chat_id=" + str(chat_id)
+                elif type(png_sticker) == str and '.' not in png_sticker:
+                    file_data = None
+                    addr = command + "?chat_id=" + str(chat_id) + "&png_sticker=" + png_sticker
+                else:
+                    file_data = {"png_sticker": open(png_sticker, 'rb')}
+                    addr = command + "?chat_id=" + str(chat_id)
+            elif tgs_sticker is not None:
+                if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
+                    file_data = None
+                    addr = command + "?chat_id=" + str(chat_id) + "&tgs_sticker=" + tgs_sticker
+                elif type(png_sticker) == bytes:
+                    file_data = {"tgs_sticker": tgs_sticker}
+                    addr = command + "?chat_id=" + str(chat_id)
+                elif type(tgs_sticker) == str and '.' not in tgs_sticker:
+                    file_data = None
+                    addr = command + "?chat_id=" + str(chat_id) + "&tgs_sticker=" + tgs_sticker
+                else:
+                    file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
+                    addr = command + "?chat_id=" + str(chat_id)
+
+            if file_data is None:
+                return self.__post(addr)
+            else:
+                return self.__postFile(addr, file_data)
+
     def deleteChatStickerSet(self, chat_id):
         """
         删除超级群组的贴纸集
@@ -1120,8 +1397,9 @@ class Bot(object):
 
         return self.__post(addr)
 
-    def editMessageLiveLocation(self, latitude, longitude, chat_id=None, message_id=None, inline_message_id=None,
-                                reply_markup=None):
+    def editMessageLiveLocation(self, latitude, longitude,
+        horizontal_accuracy=None, chat_id=None, message_id=None,
+        heading=None, inline_message_id=None, reply_markup=None):
         """
         使用此方法编辑实时位置消息
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
@@ -1140,6 +1418,11 @@ class Bot(object):
 
         addr += "&latitude=" + str(latitude)
         addr += "&longitude=" + str(longitude)
+
+        if horizontal_accuracy is not None:
+            addr += "&horizontal_accuracy="  + str(horizontal_accuracy)
+        if heading is not None:
+            addr += "&heading=" + str(heading)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
@@ -1179,19 +1462,22 @@ class Bot(object):
         command = inspect.stack()[0].function
         addr = command
         commands = {"commands": commands}
+
         return self.__postJson(addr, commands)
 
-    def getMyCommands(self, ):
+    def getMyCommands(self):
         """
         使用此方法获取机器人当前的命令列表
         """
         command = inspect.stack()[0].function
         addr = command
+
         return self.__post(addr)
 
     # Updating messages
     def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None,
-                        parse_mode=None, disable_web_page_preview=None, reply_markup=None):
+        parse_mode=None, disable_web_page_preview=None,
+        reply_markup=None, entities=None):
         """
         编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
@@ -1216,11 +1502,13 @@ class Bot(object):
                     str(disable_web_page_preview)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if entities is not None:
+            addr += "&entities=" + json.dumps(entities)
 
         return self.__post(addr)
 
     def editMessageCaption(self, chat_id=None, message_id=None, inline_message_id=None, caption=None, parse_mode=None,
-                           reply_markup=None):
+        reply_markup=None, caption_entities=None):
         """
         编辑消息的Caption。成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
@@ -1242,6 +1530,8 @@ class Bot(object):
             addr += "&parse_mode=" + str(parse_mode)
         if reply_markup is not None:
             addr += "&reply_markup=" + str(reply_markup)
+        if caption_entities is not None:
+            addr += "&caption_entities=" + json.dumps(caption_entities)
 
         return self.__post(addr)
 
@@ -1394,7 +1684,9 @@ class Bot(object):
         return self.__post(addr)
 
     # Stickers
-    def sendSticker(self, chat_id, sticker, disable_notification=None, reply_to_message_id=None, reply_markup=None):
+    def sendSticker(self, chat_id, sticker, disable_notification=None,
+        reply_to_message_id=None, reply_markup=None,
+        allow_sending_without_reply=None):
         """
         使用此方法发送静态、webp或动画、tgs贴纸
         """
@@ -1419,6 +1711,8 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         if file_data is None:
             return self.__post(addr)
@@ -1434,7 +1728,9 @@ class Bot(object):
 
         return self.__post(addr)
 
-    def uploadStickerFile(self, user_id, png_sticker):
+    def uploadStickerFile(self, user_id, name, title, emojis,
+        png_sticker=None, tgs_sticker=None, contains_masks=None,
+        mask_position=None):
         """
         使用此方法可以上传带有标签的.PNG文件
         以供以后在createNewStickerSet和addStickerToSet方法中使用
@@ -1461,7 +1757,8 @@ class Bot(object):
         else:
             return self.__postFile(addr, file_data)
 
-    def createNewStickerSet(self, user_id, name, title, emojis, png_sticker=None, tgs_sticker=None):
+    def createNewStickerSet(self, user_id, name, title, emojis, png_sticker=None, tgs_sticker=None,
+        contains_masks=None, mask_position=None):
         """
         使用此方法可以创建用户拥有的新贴纸集
         机器人将能够编辑由此创建的贴纸集
@@ -1477,36 +1774,44 @@ class Bot(object):
             return False
         elif png_sticker is not None and tgs_sticker is not None:
             return False
-
-        if png_sticker is not None:
-            if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
-                file_data = None
-                addr += "&png_sticker=" + png_sticker
-            elif type(png_sticker) == bytes:
-                file_data = {"png_sticker": png_sticker}
-            elif type(png_sticker) == str and '.' not in png_sticker:
-                file_data = None
-                addr += "&png_sticker=" + png_sticker
-            else:
-                file_data = {"png_sticker": open(png_sticker, 'rb')}
-        elif tgs_sticker is not None:
-            if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
-                file_data = None
-                addr += "&tgs_sticker=" + tgs_sticker
-            elif type(tgs_sticker) == bytes:
-                file_data = {"tgs_sticker": tgs_sticker}
-            elif type(tgs_sticker) == str and '.' not in tgs_sticker:
-                file_data = None
-                addr += "&tgs_sticker=" + tgs_sticker
-            else:
-                file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
-
-        if file_data is None:
-            return self.__post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            if png_sticker is not None:
+                if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
+                    file_data = None
+                    addr += "&png_sticker=" + png_sticker
+                elif type(png_sticker) == bytes:
+                    file_data = {"png_sticker": png_sticker}
+                elif type(png_sticker) == str and '.' not in png_sticker:
+                    file_data = None
+                    addr += "&png_sticker=" + png_sticker
+                else:
+                    file_data = {"png_sticker": open(png_sticker, 'rb')}
+            elif tgs_sticker is not None:
+                if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
+                    file_data = None
+                    addr += "&tgs_sticker=" + tgs_sticker
+                elif type(tgs_sticker) == bytes:
+                    file_data = {"tgs_sticker": tgs_sticker}
+                elif type(tgs_sticker) == str and '.' not in tgs_sticker:
+                    file_data = None
+                    addr += "&tgs_sticker=" + tgs_sticker
+                else:
+                    file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
 
-    def addStickerToSet(self, user_id, name, emojis, png_sticker=None, tgs_sticker=None):
+            if contains_masks is not None:
+                addr += "&contains_masks=" + str(contains_masks)
+                if mask_position is not None:
+                    addr += "&mask_position=" + json.dumps(mask_position)
+                else:
+                    return False
+
+            if file_data is None:
+                return self.__post(addr)
+            else:
+                return self.__postFile(addr, file_data)
+
+    def addStickerToSet(self, user_id, name, emojis, png_sticker=None, tgs_sticker=None,
+        mask_position=None):
         """
         使用此方法可以将新标签添加到由机器人创建的集合中
         png_sticker或tgs_sticker字段只能且必须存在一个。
@@ -1522,34 +1827,37 @@ class Bot(object):
             return False
         elif png_sticker is not None and tgs_sticker is not None:
             return False
-
-        if png_sticker is not None:
-            if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
-                file_data = None
-                addr += "&png_sticker=" + png_sticker
-            elif type(png_sticker) == bytes:
-                file_data = {"png_sticker": png_sticker}
-            elif type(png_sticker) == str and '.' not in png_sticker:
-                file_data = None
-                addr += "&png_sticker=" + png_sticker
-            else:
-                file_data = {"png_sticker": open(png_sticker, 'rb')}
-        elif tgs_sticker is not None:
-            if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
-                file_data = None
-                addr += "&tgs_sticker=" + tgs_sticker
-            elif type(tgs_sticker) == bytes:
-                file_data = {"tgs_sticker": tgs_sticker}
-            elif type(tgs_sticker) == str and '.' not in tgs_sticker:
-                file_data = None
-                addr += "&tgs_sticker=" + tgs_sticker
-            else:
-                file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
-
-        if file_data is None:
-            return self.__post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            if png_sticker is not None:
+                if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
+                    file_data = None
+                    addr += "&png_sticker=" + png_sticker
+                elif type(png_sticker) == bytes:
+                    file_data = {"png_sticker": png_sticker}
+                elif type(png_sticker) == str and '.' not in png_sticker:
+                    file_data = None
+                    addr += "&png_sticker=" + png_sticker
+                else:
+                    file_data = {"png_sticker": open(png_sticker, 'rb')}
+            elif tgs_sticker is not None:
+                if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
+                    file_data = None
+                    addr += "&tgs_sticker=" + tgs_sticker
+                elif type(tgs_sticker) == bytes:
+                    file_data = {"tgs_sticker": tgs_sticker}
+                elif type(tgs_sticker) == str and '.' not in tgs_sticker:
+                    file_data = None
+                    addr += "&tgs_sticker=" + tgs_sticker
+                else:
+                    file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
+
+            if mask_position is not None:
+                addr += "&mask_position=" + json.dumps(mask_position)
+
+            if file_data is None:
+                return self.__post(addr)
+            else:
+                return self.__postFile(addr, file_data)
 
     def setStickerPositionInSet(self, sticker, position):
         """
@@ -1603,7 +1911,8 @@ class Bot(object):
                     need_name=None, need_phone_number=None, need_email=None,
                     need_shipping_address=None, send_phone_number_to_provider=None,
                     send_email_to_provider=None, is_flexible=None, disable_notification=None,
-                    reply_to_message_id=None, reply_markup=None):
+                    reply_to_message_id=None, reply_markup=None,
+                    allow_sending_without_reply=None):
         """
         使用此方法发送发票
         """
@@ -1648,6 +1957,8 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         return self.__post(addr)
 
@@ -1696,7 +2007,8 @@ class Bot(object):
     # Games
 
     def sendGame(self, chat_id, game_short_name, disable_notification=None,
-                 reply_to_message_id=None, reply_markup=None):
+        reply_to_message_id=None, reply_markup=None,
+        allow_sending_without_reply=None):
         """
         使用此方法发送游戏
         """
@@ -1710,11 +2022,13 @@ class Bot(object):
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         return self.__post(addr)
 
     def setGameScore(self, user_id, score, force=None, disable_edit_message=None,
-                     chat_id=None, message_id=None, inline_message_id=None):
+                    chat_id=None, message_id=None, inline_message_id=None):
         """
         使用此方法设置游戏中指定用户的分数
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数

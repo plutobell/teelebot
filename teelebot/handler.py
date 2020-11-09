@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-8
+@last modify: 2020-11-9
 '''
 import configparser
 import argparse
@@ -10,7 +10,7 @@ import sys
 import shutil
 from pathlib import Path
 
-__version__ = "1.9.20_dev"
+__version__ = "1.10.0_dev"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
@@ -138,9 +138,26 @@ def config():
     if "pool_size" in config.keys():
         if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
             print("线程池尺寸超出范围!(1-100)")
-            return False
+            os._exit(0)
     else:
         config["pool_size"] = "40"
+
+    if "local_api_server" in config.keys():
+        local_api_server = config["local_api_server"]
+        if local_api_server == None or local_api_server == "" or len(local_api_server) < 7:
+            config["local_api_server"] = "False"
+        else:
+            if "https://" in local_api_server:
+                print("local api server address not support https.")
+                os._exit(0)
+            if "http://" not in local_api_server:
+                print("local api server address incorrect.")
+                os._exit(0)
+            if local_api_server[len(local_api_server)-1] != "/":
+                local_api_server += "/"
+            config["local_api_server"] = local_api_server
+    else:
+        config["local_api_server"] = "False"
 
     if config["debug"] == "True":
         config["debug"] = True

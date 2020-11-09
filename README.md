@@ -1,5 +1,5 @@
 # teelebot
-Python实现的Telegram Bot机器人框架，具有插件系统，插件支持热更新和热装载。
+Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件支持**热更新**和**热装载**。
 
 
 
@@ -7,7 +7,7 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 
 ## 说明 ##
 
-本项目是基于Python和Telegram Bot API实现的Telegram Bot框架，具有插件系统。目前预置插件有以下几个：
+本项目是基于Python和Telegram Bot API实现的Telegram Bot**框架**，具有**插件系统**。目前预置插件有以下几个：
 
 1. Menu - 自动生成的插件菜单
 
@@ -26,10 +26,6 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 
 
 
-本项目在 Python 3.5 及以上版本测试通过。
-
-
-
 
 
 ## 更新日志 ##
@@ -40,7 +36,7 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 
 
 
-## Telegram Bot API现存方法已全部实现 （2020/6/30）
+## 已升级至 Telegram Bot API 5.0（2020/11/9）
 
 **Getting updates**
 
@@ -53,6 +49,8 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 
 * getMe
 * getFile
+* logOut
+* close
 * sendMessage
 * sendPhoto
 * sendDocument
@@ -68,10 +66,13 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 * promoteChatMember
 * pinChatMessage
 * unpinChatMessage
+* unpinAllChatMessages
 * sendVoice
 * sendAnimation
 * sendAudio
 * sendVideo
+* sendPoll
+* sendDice
 * sendVideoNote
 * getUserProfilePhotos
 * setChatTitle
@@ -83,6 +84,7 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 * sendVenue
 * sendChatAction
 * forwardMessage
+* copyMessage
 * kickChatMember
 * unbanChatMember
 * restrictChatMember
@@ -157,8 +159,7 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 ## Demo ##
 
 * Telegram群组： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）
-
-
+* Bot : [teelebot](http://t.me/teelebot)（t.me/teelebot）
 
 
 
@@ -171,6 +172,8 @@ Python实现的Telegram Bot机器人框架，具有插件系统，插件支持�
 ### Python版本
 
 teelebot 只支持 Python3.x，不支持Python2.x。
+
+本项目在 Python 3.5 及以上版本测试通过。
 
 
 
@@ -218,7 +221,7 @@ webhook=False
 root=your user id
 debug=False
 timeout=60
-plugin_dir=your plugin dir   #[Optional]
+plugin_dir=your plugin dir //[Optional]
 ```
 
 
@@ -250,7 +253,8 @@ local_port=webhook local port //Optional while webhook is False
 root=your user id
 debug=False
 timeout=60
-plugin_dir=your plugin dir   //[Optional]
+plugin_dir=your plugin dir //[Optional]
+local_api_server=local api server address //[Optional]
 ```
 
 * Linux

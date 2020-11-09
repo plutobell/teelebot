@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-8-23
-@last modify: 2020-10-24
+@last modify: 2020-11-9
 """
 from .polling import runUpdates
 from .webhook import runWebhook
@@ -11,6 +11,11 @@ name = "teelebot"
 __all__ = ['Bot']
 
 bot = Bot()
+
+if bot.config["local_api_server"] != "False":
+    api_server = "Local"
+else:
+    api_server = "Remote"
 
 
 def main():
@@ -32,7 +37,8 @@ def main():
                 return False
 
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
-              "\n * 运行模式: Webhook", "\n * 最大线程: " + str(bot.config["pool_size"]) + "\n")
+              "\n * 运行模式: Webhook", "\n * 最大线程: " + str(bot.config["pool_size"]),
+              "\n * 连接地址: " + api_server + "\n")
         runWebhook(bot=bot, host=bot.config["local_address"], port=int(
             bot.config["local_port"]))
 
@@ -44,5 +50,6 @@ def main():
                 return False
 
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
-              "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]) + "\n")
+              "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]),
+              "\n * 连接地址: " + api_server + "\n")
         runUpdates(bot=bot)
