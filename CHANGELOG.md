@@ -1,5 +1,12 @@
 # 更新日志
 
+#### 2020-11-10 ####
+
+* v1.10.1 :
+  * 配置文件新增参数 drop_pending_updates，以控制是否在启动时抛弃所有挂起的更新
+  * Bot类新增方法 response_chats 和 response_users
+  * 增强插件 Uptime
+
 #### 2020-11-9 ####
 
 * v1.10.0 :
@@ -13,16 +20,16 @@
     * 新增方法 sendDice
     * 新增方法 addStickerToSet
     * 为部分 消息发送 类型的方法增加字段：allow_sending_without_reply、caption_entities、allow_sending_without_reply
-    * 为unbanChatMember方法增加字段 only_if_banned
-    * 为deleteWebhook-方法增加字段 drop_pending_updates
-    * 为setWebhook方法增加字段：ip_address 、drop_pending_updates
-    * 为sendDocument方法增加字段 disable_content_type_detection
-    * 为sendLocation方法增加字段：heading、horizontal_accuracy
-    * 为editMessageLiveLocation方法增加字段：heading、horizontal_accuracy
-    * 为promoteChatMember方法增加字段 is_anonymous
-    * 为editMessageText方法增加字段 entities
-    * 为editMessageCaption方法增加字段 caption_entities
-    * 为sendMessage方法增加字段 entities
+    * 为 unbanChatMember 方法增加字段 only_if_banned
+    * 为 deleteWebhook 方法增加字段 drop_pending_updates
+    * 为 setWebhook 方法增加字段：ip_address 、drop_pending_updates
+    * 为 sendDocument 方法增加字段 disable_content_type_detection
+    * 为 sendLocation 方法增加字段：heading、horizontal_accuracy
+    * 为 editMessageLiveLocation 方法增加字段：heading、horizontal_accuracy
+    * 为 promoteChatMember 方法增加字段 is_anonymous
+    * 为 editMessageText 方法增加字段 entities
+    * 为 editMessageCaption 方法增加字段 caption_entities
+    * 为 sendMessage 方法增加字段 entities
     * 其他细节调整
   * 完善Bot类方法 sendVenue
 

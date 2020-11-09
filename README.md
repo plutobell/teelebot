@@ -150,6 +150,8 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * message_deletor
 * uptime
 * response_times
+* response_chats 
+* response_users
 * path_converter
 
 
