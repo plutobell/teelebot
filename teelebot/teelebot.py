@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-11
+@last modify: 2020-11-12
 @author github:plutobell
-@version: 1.11.1
+@version: 1.11.2
 """
 import inspect
 import time
@@ -397,7 +397,7 @@ class Bot:
                 uid += uuidChars[x % 0x3E]
             return uid
 
-        if len(self.__schedule_queue) >= self.__schedule_queue_size:
+        if len(self.__schedule_queue) == self.__schedule_queue_size:
             return False, "Full"
 
         ok, t = self.__create_scheduler(gap, func, args)
@@ -452,7 +452,7 @@ class Bot:
         移除所有周期性任务
         """
         if len(self.__schedule_queue) == 0:
-            return True, "Empty"
+            return False, "Empty"
         else:
             try:
                 for uid in list(self.__schedule_queue.keys()):
