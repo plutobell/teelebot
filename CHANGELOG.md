@@ -1,5 +1,12 @@
 # 更新日志
 
+#### 2020-11-12 ####
+
+* v1.11.2 :
+  * 修复 drop_pending_updates 开启后在 Polling 模式下的bug
+  * 修复方法 add_schedule 的bug
+  * 移除方法 dropPendingUpdates
+
 #### 2020-11-11
 
 * v1.11.1 :

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-11
+@last modify: 2020-11-12
 '''
 import configparser
 import argparse
@@ -10,7 +10,7 @@ import sys
 import shutil
 from pathlib import Path
 
-__version__ = "1.11.1"
+__version__ = "1.11.2"
 __author__ = "github:plutobell"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
