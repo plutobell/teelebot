@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-8-23
-@last modify: 2020-11-10
+@last modify: 2020-11-12
 """
-from .polling import runUpdates, dropPendingUpdates
+from .polling import runUpdates
 from .webhook import runWebhook
 from .teelebot import Bot
 
@@ -57,6 +57,9 @@ def main():
         print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
               "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]),
               "\n * 连接地址: " + api_server + "\n")
-        if bot.config["drop_pending_updates"] == True:
-            dropPendingUpdates(bot=bot)
+        pending_update_count = bot.getWebhookInfo()["pending_update_count"]
+        if bot.config["drop_pending_updates"] == True and \
+            pending_update_count != 0:
+            results = bot.getUpdates()
+            messages = bot._washUpdates(results)
         runUpdates(bot=bot)
