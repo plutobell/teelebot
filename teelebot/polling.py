@@ -25,6 +25,9 @@ def dropPendingUpdates(bot):
     pending_update_count = bot.getWebhookInfo()["pending_update_count"]
     results = bot.getUpdates()  # 获取消息队列messages
     messages = bot._washUpdates(results)
-    for i, _ in enumerate(messages):  # 获取单条消息记录message
-        if i < pending_update_count:
-            continue
+    if messages is None or not messages:
+        pass
+    else:
+        for i, _ in enumerate(messages):  # 获取单条消息记录message
+            if i < pending_update_count:
+                continue

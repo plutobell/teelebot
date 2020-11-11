@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-10
+@last modify: 2020-11-11
 @author github:plutobell
-@version: 1.10.1_dev
+@version: 1.11.1
 """
 import inspect
 import time
@@ -21,6 +21,7 @@ from .handler import config, bridge, plugin_info
 from datetime import timedelta
 from traceback import extract_stack
 from pathlib import Path
+from uuid import uuid4
 from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -33,7 +34,7 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-class Bot(object):
+class Bot:
     """机器人的基类"""
 
     def __init__(self, key=""):
@@ -66,8 +67,16 @@ class Bot(object):
         self.__response_times = 0
         self.__response_chats = []
         self.__response_users = []
+
+        thread_pool_size = round(int(self.config["pool_size"]) * 2 / 3)
+        schedule_queue_size = int(self.config["pool_size"]) - thread_pool_size
+
+        self.__schedule_queue = {}
+        self.__schedule_queue_size = schedule_queue_size
+        self.__schedule_queue_mutex = threading.Lock()
+
         self.__thread_pool = ThreadPoolExecutor(
-            max_workers=int(self.config["pool_size"]))
+            max_workers=thread_pool_size)
         self.__session = self.__connection_session(pool_connections=int(
             self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"]) * 2)
         self.__plugin_info = self.config["plugin_info"]
@@ -353,6 +362,109 @@ class Bot(object):
                 return req.json().get("result")
             elif not req.json().get("ok"):
                 return req.json().get("ok")
+
+
+    def __create_scheduler(self, gap, func, args):
+        class RepeatingTimer(threading.Timer):
+            def run(self):
+                while not self.finished.is_set():
+                    self.function(*self.args, **self.kwargs)
+                    self.finished.wait(self.interval)
+        try:
+            t = RepeatingTimer(gap, func, args)
+            t.setDaemon(True)
+            return True, t
+        except Exception as e:
+            print(e)
+            return False, str(e)
+
+    def add_schedule(self, gap, func, args):
+        """
+        添加周期性任务
+        """
+        def __short_uuid():
+            uuidChars = ("a", "b", "c", "d", "e", "f",
+                    "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+                    "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5",
+                    "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+                    "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
+                    "W", "X", "Y", "Z")
+            uuid = str(uuid4().hex)
+            uid = ''
+            for i in range(0,8):
+                sub = uuid[i * 4: i * 4 + 4]
+                x = int(sub,16)
+                uid += uuidChars[x % 0x3E]
+            return uid
+
+        if len(self.__schedule_queue) >= self.__schedule_queue_size:
+            return False, "Full"
+
+        ok, t = self.__create_scheduler(gap, func, args)
+        if ok:
+            t.start()
+            uid = __short_uuid()
+            if self.__schedule_queue_mutex.acquire():
+                self.__schedule_queue[uid] = t
+            self.__schedule_queue_mutex.release()
+
+            return True, uid
+        else:
+            return False, "Failure"
+
+    def stat_schedule(self):
+        """
+        获取周期性任务池的使用情况
+        """
+        try:
+            used = len(self.__schedule_queue)
+            free = self.__schedule_queue_size - used
+            size = self.__schedule_queue_size
+
+            result = {
+                "used": used,
+                "free": free,
+                "size": size
+            }
+            return True, result
+        except Exception as e:
+            return False, {"exception": e}
+
+    def del_schedule(self, uid):
+        """
+        移除周期性任务
+        """
+        if len(self.__schedule_queue) <= 0:
+            return False, "Empty"
+
+        if str(uid) in self.__schedule_queue.keys():
+            self.__schedule_queue[str(uid)].cancel()
+            if self.__schedule_queue_mutex.acquire():
+                self.__schedule_queue.pop(str(uid))
+            self.__schedule_queue_mutex.release()
+
+            return True, str(uid)
+        else:
+            return False, "NotFound"
+
+    def clear_schedule(self):
+        """
+        移除所有周期性任务
+        """
+        if len(self.__schedule_queue) == 0:
+            return True, "Empty"
+        else:
+            try:
+                for uid in list(self.__schedule_queue.keys()):
+                    self.__schedule_queue[str(uid)].cancel()
+
+                if self.__schedule_queue_mutex.acquire():
+                    self.__schedule_queue.clear()
+                self.__schedule_queue_mutex.release()
+
+                return True, "Cleared"
+            except Exception as e:
+                return False, str(e)
 
     def message_deletor(self, time_gap, chat_id, message_id):
         """

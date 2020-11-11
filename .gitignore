@@ -5,3 +5,4 @@ __pycache__/
 *.db
 info.txt
 cert/
+run.cmd
