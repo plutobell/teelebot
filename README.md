@@ -339,7 +339,7 @@ python -m teelebot -c/--config <configure file path>
 
 
 
-## 插件开发指南 (以 Hello 插件为例) BETA 0.7
+## 插件开发指南 (以 Hello 插件为例) BETA 0.8
 
 #### 一、插件结构
 
@@ -443,6 +443,19 @@ teelebot -p/--plugin <plugin name>
 该指令会使用框架配置文件(config.cfg)中的插件路径作为所创建插件模板的存放路径。
 
 
+
+#### 五、周期性任务
+
+在 `v1.11.1` 及以上版本，可以通过Bot类的方法创建**周期性任务**，功能类似**循环定时器**。
+
+可获得的方法：
+
+*  **add_schedule** : 添加任务
+*  **del_schedule**  : 移除任务
+*  **clear_schedule** : 清空任务池
+*  **stat_schedule** : 查看任务池状态
+
+周期性任务池的大小为全局线程池的**三分之一** ，线程池大小则可通过配置文件指定。
 
 
 

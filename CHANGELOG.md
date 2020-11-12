@@ -2,6 +2,10 @@
 
 #### 2020-11-12 ####
 
+* v1.11.3 :
+  * 重构 _pluginRun 方法
+  * 修复插件 热更新 和 热装载 的bug
+
 * v1.11.2 :
   * 修复 drop_pending_updates 开启后在 Polling 模式下的bug
   * 修复方法 add_schedule 的bug

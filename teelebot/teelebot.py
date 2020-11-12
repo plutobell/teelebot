@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-11-12
 @author github:plutobell
-@version: 1.11.2
+@version: 1.11.3
 """
 import inspect
 import time
@@ -114,22 +114,138 @@ class Bot:
 
     def __import_module(self, plugin_name):
         """
-        动态导入模块及热更新
+        动态导入模块
         """
-        sys.path.append(self.plugin_dir + plugin_name + r"/")
+        sys.path.append(self.path_converter(self.plugin_dir + plugin_name + os.sep))
         Module = importlib.import_module(plugin_name)  # 模块检测
 
-        now_mtime = os.stat(
-            self.plugin_dir + plugin_name + "/" + plugin_name + ".py").st_mtime
+        return Module
+
+    def __update_plugin(self, plugin_name):
+        """
+        热更新插件
+        """
+        plugin_uri = self.path_converter(
+            self.plugin_dir + plugin_name + os.sep + plugin_name + ".py")
+        now_mtime = os.stat(plugin_uri).st_mtime
         # print(now_mtime, self.__plugin_info[plugin_name])
         if now_mtime != self.__plugin_info[plugin_name]:  # 插件热更新
-            if os.path.exists(self.plugin_dir + plugin_name + r"/__pycache__"):
-                shutil.rmtree(self.plugin_dir + plugin_name + r"/__pycache__")
+            if os.path.exists(self.path_converter(self.plugin_dir + plugin_name + r"/__pycache__")):
+                shutil.rmtree(self.path_converter(self.plugin_dir + plugin_name + r"/__pycache__"))
             self.__plugin_info[plugin_name] = now_mtime
+            Module = self.__import_module(plugin_name)
             importlib.reload(Module)
             logger.info("The plugin " + plugin_name + " has been updated")
 
-        return Module
+    def __load_plugin(self, now_plugin_bridge, now_plugin_info):
+        """
+        动态装载插件
+        """
+        for plugin_value in list(now_plugin_bridge.values()):
+            if plugin_value not in list(self.plugin_bridge.values()):
+                logger.info("The plugin " + plugin_value + " has been installed")
+                self.__plugin_info[plugin_value] = now_plugin_info[plugin_value]
+        for plugin_value in list(self.plugin_bridge.values()):
+            if plugin_value not in list(now_plugin_bridge.values()):
+                logger.info("The plugin " + plugin_value + " has been uninstalled")
+                self.__plugin_info.pop(plugin_value)
+        self.plugin_bridge = now_plugin_bridge
+
+    def __control_plugin(self, plugin_bridge, plugin_list, chat_type, chat_id):
+        if chat_type != "private" and "/pluginctl" in plugin_bridge.keys() \
+                and plugin_bridge["/pluginctl"] == "PluginCTL":
+            if os.path.exists(self.path_converter(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
+                with open(self.path_converter(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+                    plugin_setting = f.read().strip()
+                plugin_list_off = plugin_setting.split(',')
+                plugin_bridge_temp = {}
+                for plugin in plugin_list:
+                    plugin_temp = plugin
+                    if plugin == "" or plugin == " ":
+                        plugin = "nil"
+                    if plugin not in plugin_list_off:
+                        plugin = plugin_temp
+                        plugin_bridge_temp[plugin] = plugin_bridge[plugin]
+                plugin_bridge = plugin_bridge_temp
+                plugin_list = plugin_bridge.keys()
+
+        return plugin_bridge, plugin_list
+
+    def __mark_message_for_pluginRun(self, message):
+        message_type = "text"
+        if "callback_query_id" in message.keys():  # callback query
+            message["message_type"] = "callback_query_data"
+            message_type = "callback_query_data"
+        elif ("new_chat_members" in message.keys()) or ("left_chat_member" in message.keys()):
+            message["message_type"] = "text"
+            message_type = "text"
+            message["text"] = ""  # default prefix of command
+        elif "photo" in message.keys():
+            message["message_type"] = "photo"
+            message_type = "message_type"
+        elif "sticker" in message.keys():
+            message["message_type"] = "sticker"
+            message_type = "message_type"
+        elif "video" in message.keys():
+            message["message_type"] = "video"
+            message_type = "message_type"
+        elif "audio" in message.keys():
+            message["message_type"] = "audio"
+            message_type = "message_type"
+        elif "document" in message.keys():
+            message["message_type"] = "document"
+            message_type = "message_type"
+        elif "text" in message.keys():
+            message["message_type"] = "text"
+            message_type = "text"
+        elif "caption" in message.keys():
+            message["message_type"] = "caption"
+            message_type = "caption"
+        elif "query" in message.keys():
+            message["message_type"] = "query"
+            message_type = "query"
+        else:
+            pass
+
+        return message_type, message
+
+    def __logging_for_pluginRun(self, message, plugin):
+        title = ""  # INFO日志
+        user_name = ""
+        if message["chat"]["type"] == "private":
+            if "first_name" in message["chat"].keys():
+                title += message["chat"]["first_name"]
+            if "last_name" in message["chat"].keys():
+                if "first_name" in message["chat"].keys():
+                    title += " " + message["chat"]["last_name"]
+                else:
+                    title += message["chat"]["last_name"]
+        elif "title" in message["chat"].keys():
+            title = message["chat"]["title"]
+        if "reply_markup" in message.keys() and \
+                message["message_type"] == "callback_query_data":
+            from_id = message["click_user"]["id"]
+            if "first_name" in message["click_user"].keys():
+                user_name += message["click_user"]["first_name"]
+            if "last_name" in message["click_user"].keys():
+                if "first_name" in message["click_user"].keys():
+                    user_name += " " + message["click_user"]["last_name"]
+                else:
+                    user_name += message["chat"]["last_name"]
+        else:
+            from_id = message["from"]["id"]
+            if "first_name" in message["from"].keys():
+                user_name += message["from"]["first_name"]
+            if "last_name" in message["from"].keys():
+                if "first_name" in message["from"].keys():
+                    user_name += " " + message["from"]["last_name"]
+                else:
+                    user_name += message["from"]["last_name"]
+        logger.info(
+            "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
+            "User:" + user_name + "(" + str(from_id) + ") - " + \
+            "Plugin: " + str(self.plugin_bridge[plugin]) + " - " + \
+            "Type:" + message["message_type"])
 
     def __debug_info(self, result):
         """
@@ -164,80 +280,30 @@ class Bot:
         if message is None:
             return
 
-        now_plugin_bridge = bridge(self.plugin_dir)  # 动态装载插件
-        if now_plugin_bridge != self.plugin_bridge:
-            for plugin in now_plugin_bridge:
-                if plugin not in self.plugin_bridge:
-                    logger.info("The plugin " + now_plugin_bridge[plugin] + " has been installed")
-            for plugin in self.plugin_bridge:
-                if plugin not in now_plugin_bridge:
-                    logger.info("The plugin " + self.plugin_bridge[plugin] + " has been uninstalled")
-            self.plugin_bridge = now_plugin_bridge
+        now_plugin_bridge = bridge(self.plugin_dir)
+        now_plugin_info = plugin_info(now_plugin_bridge.values(), self.plugin_dir)
 
-        now_plugin_info = plugin_info(self.plugin_bridge.values(), self.plugin_dir)  # 动态更新插件信息
-        if len(now_plugin_info) != len(self.__plugin_info):
-            self.__plugin_info = now_plugin_info
+        if now_plugin_bridge != self.plugin_bridge: # 动态装载插件
+            self.__load_plugin(now_plugin_bridge, now_plugin_info)
+
+        if len(now_plugin_info) != len(self.__plugin_info) or \
+            now_plugin_info != self.__plugin_info: # 动态更新插件信息
+            for plugin_name in list(self.plugin_bridge.values()):
+                self.__update_plugin(plugin_name) #热更新插件
 
         if len(self.plugin_bridge) == 0:
             os.system("")
             logger.warn("\033[1;31mNo plugins installed\033[0m")
 
-        plugin_list = self.plugin_bridge.keys()
+        plugin_list = list(self.plugin_bridge.keys())
         plugin_bridge = self.plugin_bridge
 
-        chat_id = message["chat"]["id"]
-        chat_type = message["chat"]["type"]
-        if chat_type != "private" and "/pluginctl" in plugin_bridge.keys() \
-                and plugin_bridge["/pluginctl"] == "PluginCTL":
-            if os.path.exists(str(Path(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"))):
-                with open(str(Path(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")), "r") as f:
-                    plugin_setting = f.read().strip()
-                plugin_list_off = plugin_setting.split(',')
-                plugin_bridge_temp = {}
-                for plugin in plugin_list:
-                    plugin_temp = plugin
-                    if plugin == "" or plugin == " ":
-                        plugin = "nil"
-                    if plugin not in plugin_list_off:
-                        plugin = plugin_temp
-                        plugin_bridge_temp[plugin] = plugin_bridge[plugin]
-                plugin_bridge = plugin_bridge_temp
-                plugin_list = plugin_bridge.keys()
+        plugin_bridge, plugin_list = self.__control_plugin( # pluginctl控制
+            plugin_bridge, plugin_list,
+            message["chat"]["type"], message["chat"]["id"])
 
         for plugin in plugin_list:
-            if "callback_query_id" in message.keys():  # callback query
-                message["message_type"] = "callback_query_data"
-                message_type = "callback_query_data"
-            elif ("new_chat_members" in message.keys()) or ("left_chat_member" in message.keys()):
-                message["message_type"] = "text"
-                message_type = "text"
-                message["text"] = ""  # default prefix of command
-            elif "photo" in message.keys():
-                message["message_type"] = "photo"
-                message_type = "message_type"
-            elif "sticker" in message.keys():
-                message["message_type"] = "sticker"
-                message_type = "message_type"
-            elif "video" in message.keys():
-                message["message_type"] = "video"
-                message_type = "message_type"
-            elif "audio" in message.keys():
-                message["message_type"] = "audio"
-                message_type = "message_type"
-            elif "document" in message.keys():
-                message["message_type"] = "document"
-                message_type = "message_type"
-            elif "text" in message.keys():
-                message["message_type"] = "text"
-                message_type = "text"
-            elif "caption" in message.keys():
-                message["message_type"] = "caption"
-                message_type = "caption"
-            elif "query" in message.keys():
-                message["message_type"] = "query"
-                message_type = "query"
-            else:
-                continue
+            message_type, message = self.__mark_message_for_pluginRun(message) # 分类标记消息
 
             if message.get(message_type)[:len(plugin)] == plugin:
                 module = self.__import_module(plugin_bridge[plugin])
@@ -253,42 +319,7 @@ class Bot:
                 if message["from"]["id"] not in self.__response_users:
                     self.__response_users.append(message["from"]["id"])
 
-                title = ""  # INFO日志
-                user_name = ""
-                if message["chat"]["type"] == "private":
-                    if "first_name" in message["chat"].keys():
-                        title += message["chat"]["first_name"]
-                    if "last_name" in message["chat"].keys():
-                        if "first_name" in message["chat"].keys():
-                            title += " " + message["chat"]["last_name"]
-                        else:
-                            title += message["chat"]["last_name"]
-                elif "title" in message["chat"].keys():
-                    title = message["chat"]["title"]
-                if "reply_markup" in message.keys() and \
-                        message["message_type"] == "callback_query_data":
-                    from_id = message["click_user"]["id"]
-                    if "first_name" in message["click_user"].keys():
-                        user_name += message["click_user"]["first_name"]
-                    if "last_name" in message["click_user"].keys():
-                        if "first_name" in message["click_user"].keys():
-                            user_name += " " + message["click_user"]["last_name"]
-                        else:
-                            user_name += message["chat"]["last_name"]
-                else:
-                    from_id = message["from"]["id"]
-                    if "first_name" in message["from"].keys():
-                        user_name += message["from"]["first_name"]
-                    if "last_name" in message["from"].keys():
-                        if "first_name" in message["from"].keys():
-                            user_name += " " + message["from"]["last_name"]
-                        else:
-                            user_name += message["from"]["last_name"]
-                logger.info(
-                    "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
-                    "User:" + user_name + "(" + str(from_id) + ") - " + \
-                    "Plugin: " + str(plugin_bridge[plugin]) + " - " + \
-                    "Type:" + message["message_type"])
+                self.__logging_for_pluginRun(message, plugin)
 
     def _washUpdates(self, results):
         """
@@ -362,7 +393,6 @@ class Bot:
                 return req.json().get("result")
             elif not req.json().get("ok"):
                 return req.json().get("ok")
-
 
     def __create_scheduler(self, gap, func, args):
         class RepeatingTimer(threading.Timer):
