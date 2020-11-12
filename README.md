@@ -155,6 +155,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * path_converter
 * add_schedule
 * del_schedule
+* find_schedule
 * clear_schedule
 * stat_schedule
 
@@ -451,7 +452,8 @@ teelebot -p/--plugin <plugin name>
 可获得的方法：
 
 *  **add_schedule** : 添加任务
-*  **del_schedule**  : 移除任务
+*  **del_schedule** : 移除任务
+*  **find_schedule** : 查找任务
 *  **clear_schedule** : 清空任务池
 *  **stat_schedule** : 查看任务池状态
 

@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-12
+@last modify: 2020-11-13
 @author github:plutobell
-@version: 1.11.3
+@version: 1.11.4
 """
 import inspect
 import time
@@ -22,6 +22,7 @@ from datetime import timedelta
 from traceback import extract_stack
 from pathlib import Path
 from uuid import uuid4
+from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -440,7 +441,7 @@ class Bot:
 
             return True, uid
         else:
-            return False, "Failure"
+            return False, t
 
     def stat_schedule(self):
         """
@@ -459,6 +460,18 @@ class Bot:
             return True, result
         except Exception as e:
             return False, {"exception": e}
+
+    def find_schedule(self, uid):
+        """
+        查找周期性任务
+        """
+        if len(self.__schedule_queue) <= 0:
+            return False, "Empty"
+
+        if str(uid) in self.__schedule_queue.keys():
+            return True, str(uid)
+        else:
+            return False, "NotFound"
 
     def del_schedule(self, uid):
         """
@@ -676,7 +689,7 @@ class Bot:
         发送文本消息
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id=" + str(chat_id) + "&text=" + text
+        addr = command + "?chat_id=" + str(chat_id) + "&text=" + quote(text)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
         if reply_to_message_id is not None:
@@ -712,7 +725,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
         if reply_to_message_id is not None:
@@ -749,7 +762,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
         if reply_to_message_id is not None:
@@ -786,7 +799,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
         if title is not None:
@@ -825,7 +838,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
         if reply_to_message_id is not None:
@@ -862,7 +875,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
         if reply_to_message_id is not None:
@@ -900,7 +913,7 @@ class Bot:
             addr = command + "?chat_id=" + char_id_str
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
         if reply_to_message_id is not None:
@@ -987,7 +1000,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + parse_mode
         if reply_to_message_id is not None:
@@ -1066,7 +1079,7 @@ class Bot:
         设置群组标题
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id=" + str(chat_id) + "&title=" + str(title)
+        addr = command + "?chat_id=" + str(chat_id) + "&title=" + quote(str(title))
         return self.__post(addr)
 
     def setChatDescription(self, chat_id, description):
@@ -1075,7 +1088,7 @@ class Bot:
         //FIXME
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id=" + str(chat_id) + "&description=" + str(description)
+        addr = command + "?chat_id=" + str(chat_id) + "&description=" + quote(str(description))
         return self.__post(addr)
 
     def setChatPhoto(self, chat_id, photo):
@@ -1113,6 +1126,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         permissions = {"permissions": permissions}
+
         return self.__postJson(addr, permissions)
 
     def restrictChatMember(self, chat_id, user_id, permissions, until_date=None):
@@ -1133,7 +1147,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + \
-               str(chat_id) + "&user_id=" + str(user_id)
+            str(chat_id) + "&user_id=" + str(user_id)
         if len(permissions) != 8:
             return False
         if until_date is not None:
@@ -1414,7 +1428,7 @@ class Bot:
             + "&message_id=" + str(message_id)
 
         if caption is not None:
-            addr += "&caption=" + caption
+            addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode" + parse_mode
         if disable_notification is not None:
@@ -1445,7 +1459,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
         if until_date is None:
             addr = command + "?chat_id=" + \
-                   str(chat_id) + "&user_id=" + str(user_id)
+                str(chat_id) + "&user_id=" + str(user_id)
 
         return self.__post(addr)
 
@@ -1478,7 +1492,7 @@ class Bot:
         为群组的管理员设置自定义头衔
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + str(custom_title)
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + quote(str(custom_title))
 
         return self.__post(addr)
 
@@ -1638,7 +1652,7 @@ class Bot:
 
     # Updating messages
     def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None,
-        parse_mode=None, disable_web_page_preview=None,
+        parse_mode="Text", disable_web_page_preview=None,
         reply_markup=None, entities=None):
         """
         编辑一条文本消息.成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
@@ -1656,7 +1670,7 @@ class Bot:
             addr = command + "?chat_id=" + str(chat_id)
             addr += "&message_id=" + str(message_id)
 
-        addr += "&text=" + str(text)
+        addr += "&text=" + quote(str(text))
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + str(parse_mode)
         if disable_web_page_preview is not None:
@@ -1669,7 +1683,8 @@ class Bot:
 
         return self.__post(addr)
 
-    def editMessageCaption(self, chat_id=None, message_id=None, inline_message_id=None, caption=None, parse_mode=None,
+    def editMessageCaption(self, chat_id=None, message_id=None,
+        inline_message_id=None, caption=None, parse_mode="Text",
         reply_markup=None, caption_entities=None):
         """
         编辑消息的Caption。成功时，若消息为Bot发送则返回编辑后的消息，其他返回True
@@ -1687,7 +1702,7 @@ class Bot:
             addr += "&message_id=" + str(message_id)
 
         if caption is not None:
-            addr += "&caption=" + str(caption)
+            addr += "&caption=" + quote(str(caption))
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
             addr += "&parse_mode=" + str(parse_mode)
         if reply_markup is not None:
@@ -1835,7 +1850,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?callback_query_id=" + str(callback_query_id)
         if text is not None:
-            addr += "&text=" + str(text)
+            addr += "&text=" + quote(str(text))
         if show_alert == "true":
             addr += "&show_alert=" + str(bool(show_alert))
         if url is not None:
