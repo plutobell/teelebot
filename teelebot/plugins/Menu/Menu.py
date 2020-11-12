@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2019-8-15
-last_modify: 2020-11-6
+last_modify: 2020-11-13
 '''
 import os
 
@@ -143,7 +143,7 @@ def menu_text(bot, page, page_total, page_size, plugin_list):
                             line_1 = f.readline().strip()[1:]
                         elif i == 1:
                             line_2 = f.readline().strip()[1:]
-                    menu_str += "<b>" + line_1 + "</b> - " + line_2 + "%0A%0A"
-        menu_str = "<b>===== 插件列表 [" + str(page) + "/" + str(page_total) + "] =====</b>%0A%0A" + menu_str + "%0A<b><i>v" + bot.VERSION + "</i></b>"
+                    menu_str += "<b>" + line_1 + "</b> - " + line_2 + "\n\n"
+        menu_str = "<b>插件列表 [" + str(page) + "/" + str(page_total) + "]</b>\n\n" + menu_str + "\n<b><i>v" + bot.VERSION + "</i></b>"
 
         return page, menu_str

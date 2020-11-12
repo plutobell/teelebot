@@ -30,8 +30,8 @@ def About(bot, message):
             "inline_keyboard": inlineKeyboard
         }
         status = bot.sendChatAction(chat_id, "typing")
-        msg = "此 Bot 基于 <b>teelebot</b> 框架 <b>v" + bot.VERSION + "</b>%0A%0A" +\
-            "<b>teelebot</b> 是基于 Telegram Bot API 的 Bot 框架，具有插件系统，扩展方便。%0A%0A"
+        msg = "此 Bot 基于 <b>teelebot</b> 框架 <b>v" + bot.VERSION + "</b>\n\n" +\
+            "<b>teelebot</b> 是基于 Telegram Bot API 的 Bot 框架，具有插件系统，扩展方便。\n\n"
 
         req = bot.getUserProfilePhotos(user_id=str(bot_id), limit=1)
         if req.get("photos", "notphotos") != "notphotos":

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-6-26
-last_modify: 2020-11-10
+last_modify: 2020-11-13
 '''
 import os
 
@@ -36,11 +36,11 @@ def Uptime(bot, message):
             }
         else:
             reply_markup = None
-        msg = "感谢您的关心 <b>(￣ε ￣)</b> %0A%0A我已经运行 <b>" +  str(time_second) + "</b> 秒%0A" +\
-                "即：<b>" + str(time_format) + "</b>%0A%0A" +\
-                "在此期间：%0A" +\
-                "响应指令 <b>" + str(response_times) + "</b> 次%0A" +\
-                "服务群组 <b>" + str(response_chats) + "</b> 个%0A" +\
-                "服务用户 <b>" + str(response_users) + "</b> 名%0A%0A"
+        msg = "<code>感谢您的关心 <b>(￣ε ￣)</b> \n\n我已经运行 <b>" +  str(time_second) + "</b> 秒\n" +\
+                "即：<b>" + str(time_format) + "</b>\n\n" +\
+                "在此期间：\n" +\
+                "响应指令 <b>" + str(response_times) + "</b> 次\n" +\
+                "服务群组 <b>" + str(response_chats) + "</b> 个\n" +\
+                "服务用户 <b>" + str(response_users) + "</b> 名\n\n</code>"
         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
         bot.message_deletor(15, chat_id, status["message_id"])

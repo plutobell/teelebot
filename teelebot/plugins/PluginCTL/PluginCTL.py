@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-6-15
-last_modify: 2020-11-6
+last_modify: 2020-11-13
 '''
 import os
 from threading import Lock
@@ -44,13 +44,13 @@ def PluginCTL(bot, message):
         bot.message_deletor(15, chat_id, status["message_id"])
     elif text[1:len(prefix)+1] == prefix and count == 0:
         status = bot.sendChatAction(chat_id, "typing")
-        msg = "<b>==== PluginCTL 插件功能 ====</b>%0A%0A" +\
-            "<b>/pluginctlshow</b> - 展示插件开启状态 %0A" +\
-            "<b>/pluginctlon</b> - 启用插件。格式：/pluginctlon接要启用的插件指令，以':'作为分隔符 %0A" +\
-            "<b>/pluginctloff</b> - 禁用插件。格式：/pluginctloff接要禁用的插件指令，以':'作为分隔符 %0A" +\
-            "<b>/pluginctlon:all</b> - 启用所有插件 %0A" +\
-            "<b>/pluginctloff:all</b> - 禁用所有插件，但必须的插件将被保留 %0A" +\
-            "<b>%0A同时操作多个插件请用英文逗号分隔</b>%0A"
+        msg = "<b>PluginCTL 插件功能</b>\n\n" +\
+            "<b>/pluginctlshow</b> - 展示插件开启状态 \n" +\
+            "<b>/pluginctlon</b> - 启用插件。格式：/pluginctlon接要启用的插件指令，以':'作为分隔符 \n" +\
+            "<b>/pluginctloff</b> - 禁用插件。格式：/pluginctloff接要禁用的插件指令，以':'作为分隔符 \n" +\
+            "<b>/pluginctlon:all</b> - 启用所有插件 \n" +\
+            "<b>/pluginctloff:all</b> - 禁用所有插件，但必须的插件将被保留 \n" +\
+            "<b>\n同时操作多个插件请用英文逗号分隔</b>\n"
         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
         bot.message_deletor(30, chat_id, status["message_id"])
     elif "reply_markup" in message.keys():
@@ -89,11 +89,11 @@ def PluginCTL(bot, message):
             }
 
             if click_user_id == from_user_id:
-                msg_on = "<b>启用的插件</b> %0A%0A"
+                msg_on = "<b>启用的插件</b> \n\n"
                 for i, on in enumerate(plugin_list_on):
-                    msg_on += " <b>[" + str(i+1) + "] " + str(on) + "</b>%0A"
-                msg_on += "%0A<b>nil</b> 代表无指令的插件"
-                status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg_on + "%0A", parse_mode="HTML", reply_markup=reply_markup)
+                    msg_on += " <b>[" + str(i+1) + "] " + str(on) + "</b>\n"
+                msg_on += "\n<b>nil</b> 代表无指令的插件"
+                status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg_on + "\n", parse_mode="HTML", reply_markup=reply_markup)
                 status = bot.answerCallbackQuery(message["callback_query_id"])
             else:
                 status = bot.answerCallbackQuery(message["callback_query_id"], text="点啥点，关你啥事？", show_alert=bool("true"))
@@ -108,17 +108,17 @@ def PluginCTL(bot, message):
             }
 
             if click_user_id == from_user_id:
-                msg_off = "<b>禁用的插件</b> %0A%0A"
+                msg_off = "<b>禁用的插件</b> \n\n"
                 for i, pluo in enumerate(plugin_list_off):
                     if pluo == "" or pluo == " ":
                         del plugin_list_off[i]
                 if len(plugin_list_off) == 0:
-                    msg_off += "无%0A"
+                    msg_off += "无\n"
                 else:
                     for i, off in enumerate(plugin_list_off):
-                        msg_off += " <b>[" + str(i+1) + "] " + str(off) + "</b>%0A"
-                msg_off += "%0A<b>nil</b> 代表无指令的插件"
-                status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg_off + "%0A", parse_mode="HTML", reply_markup=reply_markup)
+                        msg_off += " <b>[" + str(i+1) + "] " + str(off) + "</b>\n"
+                msg_off += "\n<b>nil</b> 代表无指令的插件"
+                status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg_off + "\n", parse_mode="HTML", reply_markup=reply_markup)
                 status = bot.answerCallbackQuery(message["callback_query_id"])
             else:
                 status = bot.answerCallbackQuery(message["callback_query_id"], text="点啥点，关你啥事？", show_alert=bool("true"))
@@ -154,12 +154,12 @@ def PluginCTL(bot, message):
             for i, po in enumerate(plugin_list_on):
                 if po == "" or po == " ":
                     plugin_list_on[i] = "nil"
-            msg_on = "<b>启用的插件</b> %0A%0A"
+            msg_on = "<b>启用的插件</b> \n\n"
             for i, on in enumerate(plugin_list_on):
-                msg_on += " <b>[" + str(i+1) + "] " + str(on) + "</b>%0A"
-            msg_on += "%0A<b>nil</b> 代表无指令的插件"
+                msg_on += " <b>[" + str(i+1) + "] " + str(on) + "</b>\n"
+            msg_on += "\n<b>nil</b> 代表无指令的插件"
             status = bot.sendChatAction(chat_id, "typing")
-            status = bot.sendMessage(chat_id=chat_id, text=msg_on + "%0A", parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
+            status = bot.sendMessage(chat_id=chat_id, text=msg_on + "\n", parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
             bot.message_deletor(60, chat_id, status["message_id"])
         elif text[1:len(prefix + command["/pluginctlon"])+1] == prefix + command["/pluginctlon"]:
             plugin_list = list(bot.plugin_bridge.keys())
