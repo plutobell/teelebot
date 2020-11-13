@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-11-13
 @author github:plutobell
-@version: 1.11.4
+@version: 1.11.5
 """
 import inspect
 import time
@@ -173,7 +173,6 @@ class Bot:
         return plugin_bridge, plugin_list
 
     def __mark_message_for_pluginRun(self, message):
-        message_type = "text"
         if "callback_query_id" in message.keys():  # callback query
             message["message_type"] = "callback_query_data"
             message_type = "callback_query_data"
@@ -206,13 +205,15 @@ class Bot:
             message["message_type"] = "query"
             message_type = "query"
         else:
-            pass
+            message["message_type"] = "unknown"
+            message_type = "unknown"
 
         return message_type, message
 
     def __logging_for_pluginRun(self, message, plugin):
         title = ""  # INFO日志
         user_name = ""
+
         if message["chat"]["type"] == "private":
             if "first_name" in message["chat"].keys():
                 title += message["chat"]["first_name"]
@@ -242,11 +243,19 @@ class Bot:
                     user_name += " " + message["from"]["last_name"]
                 else:
                     user_name += message["from"]["last_name"]
-        logger.info(
+
+        if message["message_type"] == "unknown":
+            logger.info(
             "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
             "User:" + user_name + "(" + str(from_id) + ") - " + \
-            "Plugin: " + str(self.plugin_bridge[plugin]) + " - " + \
+            "Plugin: " + "" + " - " + \
             "Type:" + message["message_type"])
+        else:
+            logger.info(
+                "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
+                "User:" + user_name + "(" + str(from_id) + ") - " + \
+                "Plugin: " + str(self.plugin_bridge[plugin]) + " - " + \
+                "Type:" + message["message_type"])
 
     def __debug_info(self, result):
         """
@@ -303,9 +312,14 @@ class Bot:
             plugin_bridge, plugin_list,
             message["chat"]["type"], message["chat"]["id"])
 
-        for plugin in plugin_list:
-            message_type, message = self.__mark_message_for_pluginRun(message) # 分类标记消息
+        message_type = ""
+        message_type, message = self.__mark_message_for_pluginRun(message) # 分类标记消息
 
+        if message_type == "unknown":
+            self.__logging_for_pluginRun(message, "unknown")
+            return
+
+        for plugin in plugin_list:
             if message.get(message_type)[:len(plugin)] == plugin:
                 module = self.__import_module(plugin_bridge[plugin])
                 pluginFunc = getattr(module, plugin_bridge[plugin])
