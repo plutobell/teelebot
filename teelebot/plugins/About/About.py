@@ -9,15 +9,12 @@ def About(bot, message):
     prefix = "about"
 
     if not os.path.exists(bot.path_converter(bot.plugin_dir + "About/config.ini")):
-        with open(bot.path_converter(bot.plugin_dir + "About/config.ini"), "w") as f:
-            f.writelines([
-                "交流群组,https://t.me/teelebot_chat\n",
-                "项目地址,https://github.com/plutobell/teelebot"
-                ])
-
-    with open(bot.path_converter(bot.plugin_dir + "About/config.ini"), 'r') as g:
-        first_btn = g.readline().strip().split(',')
-        last_btn = g.readline().strip().split(',')
+        first_btn = ["交流群组", "https://t.me/teelebot_chat"]
+        last_btn = ["项目地址", "https://github.com/plutobell/teelebot"]
+    else:
+        with open(bot.path_converter(bot.plugin_dir + "About/config.ini"), 'r') as g:
+            first_btn = g.readline().strip().split(',')
+            last_btn = g.readline().strip().split(',')
 
     if text[1:len(prefix)+1] == prefix:
         inlineKeyboard = [

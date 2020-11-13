@@ -36,7 +36,7 @@ def Uptime(bot, message):
             }
         else:
             reply_markup = None
-        msg = "<code>感谢您的关心 <b>(￣ε ￣)</b> \n\n我已经运行 <b>" +  str(time_second) + "</b> 秒\n" +\
+        msg = "<code>感谢您的关心</code> <b>(￣ε ￣)</b> \n\n<code>我已经运行 <b>" +  str(time_second) + "</b> 秒\n" +\
                 "即：<b>" + str(time_format) + "</b>\n\n" +\
                 "在此期间：\n" +\
                 "响应指令 <b>" + str(response_times) + "</b> 次\n" +\

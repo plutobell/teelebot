@@ -33,15 +33,12 @@ def Menu(bot, message):
     page_callback_command = "/" + prefix + "page?page="
 
     if not os.path.exists(bot.path_converter(bot.plugin_dir + "Menu/config.ini")):
-        with open(bot.path_converter(bot.plugin_dir + "Menu/config.ini"), "w") as f:
-            f.writelines([
-                "交流群组,https://t.me/teelebot_chat\n",
-                "项目地址,https://github.com/plutobell/teelebot"
-                ])
-
-    with open(bot.path_converter(bot.plugin_dir + "Menu/config.ini"), 'r') as g:
-        first_btn = g.readline().strip().split(',')
-        last_btn = g.readline().strip().split(',')
+        first_btn = ["交流群组", "https://t.me/teelebot_chat"]
+        last_btn = ["项目地址", "https://github.com/plutobell/teelebot"]
+    else:
+        with open(bot.path_converter(bot.plugin_dir + "Menu/config.ini"), 'r') as g:
+            first_btn = g.readline().strip().split(',')
+            last_btn = g.readline().strip().split(',')
 
     wait_time = plugin_count * 7
 
@@ -144,6 +141,6 @@ def menu_text(bot, page, page_total, page_size, plugin_list):
                         elif i == 1:
                             line_2 = f.readline().strip()[1:]
                     menu_str += "<b>" + line_1 + "</b> - " + line_2 + "\n\n"
-        menu_str = "<b>插件列表 [" + str(page) + "/" + str(page_total) + "]</b>\n\n" + menu_str + "\n<b><i>v" + bot.VERSION + "</i></b>"
+        menu_str = "<b>插件列表 [" + str(page) + "/" + str(page_total) + "]</b>\n\n" + menu_str + "\n<code>v" + bot.VERSION + "</code>"
 
         return page, menu_str
