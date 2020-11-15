@@ -14,7 +14,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 2. Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
 3. About - 关于
 4. Uptime - 获取Bot运行状态
-5. ID - 获取你的用户ID
+5. Schedule - 周期性执行特定任务
 6. PluginCTL - 插件开关控制
 7. Hello - Hello World插件例子
 
@@ -153,11 +153,11 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * response_chats 
 * response_users
 * path_converter
-* add_schedule
-* del_schedule
-* find_schedule
-* clear_schedule
-* stat_schedule
+* schedule.add
+* schedule.delete
+* schedule.find
+* schedule.clear
+* schedule.status
 
 
 
@@ -181,6 +181,16 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 teelebot 只支持 Python3.x，不支持Python2.x。
 
 本项目在 Python 3.5 及以上版本测试通过。
+
+
+
+
+
+## 安装 ##
+
+```bash
+pip install teelebot
+```
 
 
 
@@ -235,9 +245,39 @@ plugin_dir=your plugin dir //[Optional]
 
 
 
+#### 二、Pip安装运行
+
+##### 安装 #####
+
+* 确保本机Python环境拥有pip包管理工具。
+
+  ```
+  pip install teelebot
+  or
+  pip3 install teelebot
+  ```
+
+##### 运行 #####
+
+任意路径打开终端，输入以下命令：
+
+- 对于使用程序配置文件默认路径的：
+
+  输入`teelebot` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+
+- 对于命令行手动指定配置文件路径的：
+
+  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
 
 
-#### 二、源码运行 ####
+
+可配合`supervisor`使用。
+
+
+
+
+
+#### 三、源码运行 ####
 
 1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests` ；
 
@@ -297,44 +337,6 @@ python -m teelebot -c/--config <configure file path>
 * 对于命令行手动指定配置文件路径的：
 
   输入`python -m teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
-
-
-
-#### 三、Pip安装运行
-
-##### 安装 #####
-
-* 确保本机Python环境拥有pip包管理工具。
-
-* 在本项目Releases页面下载包文件。
-
-* 本机命令行进入包文件所在目录，执行：
-
-  ```
-  pip install <teelebot package file name>
-  
-  or
-  
-  pip3 install <teelebot package file name>
-  ```
-
-由于API未封装完毕，暂未上传至 `PyPI` ,故不能在线安装，望谅解。
-
-##### 运行 #####
-
-任意路径打开终端，输入以下命令：
-
-- 对于使用程序配置文件默认路径的：
-
-  输入`teelebot` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
-
-- 对于命令行手动指定配置文件路径的：
-
-  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
-
-
-
-可配合`supervisor`使用。
 
 
 
