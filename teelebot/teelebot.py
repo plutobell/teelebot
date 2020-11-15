@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-13
-@author github:plutobell
-@version: 1.11.5
+@last modify: 2020-11-15
+@author: Pluto (github:plutobell)
+@version: 1.12.0
 """
 import inspect
 import time
@@ -14,25 +14,16 @@ import json
 import shutil
 import importlib
 import threading
-import requests
-import logging
 
-from .handler import config, bridge, plugin_info
 from datetime import timedelta
-from traceback import extract_stack
 from pathlib import Path
-from uuid import uuid4
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-logging.basicConfig(level=logging.DEBUG,
-                    datefmt='%Y/%m/%d %H:%M:%S',
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
+from .handler import config, bridge, plugin_info
+from .logger import logger
+from .schedule import schedule
+from .request import request
 
 
 class Bot:
@@ -72,44 +63,28 @@ class Bot:
         thread_pool_size = round(int(self.config["pool_size"]) * 2 / 3)
         schedule_queue_size = int(self.config["pool_size"]) - thread_pool_size
 
-        self.__schedule_queue = {}
-        self.__schedule_queue_size = schedule_queue_size
-        self.__schedule_queue_mutex = threading.Lock()
+        self.request = request(thread_pool_size, self.url, self.debug)
+        self.schedule = schedule(schedule_queue_size)
 
         self.__thread_pool = ThreadPoolExecutor(
             max_workers=thread_pool_size)
-        self.__session = self.__connection_session(pool_connections=int(
-            self.config["pool_size"]), pool_maxsize=int(self.config["pool_size"]) * 2)
-        self.__plugin_info = self.config["plugin_info"]
+        self.__message_deletor_thread_pool = ThreadPoolExecutor(
+            max_workers=int(self.config["pool_size"]) * 5)
 
+        self.__plugin_info = self.config["plugin_info"]
         del self.config["plugin_info"]
 
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
-        self.__session.close()
+        self.__message_deletor_thread_pool.shutdown(wait=True)
+        del self.request
+        del self.schedule
 
     # teelebot method
-    def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
-        """
-        全局连接池
-        """
-        session = requests.Session()
-        session.verify = False
-
-        adapter = requests.adapters.HTTPAdapter(pool_connections=pool_connections,
-                                                pool_maxsize=pool_maxsize, max_retries=max_retries)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-
-        return session
-
     def __threadpool_exception(self, fur):
         """
         线程池异常回调
         """
-        # if self.debug == True:
-        #     logger.debug("OK")
-        #     # print(fur.result())
         if fur.exception() is not None:
             logger.debug("EXCEPTION" + " - " + str(fur.result()))
 
@@ -257,32 +232,6 @@ class Bot:
                 "Plugin: " + str(self.plugin_bridge[plugin]) + " - " + \
                 "Type:" + message["message_type"])
 
-    def __debug_info(self, result):
-        """
-        debug模式
-        """
-        if self.debug and not result.get("ok"):
-            os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
-            stack_info = extract_stack()
-            if len(stack_info) > 8:  # 插件内
-                logger.debug("\033[1;31m" + \
-                            "Request failed" + " - " + \
-                            "From:" + stack_info[-3][2] + " - " + \
-                            "Path:" + stack_info[5][0] + " - " + \
-                            "Line:" + str(stack_info[5][1]) + " - " + \
-                            "Method:" + stack_info[6][2] + " - " + \
-                            "Result:" + str(result) + \
-                            "\033[0m")
-            elif len(stack_info) > 3:  # 外部调用
-                logger.debug("\033[1;31m" + \
-                            "Request failed" + " - " + \
-                            "From:" + stack_info[0][0] + " - " + \
-                            "Path:" + stack_info[1][0] + " - " + \
-                            "Line:" + str(stack_info[0][1]) + " - " + \
-                            "Method:" + stack_info[1][2] + " - " + \
-                            "Result:" + str(result) + \
-                            "\033[0m")
-
     def _pluginRun(self, bot, message):
         """
         运行插件
@@ -377,168 +326,24 @@ class Bot:
         else:
             return None
 
-    def __post(self, addr):
-        with self.__session.post(self.url + addr) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
-
-    def __postFile(self, addr, file_data):
-        with self.__session.post(self.url + addr, files=file_data) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
-
-    def __postJson(self, addr, json):
-        with self.__session.get(self.url + addr, json=json) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
-
-    def __get(self, addr):
-        with self.__session.get(self.url + addr) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
-
-    def __create_scheduler(self, gap, func, args):
-        class RepeatingTimer(threading.Timer):
-            def run(self):
-                while not self.finished.is_set():
-                    self.function(*self.args, **self.kwargs)
-                    self.finished.wait(self.interval)
-        try:
-            t = RepeatingTimer(gap, func, args)
-            t.setDaemon(True)
-            return True, t
-        except Exception as e:
-            print(e)
-            return False, str(e)
-
-    def add_schedule(self, gap, func, args):
-        """
-        添加周期性任务
-        """
-        def __short_uuid():
-            uuidChars = ("a", "b", "c", "d", "e", "f",
-                    "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
-                    "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5",
-                    "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-                    "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
-                    "W", "X", "Y", "Z")
-            uuid = str(uuid4().hex)
-            uid = ''
-            for i in range(0,8):
-                sub = uuid[i * 4: i * 4 + 4]
-                x = int(sub,16)
-                uid += uuidChars[x % 0x3E]
-            return uid
-
-        if len(self.__schedule_queue) == self.__schedule_queue_size:
-            return False, "Full"
-
-        ok, t = self.__create_scheduler(gap, func, args)
-        if ok:
-            t.start()
-            uid = __short_uuid()
-            if self.__schedule_queue_mutex.acquire():
-                self.__schedule_queue[uid] = t
-            self.__schedule_queue_mutex.release()
-
-            return True, uid
-        else:
-            return False, t
-
-    def stat_schedule(self):
-        """
-        获取周期性任务池的使用情况
-        """
-        try:
-            used = len(self.__schedule_queue)
-            free = self.__schedule_queue_size - used
-            size = self.__schedule_queue_size
-
-            result = {
-                "used": used,
-                "free": free,
-                "size": size
-            }
-            return True, result
-        except Exception as e:
-            return False, {"exception": e}
-
-    def find_schedule(self, uid):
-        """
-        查找周期性任务
-        """
-        if len(self.__schedule_queue) <= 0:
-            return False, "Empty"
-
-        if str(uid) in self.__schedule_queue.keys():
-            return True, str(uid)
-        else:
-            return False, "NotFound"
-
-    def del_schedule(self, uid):
-        """
-        移除周期性任务
-        """
-        if len(self.__schedule_queue) <= 0:
-            return False, "Empty"
-
-        if str(uid) in self.__schedule_queue.keys():
-            self.__schedule_queue[str(uid)].cancel()
-            if self.__schedule_queue_mutex.acquire():
-                self.__schedule_queue.pop(str(uid))
-            self.__schedule_queue_mutex.release()
-
-            return True, str(uid)
-        else:
-            return False, "NotFound"
-
-    def clear_schedule(self):
-        """
-        移除所有周期性任务
-        """
-        if len(self.__schedule_queue) == 0:
-            return False, "Empty"
-        else:
-            try:
-                for uid in list(self.__schedule_queue.keys()):
-                    self.__schedule_queue[str(uid)].cancel()
-
-                if self.__schedule_queue_mutex.acquire():
-                    self.__schedule_queue.clear()
-                self.__schedule_queue_mutex.release()
-
-                return True, "Cleared"
-            except Exception as e:
-                return False, str(e)
-
     def message_deletor(self, time_gap, chat_id, message_id):
         """
         定时删除一条消息，时间范围：[0, 900],单位秒
         """
         if time_gap < 0 or time_gap > 900:
-            return "time_error"
+            return "time_gap_error"
         else:
-            def message_deletor_func(chat_id, message_id):
+            def message_deletor_func(time_gap, chat_id, message_id):
+                time.sleep(int(time_gap))
                 self.deleteMessage(chat_id=chat_id, message_id=message_id)
 
             if time_gap == 0:
                 message_deletor_func(chat_id, message_id)
             else:
-                timer = threading.Timer(time_gap, message_deletor_func, args=[
-                    chat_id, message_id])
-                timer.start()
+                fur = self.__message_deletor_thread_pool.submit(
+                    message_deletor_func, time_gap, chat_id, message_id)
+                fur.add_done_callback(self.__threadpool_exception)
+
             return "ok"
 
     def path_converter(self, path):
@@ -597,7 +402,6 @@ class Bot:
             return False
 
     # Getting updates
-
     def getUpdates(self, limit=100, allowed_updates=None):
         """
         获取消息队列
@@ -607,9 +411,9 @@ class Bot:
             "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
 
         if allowed_updates is not None:
-            return self.__postJson(addr, allowed_updates)
+            return self.request.postJson(addr, allowed_updates)
         else:
-            return self.__get(addr)
+            return self.request.get(addr)
 
     def setWebhook(self, url, certificate=None, ip_address=None,
         max_connections=None, allowed_updates=None, drop_pending_updates=None):
@@ -636,9 +440,9 @@ class Bot:
                 file_data = {"certificate": open(certificate, 'rb')}
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def deleteWebhook(self, drop_pending_updates=None):
         """
@@ -648,7 +452,7 @@ class Bot:
         addr = command
         if drop_pending_updates is not None:
             addr += "?drop_pending_updates=" + str(drop_pending_updates)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getWebhookInfo(self):
         """
@@ -656,7 +460,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command
-        return self.__post(addr)
+        return self.request.post(addr)
 
     # Available methods
 
@@ -667,7 +471,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?" + "offset=" + \
             str(self.offset) + "&timeout=" + str(self.timeout)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getFile(self, file_id):
         """
@@ -675,7 +479,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?file_id=" + file_id
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def logOut(self):
         """
@@ -684,7 +488,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def close(self):
         """
@@ -694,7 +498,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, disable_web_page_preview=None, entities=None,
@@ -717,7 +521,7 @@ class Bot:
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
@@ -752,9 +556,9 @@ class Bot:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
@@ -789,9 +593,9 @@ class Bot:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            self.__postFile(addr, file_data)
+            self.request.postFile(addr, file_data)
 
     def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
@@ -828,9 +632,9 @@ class Bot:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None):  # 发送图片
@@ -865,9 +669,9 @@ class Bot:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None):
@@ -902,9 +706,9 @@ class Bot:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None):
@@ -938,9 +742,9 @@ class Bot:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None):  # 暂未弄懂格式。
@@ -991,7 +795,7 @@ class Bot:
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return __postJson(self, addr, medias)
+        return self.request.postJson(self, addr, medias)
 
     def sendDocument(self, chat_id, document, caption=None, parse_mode="Text",
         reply_to_message_id=None, reply_markup=None, disable_content_type_detection=None,
@@ -1029,9 +833,9 @@ class Bot:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def leaveChat(self, chat_id):
         """
@@ -1039,7 +843,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getChat(self, chat_id):
         """
@@ -1049,7 +853,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getChatAdministrators(self, chat_id):
         """
@@ -1057,7 +861,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getChatMembersCount(self, chat_id):
         """
@@ -1065,7 +869,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getUserProfilePhotos(self, user_id, offset=None, limit=None):
         """
@@ -1078,7 +882,7 @@ class Bot:
             addr += "&offset=" + str(offset)
         if limit is not None and limit in list(range(1, 101)):
             addr += "&limit=" + str(limit)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getChatMember(self, user_id, chat_id):
         """
@@ -1086,7 +890,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setChatTitle(self, chat_id, title):
         """
@@ -1094,7 +898,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&title=" + quote(str(title))
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setChatDescription(self, chat_id, description):
         """
@@ -1103,7 +907,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&description=" + quote(str(description))
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setChatPhoto(self, chat_id, photo):
         """
@@ -1113,7 +917,7 @@ class Bot:
         file_data = {"photo": open(photo, 'rb')}
         addr = command + "?chat_id=" + str(chat_id)
 
-        return self.__postFile(addr, file_data)
+        return self.request.postFile(addr, file_data)
 
     def deleteChatPhoto(self, chat_id):
         """
@@ -1121,7 +925,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setChatPermissions(self, chat_id, permissions):
         """
@@ -1141,7 +945,7 @@ class Bot:
         addr = command + "?chat_id=" + str(chat_id)
         permissions = {"permissions": permissions}
 
-        return self.__postJson(addr, permissions)
+        return self.request.postJson(addr, permissions)
 
     def restrictChatMember(self, chat_id, user_id, permissions, until_date=None):
         """
@@ -1168,7 +972,7 @@ class Bot:
             until_date = int(time.time()) + int(until_date)
             addr += "&until_date=" + str(until_date)
 
-        return self.__postJson(addr, permissions)
+        return self.request.postJson(addr, permissions)
 
     def promoteChatMember(self, user_id, chat_id, is_anonymous=None,
         can_change_info=None, can_post_messages=None, can_edit_messages=None,
@@ -1211,7 +1015,7 @@ class Bot:
         if can_promote_members is not None:
             addr += "&can_promote_members=" + str(can_promote_members)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def pinChatMessage(self, chat_id, message_id, disable_notification=None):
         """
@@ -1222,7 +1026,7 @@ class Bot:
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def unpinChatMessage(self, chat_id, message_id=None):
         """
@@ -1234,7 +1038,7 @@ class Bot:
         if message_id is not None:
             addr += "&message_id=" + str(message_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def unpinAllChatMessages(self, chat_id):
         """
@@ -1243,7 +1047,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendLocation(self, chat_id, latitude, longitude,
         horizontal_accuracy=None, live_period=None,
@@ -1271,7 +1075,7 @@ class Bot:
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendContact(self, chat_id, phone_number, first_name, last_name=None, reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None):
@@ -1290,7 +1094,7 @@ class Bot:
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendPoll(self, chat_id, question, option, is_anonymous=None,
         type_=None, allows_multiple_answers=None, correct_option_id=None,
@@ -1336,7 +1140,7 @@ class Bot:
             if reply_markup is not None:
                 addr += "&reply_markup=" + json.dumps(reply_markup)
 
-            return self.__postJson(addr, option)
+            return self.request.postJson(addr, option)
         else:
             return False
 
@@ -1365,7 +1169,7 @@ class Bot:
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendVenue(self, chat_id, latitude, longitude, title, address, 
         allow_sending_without_reply=None,
@@ -1398,7 +1202,7 @@ class Bot:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def sendChatAction(self, chat_id, action):
         """
@@ -1413,7 +1217,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&action=" + str(action)
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def forwardMessage(self, chat_id, from_chat_id, message_id, disable_notification=None):
         """
@@ -1426,7 +1230,7 @@ class Bot:
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def copyMessage(self, chat_id, from_chat_id, message_id,
         caption=None, parse_mode="Text", caption_entities=None,
@@ -1455,9 +1259,9 @@ class Bot:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
         if caption_entities is not None:
-            return self.__postJson(addr, caption_entities)
+            return self.request.postJson(addr, caption_entities)
         else:
-            return self.__post(addr)
+            return self.request.post(addr)
 
 
     def kickChatMember(self, chat_id, user_id, until_date=None):
@@ -1475,7 +1279,7 @@ class Bot:
             addr = command + "?chat_id=" + \
                 str(chat_id) + "&user_id=" + str(user_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def unbanChatMember(self, chat_id, user_id, only_if_banned=None):
         """
@@ -1499,7 +1303,7 @@ class Bot:
         if only_if_banned is not None:
             addr += "&only_if_banned=" + str(only_if_banned)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setChatAdministratorCustomTitle(self, chat_id, user_id, custom_title):
         """
@@ -1508,7 +1312,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&custom_title=" + quote(str(custom_title))
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def exportChatInviteLink(self, chat_id):
         """
@@ -1517,7 +1321,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setChatStickerSet(self, chat_id, sticker_set_name):
         """
@@ -1526,7 +1330,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&sticker_set_name=" + str(sticker_set_name)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def addStickerToSet(self, user_id, name, emojis,
         png_sticker=None, tgs_sticker=None, mask_position=None):
@@ -1574,9 +1378,9 @@ class Bot:
                     addr = command + "?chat_id=" + str(chat_id)
 
             if file_data is None:
-                return self.__post(addr)
+                return self.request.post(addr)
             else:
-                return self.__postFile(addr, file_data)
+                return self.request.postFile(addr, file_data)
 
     def deleteChatStickerSet(self, chat_id):
         """
@@ -1585,7 +1389,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def editMessageLiveLocation(self, latitude, longitude,
         horizontal_accuracy=None, chat_id=None, message_id=None,
@@ -1616,7 +1420,7 @@ class Bot:
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def stopMessageLiveLocation(self, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
         """
@@ -1638,7 +1442,7 @@ class Bot:
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setMyCommands(self, commands):
         """
@@ -1653,7 +1457,7 @@ class Bot:
         addr = command
         commands = {"commands": commands}
 
-        return self.__postJson(addr, commands)
+        return self.request.postJson(addr, commands)
 
     def getMyCommands(self):
         """
@@ -1662,7 +1466,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     # Updating messages
     def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None,
@@ -1695,7 +1499,7 @@ class Bot:
         if entities is not None:
             addr += "&entities=" + json.dumps(entities)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def editMessageCaption(self, chat_id=None, message_id=None,
         inline_message_id=None, caption=None, parse_mode="Text",
@@ -1724,7 +1528,7 @@ class Bot:
         if caption_entities is not None:
             addr += "&caption_entities=" + json.dumps(caption_entities)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def editMessageMedia(self, media, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
         """
@@ -1753,7 +1557,7 @@ class Bot:
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.__postJson(addr, media)
+        return self.request.postJson(addr, media)
 
     def editMessageReplyMarkup(self, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
         """
@@ -1774,7 +1578,7 @@ class Bot:
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def stopPoll(self, chat_id, message_id, reply_markup=None):
         """
@@ -1786,7 +1590,7 @@ class Bot:
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def deleteMessage(self, chat_id, message_id):
         """
@@ -1795,7 +1599,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     # Inline mode
 
@@ -1817,7 +1621,7 @@ class Bot:
         if switch_pm_parameter is not None:
             addr += "&switch_pm_parameter=" + str(switch_pm_parameter)
 
-        return self.__postJson(addr, results)
+        return self.request.postJson(addr, results)
 
     def answerCallbackQuery(self, callback_query_id, text=None, show_alert="false", url=None, cache_time=0):
         """
@@ -1872,7 +1676,7 @@ class Bot:
         if cache_time != 0:
             addr += "&cache_time=" + str(cache_time)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     # Stickers
     def sendSticker(self, chat_id, sticker, disable_notification=None,
@@ -1906,9 +1710,9 @@ class Bot:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def getStickerSet(self, name):
         """
@@ -1917,7 +1721,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?name=" + str(name)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def uploadStickerFile(self, user_id, name, title, emojis,
         png_sticker=None, tgs_sticker=None, contains_masks=None,
@@ -1944,9 +1748,9 @@ class Bot:
             addr = command + "?user_id=" + user_id_str
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     def createNewStickerSet(self, user_id, name, title, emojis, png_sticker=None, tgs_sticker=None,
         contains_masks=None, mask_position=None):
@@ -1997,9 +1801,9 @@ class Bot:
                     return False
 
             if file_data is None:
-                return self.__post(addr)
+                return self.request.post(addr)
             else:
-                return self.__postFile(addr, file_data)
+                return self.request.postFile(addr, file_data)
 
     def addStickerToSet(self, user_id, name, emojis, png_sticker=None, tgs_sticker=None,
         mask_position=None):
@@ -2046,9 +1850,9 @@ class Bot:
                 addr += "&mask_position=" + json.dumps(mask_position)
 
             if file_data is None:
-                return self.__post(addr)
+                return self.request.post(addr)
             else:
-                return self.__postFile(addr, file_data)
+                return self.request.postFile(addr, file_data)
 
     def setStickerPositionInSet(self, sticker, position):
         """
@@ -2058,7 +1862,7 @@ class Bot:
         addr = command + "?sticker=" + str(sticker)
         addr += "&position=" + str(position)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def deleteStickerFromSet(self, sticker):
         """
@@ -2067,7 +1871,7 @@ class Bot:
         command = inspect.stack()[0].function
         addr = command + "?sticker=" + str(sticker)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setStickerSetThumb(self, name, user_id, thumb=None):
         """
@@ -2091,9 +1895,9 @@ class Bot:
                 file_data = {"thumb": open(thumb, 'rb')}
 
         if file_data is None:
-            return self.__post(addr)
+            return self.request.post(addr)
         else:
-            return self.__postFile(addr, file_data)
+            return self.request.postFile(addr, file_data)
 
     # Payments
     def sendInvoice(self, chat_id, title, description, payload, provider_token, start_parameter,
@@ -2151,7 +1955,7 @@ class Bot:
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def answerShippingQuery(self, shipping_query_id, ok, shipping_options=None, error_message=None):
         """
@@ -2166,7 +1970,7 @@ class Bot:
         if error_message is not None:
             addr += "&error_message=" + str(error_message)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def answerPreCheckoutQuery(self, pre_checkout_query_id, ok, error_message=None):
         """
@@ -2179,7 +1983,7 @@ class Bot:
         if error_message is not None:
             addr += "&error_message=" + str(error_message)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     # Telegram Passport
 
@@ -2193,7 +1997,7 @@ class Bot:
         addr = command + "?user_id=" + str(user_id)
         addr += "&errors=" + json.dumps(errors)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     # Games
 
@@ -2216,7 +2020,7 @@ class Bot:
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def setGameScore(self, user_id, score, force=None, disable_edit_message=None,
                     chat_id=None, message_id=None, inline_message_id=None):
@@ -2244,7 +2048,7 @@ class Bot:
         if disable_edit_message is not None:
             addr += "&disable_edit_message=" + str(disable_edit_message)
 
-        return self.__post(addr)
+        return self.request.post(addr)
 
     def getGameHighScores(self, user_id, chat_id=None, message_id=None, inline_message_id=None):
         """
@@ -2266,4 +2070,4 @@ class Bot:
 
         addr += "&user_id=" + str(user_id)
 
-        return self.__post(addr)
+        return self.request.post(addr)

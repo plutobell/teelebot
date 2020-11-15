@@ -1,46 +1,56 @@
+import sys
+sys.path.append("./teelebot")
+
 from setuptools import setup, find_packages, Extension
 from distutils.core import setup, Extension
-from teelebot.handler import config
+from version import(
+    __author__,
+    __email__,
+    __blog__,
+    __description__,
+    __version__
+)
 
-config = config()
-
-# read the contents of the README
 with open('README.md', "r", encoding="utf-8") as README_md:
     README = README_md.read()
 
 setup(
     name='teelebot',
-    version=config["version"],
-    description='基于Telegram Bot API的机器人框架,拥有插件系统，扩展方便。',
+    version=__version__,
+    description=__description__,
     keywords=' '.join([
         'teelebot',
         'telegram bot',
-        'telegram api'
+        'telegram bot api',
+        "telegram"
     ]),
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
-    url='https://github.com/plutobell/teelebot',
-    author='Pluto',
-    author_email='hi@ojoll.com',
+    url=__blog__,
+    author=__author__,
+    author_email=__email__,
     long_description=README,
     long_description_content_type="text/markdown",
     license='GPLv3',
-    packages=find_packages(exclude=['plugins', 'plugins.*']),
+    packages=find_packages(exclude=['plugins', 'plugins.*', 'test', 'test.*']),
     package_data={
         'teelebot':['README.md'],
         'teelebot':['LICENSE'],
-		'teelebot':['plugins/Chat/hello.ogg',
-					'plugins/Hello/helloworld.png'
+		'teelebot':[
+            'plugins/Chat/hello.ogg',
+            'plugins/Hello/helloworld.png',
+            'plugins/About/icon.png'
 		],
     },
+    python_requires='>=3.5',
     install_requires=['requests'],
     entry_points={
         'console_scripts': [
             'teelebot=teelebot:main',
         ]
     },
-    zip_safe=False
+    zip_safe=True
 )

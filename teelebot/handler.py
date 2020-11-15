@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-13
+@last modify: 2020-11-15
 '''
 import configparser
 import argparse
@@ -9,9 +9,7 @@ import os
 import sys
 import shutil
 from pathlib import Path
-
-__version__ = "1.11.5"
-__author__ = "github:plutobell"
+from .version import __author__, __github__, __version__
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
@@ -25,10 +23,9 @@ parser.add_argument(
 args = parser.parse_args()
 
 if len(sys.argv) == 2 and args.version:
-    os.system("")
-    print("version: \033[1;36;40m" + __version__ + "\033[0m")
-    print("author: \033[1;36;40m" + __author__ + "\033[0m")
-    print("")
+    print("\nVersion: " + __version__)
+    print("Author: " + __author__)
+    print("Project: " + __github__)
     os._exit(0)
 
 
@@ -45,7 +42,7 @@ def config():
             os.mkdir(str(Path(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")))
         if not os.path.exists(str(Path(os.path.abspath(
             os.path.expanduser('~')) + "/.teelebot/config.cfg"))):
-            print("配置文件不存在!")
+            print("the configuration file does not exist.")
             os._exit(0)
         else:
             config_dir = str(Path(os.path.abspath(
@@ -63,14 +60,14 @@ def config():
         default_args = ["key", "webhook", "root", "timeout"]
     for default_arg in default_args:
         if default_arg not in options:
-            print("配置文件缺失必要的参数!")
+            print("the configuration file is missing necessary parameters.")
             return False
 
     for option in options:
         config[str(option)] = conf.get("config", option)
 
     if any(["version" in config.keys(), "author" in config.keys()]):
-        print("配置文件存在错误!")
+        print("error in configuration file.")
         os._exit(0)
 
     if config["webhook"] == "True":
@@ -78,7 +75,7 @@ def config():
                         "server_port", "local_address", "local_port"]
         for w in webhook_args:
             if w not in config.keys():
-                print("请检查配置文件中是否存在以下字段：\n" +
+                print("please check if the following fields exist in the configuration file: \n" +
                     "cert_pub server_address server_port local_address local_port")
                 return False
 
@@ -112,7 +109,19 @@ def config():
                         "# -*- coding:utf-8 -*-\n",
                         "\n",
                         "def " + plugin_name + "(bot, message):\n",
-                        "    pass\n"
+                        "\n" + \
+                        '    text = message["text"]\n' + \
+                        "\n" + \
+                        '    chat_id = message["chat"]["id"]\n' + \
+                        '    user_id = message["from"]["id"]\n' + \
+                        '    message_id = message["message_id"]\n' + \
+                        "\n" + \
+                        '    message_type = message["message_type"]\n' + \
+                        '    chat_type = message["chat"]["type"]\n' + \
+                        "\n" + \
+                        '    prefix = "/' + plugin_name.lower() + '"\n' + \
+                        "\n\n" + \
+                        "    # Write your plugin code below"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w") as init:
@@ -125,6 +134,9 @@ def config():
                     readme.writelines([
                         "# " + plugin_name + " #\n"
                     ])
+            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt"))):
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt")), "w") as requirement:
+                    pass
 
             print("plugin " + plugin_name + " was created successfully.")
         else:
@@ -136,7 +148,7 @@ def config():
 
     if "pool_size" in config.keys():
         if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
-            print("线程池尺寸超出范围!(1-100)")
+            print("thread pool size is out of range (1-100).")
             os._exit(0)
     else:
         config["pool_size"] = "40"

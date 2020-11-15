@@ -352,6 +352,7 @@ Hello/
   ./Hello.py
   ./Hello_screenshot.png
   ./readme.md
+  ./requirement.txt
 ```
 
 #### 二、规则
@@ -447,15 +448,27 @@ teelebot -p/--plugin <plugin name>
 
 #### 五、周期性任务
 
-在 `v1.11.1` 及以上版本，可以通过Bot类的方法创建**周期性任务**，功能类似**循环定时器**。
+在 `v1.11.1` 及以上版本，可以创建**周期性任务**，功能类似**循环定时器**。
 
 可获得的方法：
 
-*  **add_schedule** : 添加任务
-*  **del_schedule** : 移除任务
-*  **find_schedule** : 查找任务
-*  **clear_schedule** : 清空任务池
-*  **stat_schedule** : 查看任务池状态
+*  **schedule.add** : 添加任务
+*  **schedule.delete** : 移除任务
+*  **schedule.find** : 查找任务
+*  **schedule.clear** : 清空任务池
+*  **schedule.status** : 查看任务池状态
+
+例：
+
+```python
+ok, uid = bot.schedule.add(gap, event, (bot, ))
+ok, uid = bot.schedule.delete(uid)
+ok, uid = bot.schedule.find(uid)
+ok, uid = bot.schedule.clear()
+ok, uid = bot.schedule.status()
+```
+
+
 
 周期性任务池的大小为全局线程池的**三分之一** ，线程池大小则可通过配置文件指定。
 
