@@ -1,14 +1,15 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-23
-@last modify: 2020-11-12
+@last modify: 2020-11-19
 '''
 import time
 import sys
 
 
-def runUpdates(bot):
-    plugin_list = bot.plugin_bridge.keys()
+def _runUpdates(bot):
+    plugin_bridge = bot.plugin_bridge
+    plugin_list = plugin_bridge.keys()
     while True:
         try:
             results = bot.getUpdates()  # 获取消息队列messages
@@ -18,4 +19,4 @@ def runUpdates(bot):
             for message in messages:  # 获取单条消息记录message
                 bot._pluginRun(bot, message)
         except KeyboardInterrupt:
-            sys.exit("程序终止")  # 退出存在问题，待修复
+            sys.exit("Bot Exit.")  # 退出存在问题，待修复

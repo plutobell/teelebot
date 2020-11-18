@@ -1,5 +1,26 @@
 # 更新日志
 
+#### 2020-11-19 ####
+
+* v1.13.2 : 
+  * 重构大量代码
+  * Bot类公共属性调整为9个
+    * root
+    * author
+    * version
+    * plugin_dir
+    * plugin_bridge
+    * uptime
+    * response_times
+    * response_chats 
+    * response_users
+  * 新增配置文件自动生成
+  * 新增命令行参数 -k/--key 和 r/--root
+  * 新增对Webhook模式非自签证书的支持
+  * 完善插件模板创建工具
+  * 修复了 bridge 和 pluginRun 的bug
+  * 其他细节优化
+
 #### 2020-11-15 ####
 
 * v1.12.0 :

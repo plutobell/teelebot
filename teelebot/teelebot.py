@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-15
+@last modify: 2020-11-19
 @author: Pluto (github:plutobell)
-@version: 1.12.0
+@version: 1.13.2
 """
 import inspect
 import time
@@ -15,64 +15,74 @@ import shutil
 import importlib
 import threading
 
-from datetime import timedelta
 from pathlib import Path
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 
-from .handler import config, bridge, plugin_info
-from .logger import logger
-from .schedule import schedule
-from .request import request
+from .handler import _config, _bridge, _plugin_info
+from .logger import _logger
+from .schedule import _Schedule
+from .request import _Request
 
 
-class Bot:
+class Bot(object):
     """机器人的基类"""
 
     def __init__(self, key=""):
-        self.config = config()
+        config = _config()
 
         if key != "":
-            self.key = key
-            self.config["key"] = key
+            self._key = key
         elif key == "":
-            self.key = self.config["key"]
+            self._key = config["key"]
 
-        if self.config["local_api_server"] != "False":
-            self.basic_url = self.config["local_api_server"]
+        self._local_api_server = config["local_api_server"]
+        if self._local_api_server != "False":
+            self._basic_url = config["local_api_server"]
         else:
-            self.basic_url = "https://api.telegram.org/"
-        self.url = self.basic_url + r"bot" + self.key + r"/"
+            self._basic_url = "https://api.telegram.org/"
+        self._url = self._basic_url + r"bot" + self._key + r"/"
 
-        self.webhook = self.config["webhook"]
-        self.timeout = self.config["timeout"]
-        self.offset = 0
-        self.debug = self.config["debug"]
+        self._webhook = config["webhook"]
+        if self._webhook:
+            self._self_signed = config["self_signed"]
+            if self._self_signed:
+                self._cert_pub = config["cert_pub"]
+            self._server_address = config["server_address"]
+            self._server_port = config["server_port"]
+            self._local_address = config["local_address"]
+            self._local_port = config["local_port"]
+        self._offset = 0
+        self._timeout = 60
+        self._debug = config["debug"]
+        self._pool_size = config["pool_size"]
+        self._drop_pending_updates = config["drop_pending_updates"]
 
-        self.plugin_dir = self.config["plugin_dir"]
-        self.plugin_bridge = self.config["plugin_bridge"]
-
-        self.VERSION = self.config["version"]
-        self.AUTHOR = self.config["author"]
-
+        self.__root = config["root"]
+        self.__AUTHOR = config["author"]
+        self.__VERSION = config["version"]
+        self.__plugin_dir = config["plugin_dir"]
+        self.__plugin_bridge = config["plugin_bridge"]
         self.__start_time = int(time.time())
         self.__response_times = 0
         self.__response_chats = []
         self.__response_users = []
 
-        thread_pool_size = round(int(self.config["pool_size"]) * 2 / 3)
-        schedule_queue_size = int(self.config["pool_size"]) - thread_pool_size
-
-        self.request = request(thread_pool_size, self.url, self.debug)
-        self.schedule = schedule(schedule_queue_size)
+        thread_pool_size = round(int(self._pool_size) * 2 / 3)
+        schedule_queue_size = int(self._pool_size) - thread_pool_size
+        self.request = _Request(thread_pool_size, self._url, self._debug)
+        self.schedule = _Schedule(schedule_queue_size)
 
         self.__thread_pool = ThreadPoolExecutor(
             max_workers=thread_pool_size)
         self.__message_deletor_thread_pool = ThreadPoolExecutor(
-            max_workers=int(self.config["pool_size"]) * 5)
+            max_workers=int(self._pool_size) * 5)
 
-        self.__plugin_info = self.config["plugin_info"]
-        del self.config["plugin_info"]
+        self.__plugin_info = config["plugin_info"]
+
+        del config
+        del thread_pool_size
+        del schedule_queue_size
 
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
@@ -86,13 +96,13 @@ class Bot:
         线程池异常回调
         """
         if fur.exception() is not None:
-            logger.debug("EXCEPTION" + " - " + str(fur.result()))
+            _logger.debug("EXCEPTION" + " - " + str(fur.result()))
 
     def __import_module(self, plugin_name):
         """
         动态导入模块
         """
-        sys.path.append(self.path_converter(self.plugin_dir + plugin_name + os.sep))
+        sys.path.append(self.path_converter(self.__plugin_dir + plugin_name + os.sep))
         Module = importlib.import_module(plugin_name)  # 模块检测
 
         return Module
@@ -102,50 +112,46 @@ class Bot:
         热更新插件
         """
         plugin_uri = self.path_converter(
-            self.plugin_dir + plugin_name + os.sep + plugin_name + ".py")
+            self.__plugin_dir + plugin_name + os.sep + plugin_name + ".py")
         now_mtime = os.stat(plugin_uri).st_mtime
         # print(now_mtime, self.__plugin_info[plugin_name])
         if now_mtime != self.__plugin_info[plugin_name]:  # 插件热更新
-            if os.path.exists(self.path_converter(self.plugin_dir + plugin_name + r"/__pycache__")):
-                shutil.rmtree(self.path_converter(self.plugin_dir + plugin_name + r"/__pycache__"))
+            if os.path.exists(self.path_converter(self.__plugin_dir + plugin_name + r"/__pycache__")):
+                shutil.rmtree(self.path_converter(self.__plugin_dir + plugin_name + r"/__pycache__"))
             self.__plugin_info[plugin_name] = now_mtime
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
-            logger.info("The plugin " + plugin_name + " has been updated")
+            _logger.info("The plugin " + plugin_name + " has been updated")
 
     def __load_plugin(self, now_plugin_bridge, now_plugin_info):
         """
         动态装载插件
         """
-        for plugin_value in list(now_plugin_bridge.values()):
-            if plugin_value not in list(self.plugin_bridge.values()):
-                logger.info("The plugin " + plugin_value + " has been installed")
-                self.__plugin_info[plugin_value] = now_plugin_info[plugin_value]
-        for plugin_value in list(self.plugin_bridge.values()):
-            if plugin_value not in list(now_plugin_bridge.values()):
-                logger.info("The plugin " + plugin_value + " has been uninstalled")
-                self.__plugin_info.pop(plugin_value)
-        self.plugin_bridge = now_plugin_bridge
+        for plugin in list(now_plugin_bridge.keys()):
+            if plugin not in list(self.__plugin_bridge.keys()):
+                _logger.info("The plugin " + plugin + " has been installed")
+                self.__plugin_info[plugin] = now_plugin_info[plugin]
+        for plugin in list(self.__plugin_bridge.keys()):
+            if plugin not in list(now_plugin_bridge.keys()):
+                _logger.info("The plugin " + plugin + " has been uninstalled")
+                self.__plugin_info.pop(plugin)
 
-    def __control_plugin(self, plugin_bridge, plugin_list, chat_type, chat_id):
-        if chat_type != "private" and "/pluginctl" in plugin_bridge.keys() \
-                and plugin_bridge["/pluginctl"] == "PluginCTL":
-            if os.path.exists(self.path_converter(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
-                with open(self.path_converter(self.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+        self.__plugin_bridge = now_plugin_bridge
+
+    def __control_plugin(self, plugin_bridge, chat_type, chat_id):
+        if chat_type != "private" and "PluginCTL" in plugin_bridge.keys() \
+                and plugin_bridge["PluginCTL"] == "/pluginctl":
+            if os.path.exists(self.path_converter(self.__plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
+                with open(self.path_converter(self.__plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                     plugin_setting = f.read().strip()
                 plugin_list_off = plugin_setting.split(',')
                 plugin_bridge_temp = {}
-                for plugin in plugin_list:
-                    plugin_temp = plugin
-                    if plugin == "" or plugin == " ":
-                        plugin = "nil"
+                for plugin in list(plugin_bridge.keys()):
                     if plugin not in plugin_list_off:
-                        plugin = plugin_temp
                         plugin_bridge_temp[plugin] = plugin_bridge[plugin]
                 plugin_bridge = plugin_bridge_temp
-                plugin_list = plugin_bridge.keys()
 
-        return plugin_bridge, plugin_list
+        return plugin_bridge
 
     def __mark_message_for_pluginRun(self, message):
         if "callback_query_id" in message.keys():  # callback query
@@ -220,16 +226,16 @@ class Bot:
                     user_name += message["from"]["last_name"]
 
         if message["message_type"] == "unknown":
-            logger.info(
+            _logger.info(
             "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
             "User:" + user_name + "(" + str(from_id) + ") - " + \
             "Plugin: " + "" + " - " + \
             "Type:" + message["message_type"])
         else:
-            logger.info(
+            _logger.info(
                 "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
                 "User:" + user_name + "(" + str(from_id) + ") - " + \
-                "Plugin: " + str(self.plugin_bridge[plugin]) + " - " + \
+                "Plugin: " + str(plugin) + " - " + \
                 "Type:" + message["message_type"])
 
     def _pluginRun(self, bot, message):
@@ -239,27 +245,23 @@ class Bot:
         if message is None:
             return
 
-        now_plugin_bridge = bridge(self.plugin_dir)
-        now_plugin_info = plugin_info(now_plugin_bridge.values(), self.plugin_dir)
+        now_plugin_bridge = _bridge(self.__plugin_dir)
+        now_plugin_info = _plugin_info(now_plugin_bridge.keys(), self.__plugin_dir)
 
-        if now_plugin_bridge != self.plugin_bridge: # 动态装载插件
+        if now_plugin_bridge != self.__plugin_bridge: # 动态装载插件
             self.__load_plugin(now_plugin_bridge, now_plugin_info)
 
         if len(now_plugin_info) != len(self.__plugin_info) or \
             now_plugin_info != self.__plugin_info: # 动态更新插件信息
-            for plugin_name in list(self.plugin_bridge.values()):
+            for plugin_name in list(self.__plugin_bridge.keys()):
                 self.__update_plugin(plugin_name) #热更新插件
 
-        if len(self.plugin_bridge) == 0:
+        if len(self.__plugin_bridge) == 0:
             os.system("")
-            logger.warn("\033[1;31mNo plugins installed\033[0m")
+            _logger.warn("\033[1;31mNo plugins installed\033[0m")
 
-        plugin_list = list(self.plugin_bridge.keys())
-        plugin_bridge = self.plugin_bridge
-
-        plugin_bridge, plugin_list = self.__control_plugin( # pluginctl控制
-            plugin_bridge, plugin_list,
-            message["chat"]["type"], message["chat"]["id"])
+        plugin_bridge = self.__control_plugin( # pluginctl控制
+            self.__plugin_bridge, message["chat"]["type"], message["chat"]["id"])
 
         message_type = ""
         message_type, message = self.__mark_message_for_pluginRun(message) # 分类标记消息
@@ -268,10 +270,10 @@ class Bot:
             self.__logging_for_pluginRun(message, "unknown")
             return
 
-        for plugin in plugin_list:
-            if message.get(message_type)[:len(plugin)] == plugin:
-                module = self.__import_module(plugin_bridge[plugin])
-                pluginFunc = getattr(module, plugin_bridge[plugin])
+        for plugin, command in plugin_bridge.items():
+            if message.get(message_type)[:len(command)] == command:
+                module = self.__import_module(plugin)
+                pluginFunc = getattr(module, plugin)
                 fur = self.__thread_pool.submit(pluginFunc, bot, message)
                 fur.add_done_callback(self.__threadpool_exception)
 
@@ -321,7 +323,7 @@ class Bot:
             else:
                 messages.append(result.get(query_or_message))
         if len(update_ids) >= 1:
-            self.offset = max(update_ids) + 1
+            self._offset = max(update_ids) + 1
             return messages
         else:
             return None
@@ -355,31 +357,70 @@ class Bot:
 
         return path
 
-    def uptime(self, time_format="second"):
+    @property
+    def plugin_bridge(self):
         """
-        获取框架的持续运行时间
+        获取插件桥
+        """
+
+        return self.__plugin_bridge
+
+    @property
+    def plugin_dir(self):
+        """
+        获取插件路径
+        """
+
+        return self.__plugin_dir
+
+    @property
+    def version(self):
+        """
+        获取框架版本号
+        """
+
+        return self.__VERSION
+
+    @property
+    def author(self):
+        """
+        作者信息
+        """
+
+        return self.__AUTHOR
+
+    @property
+    def root(self):
+        """
+        root用户ID
+        """
+
+        return self.__root
+
+    @property
+    def uptime(self):
+        """
+        获取框架的持续运行时间(单位为秒)
         """
         second = int(time.time()) - self.__start_time
-        if time_format == "second":
-            return second
-        elif time_format == "format":
-            format_time = timedelta(seconds=second)
-            return format_time
-        else:
-            return False
 
+        return second
+
+    @property
     def response_times(self):
         """
         获取框架启动后响应指令的统计次数
         """
         return self.__response_times
 
+    @property
     def response_chats(self):
         """
         获取框架启动后响应的所有群组ID
         """
         return self.__response_chats
 
+    @property
     def response_users(self):
         """
         获取框架启动后响应的所有用户ID
@@ -395,7 +436,7 @@ class Bot:
         if req:
 
             file_path = req["file_path"]
-            file_download_path = self.basic_url + "file/bot" + self.key + r"/" + file_path
+            file_download_path = self._basic_url + "file/bot" + self._key + r"/" + file_path
 
             return file_download_path
         else:
@@ -407,8 +448,8 @@ class Bot:
         获取消息队列
         """
         command = inspect.stack()[0].function
-        addr = command + "?offset=" + str(self.offset) + \
-            "&limit=" + str(limit) + "&timeout=" + str(self.timeout)
+        addr = command + "?offset=" + str(self._offset) + \
+            "&limit=" + str(limit) + "&timeout=" + str(self._timeout)
 
         if allowed_updates is not None:
             return self.request.postJson(addr, allowed_updates)
@@ -470,7 +511,7 @@ class Bot:
         """
         command = inspect.stack()[0].function
         addr = command + "?" + "offset=" + \
-            str(self.offset) + "&timeout=" + str(self.timeout)
+            str(self._offset) + "&timeout=" + str(self._timeout)
         return self.request.post(addr)
 
     def getFile(self, file_id):
@@ -884,7 +925,7 @@ class Bot:
             addr += "&limit=" + str(limit)
         return self.request.post(addr)
 
-    def getChatMember(self, user_id, chat_id):
+    def getChatMember(self, chat_id, user_id):
         """
         获取群组特定用户信息
         """
@@ -974,7 +1015,7 @@ class Bot:
 
         return self.request.postJson(addr, permissions)
 
-    def promoteChatMember(self, user_id, chat_id, is_anonymous=None,
+    def promoteChatMember(self, chat_id, user_id, is_anonymous=None,
         can_change_info=None, can_post_messages=None, can_edit_messages=None,
         can_delete_messages=None, can_invite_users=None, can_restrict_members=None,
         can_pin_messages=None, can_promote_members=None):
@@ -982,6 +1023,7 @@ class Bot:
         修改管理员权限(只能修改由机器人任命的管理员的权限,
         范围为机器人权限的子集)
         {
+        'is_anonymous':None,
         'can_change_info':False,
         'can_post_messages':False,
         'can_edit_messages':False,

@@ -16,11 +16,15 @@ def PluginCTL(bot, message):
     text = message["text"]
     prefix = "pluginctl"
 
-    if not os.path.exists(bot.path_converter(bot.plugin_dir + "PluginCTL/db/")):
-        os.mkdir(bot.path_converter(bot.plugin_dir + "PluginCTL/db/"))
+    plugin_dir = bot.plugin_dir
+    root = bot.root
+    plugin_bridge = bot.plugin_bridge
 
-    if message["chat"]["type"] != "private" and not os.path.exists(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
-        with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+    if not os.path.exists(bot.path_converter(plugin_dir + "PluginCTL/db/")):
+        os.mkdir(bot.path_converter(plugin_dir + "PluginCTL/db/"))
+
+    if message["chat"]["type"] != "private" and not os.path.exists(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
+        with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
             pass
 
     command = {
@@ -35,8 +39,8 @@ def PluginCTL(bot, message):
 
     if message["chat"]["type"] != "private":
         admins = administrators(bot=bot, chat_id=chat_id)
-        if str(bot.config["root"]) not in admins:
-            admins.append(str(bot.config["root"])) #root permission
+        if str(root) not in admins:
+            admins.append(str(root)) #root permission
 
     if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
         status = bot.sendChatAction(chat_id, "typing")
@@ -46,8 +50,8 @@ def PluginCTL(bot, message):
         status = bot.sendChatAction(chat_id, "typing")
         msg = "<b>PluginCTL 插件功能</b>\n\n" +\
             "<b>/pluginctlshow</b> - 展示插件开启状态 \n" +\
-            "<b>/pluginctlon</b> - 启用插件。格式：/pluginctlon接要启用的插件指令，以':'作为分隔符 \n" +\
-            "<b>/pluginctloff</b> - 禁用插件。格式：/pluginctloff接要禁用的插件指令，以':'作为分隔符 \n" +\
+            "<b>/pluginctlon</b> - 启用插件。格式：/pluginctlon接要启用的插件名，以空格分隔 \n" +\
+            "<b>/pluginctloff</b> - 禁用插件。格式：/pluginctloff接要禁用的插件名，以空格分隔 \n" +\
             "<b>/pluginctlon:all</b> - 启用所有插件 \n" +\
             "<b>/pluginctloff:all</b> - 禁用所有插件，但必须的插件将被保留 \n" +\
             "<b>\n同时操作多个插件请用英文逗号分隔</b>\n"
@@ -62,21 +66,16 @@ def PluginCTL(bot, message):
         pluginctlsho_off_page = "/" + prefix + "showoffpage"
 
         plugin_dict = bot.plugin_bridge
-        with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+        with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
             plugin_setting = f.read().strip()
         plugin_list_off = plugin_setting.split(',')
-        plugin_list_temp = {}
-        for plug in bot.plugin_bridge.keys():
-            plugin_temp = plug
-            if plug == "" or plug == " ":
-                plug = "nil"
-            if plug not in plugin_list_off:
-                plug = plugin_temp
-                plugin_list_temp[plug] = bot.plugin_bridge[plug]
-        plugin_list_on = list(plugin_list_temp.keys()) #dict.keys()不可修改！
-        for i, po in enumerate(plugin_list_on):
-            if po == "" or po == " ":
-                plugin_list_on[i] = "nil"
+        plugin_list_on = {}
+        for plugin in plugin_bridge.keys():
+            if plugin not in plugin_list_off:
+                plugin_list_on[plugin] = plugin_bridge[plugin]
+        for key, val in plugin_list_on.items(): #dict.keys()不可修改！
+            if val == "" or val == " ":
+                plugin_list_on[key] = "nil"
 
         if callback_query_data == pluginctlsho_on_page:
             inlineKeyboard = [
@@ -89,10 +88,13 @@ def PluginCTL(bot, message):
             }
 
             if click_user_id == from_user_id:
+                for key, val in plugin_list_on.items(): #dict.keys()不可修改！
+                    if val == "" or val == " ":
+                        plugin_list_on[key] = "nil"
                 msg_on = "<b>启用的插件</b> \n\n"
                 for i, on in enumerate(plugin_list_on):
-                    msg_on += " <b>[" + str(i+1) + "] " + str(on) + "</b>\n"
-                msg_on += "\n<b>nil</b> 代表无指令的插件"
+                    msg_on += " <b>[" + str(i+1) + "] " + str(on) + " " + str(plugin_list_on[on]) + "</b>\n"
+                msg_on += "\n<b>nil</b> 代表指令为空"
                 status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg_on + "\n", parse_mode="HTML", reply_markup=reply_markup)
                 status = bot.answerCallbackQuery(message["callback_query_id"])
             else:
@@ -109,6 +111,9 @@ def PluginCTL(bot, message):
 
             if click_user_id == from_user_id:
                 msg_off = "<b>禁用的插件</b> \n\n"
+                for key, val in plugin_bridge.items(): #dict.keys()不可修改！
+                    if val == "" or val == " ":
+                        plugin_bridge[key] = "nil"
                 for i, pluo in enumerate(plugin_list_off):
                     if pluo == "" or pluo == " ":
                         del plugin_list_off[i]
@@ -116,8 +121,8 @@ def PluginCTL(bot, message):
                     msg_off += "无\n"
                 else:
                     for i, off in enumerate(plugin_list_off):
-                        msg_off += " <b>[" + str(i+1) + "] " + str(off) + "</b>\n"
-                msg_off += "\n<b>nil</b> 代表无指令的插件"
+                        msg_off += " <b>[" + str(i+1) + "] " + str(off) +  " " + str(plugin_bridge[off]) + "</b>\n"
+                msg_off += "\n<b>nil</b> 代表指令为空"
                 status = bot.editMessageText(chat_id=chat_id, message_id=message_id, text=msg_off + "\n", parse_mode="HTML", reply_markup=reply_markup)
                 status = bot.answerCallbackQuery(message["callback_query_id"])
             else:
@@ -139,32 +144,27 @@ def PluginCTL(bot, message):
             }
 
             plugin_dict = bot.plugin_bridge
-            with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+            with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                 plugin_setting = f.read().strip()
             plugin_list_off = plugin_setting.split(',')
-            plugin_list_temp = {}
-            for plug in bot.plugin_bridge.keys():
-                plugin_temp = plug
-                if plug == "" or plug == " ":
-                    plug = "nil"
-                if plug not in plugin_list_off:
-                    plug = plugin_temp
-                    plugin_list_temp[plug] = bot.plugin_bridge[plug]
-            plugin_list_on = list(plugin_list_temp.keys()) #dict.keys()不可修改！
-            for i, po in enumerate(plugin_list_on):
-                if po == "" or po == " ":
-                    plugin_list_on[i] = "nil"
+            plugin_list_on = {}
+            for plugin in plugin_bridge.keys():
+                if plugin not in plugin_list_off:
+                    plugin_list_on[plugin] = plugin_bridge[plugin]
+            for key, val in plugin_list_on.items(): #dict.keys()不可修改！
+                if val == "" or val == " ":
+                    plugin_list_on[key] = "nil"
             msg_on = "<b>启用的插件</b> \n\n"
             for i, on in enumerate(plugin_list_on):
-                msg_on += " <b>[" + str(i+1) + "] " + str(on) + "</b>\n"
-            msg_on += "\n<b>nil</b> 代表无指令的插件"
+                msg_on += " <b>[" + str(i+1) + "] " + str(on) + " " + str(plugin_list_on[on]) + "</b>\n"
+            msg_on += "\n<b>nil</b> 代表指令为空"
             status = bot.sendChatAction(chat_id, "typing")
             status = bot.sendMessage(chat_id=chat_id, text=msg_on + "\n", parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
             bot.message_deletor(60, chat_id, status["message_id"])
         elif text[1:len(prefix + command["/pluginctlon"])+1] == prefix + command["/pluginctlon"]:
-            plugin_list = list(bot.plugin_bridge.keys())
-            if len(text.split(':')) == 2:
-                plug_set = text.split(':')[1]
+            plugin_list = list(plugin_bridge.keys())
+            if len(text.split(' ')) == 2:
+                plug_set = text.split(' ')[1]
                 for p in plug_set.split(','):
                     if p == "nil":
                         p = ''
@@ -173,14 +173,14 @@ def PluginCTL(bot, message):
                             continue
                         if p == "all":
                             continue
-                        msg = "插件指令 <b>" + str(p) + "</b> 不存在，请重试!"
+                        msg = "插件 <b>" + str(p) + "</b> 不存在，请重试!"
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                         bot.message_deletor(15, chat_id, status["message_id"])
                         return False
                 if plug_set == "all":
                     lock.acquire()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
                         f.write('')
                     lock.release()
                     status = bot.sendChatAction(chat_id, "typing")
@@ -188,7 +188,7 @@ def PluginCTL(bot, message):
                     bot.message_deletor(15, chat_id, status["message_id"])
                     return False
                 elif len(plug_set.split(',')) >= 2:
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     for i, plug_s in enumerate(plug_set.split(',')):
@@ -197,12 +197,12 @@ def PluginCTL(bot, message):
                                 if p == plug_s:
                                     del plugin_list_off[i]
                     lock.acquire()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 else:
                     plug_set = plug_set.strip()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     if plug_set in plugin_list_off:
@@ -210,7 +210,7 @@ def PluginCTL(bot, message):
                             if p == plug_set:
                                 del plugin_list_off[i]
                     lock.acquire()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 status = bot.sendChatAction(chat_id, "typing")
@@ -222,19 +222,17 @@ def PluginCTL(bot, message):
                 bot.message_deletor(15, chat_id, status["message_id"])
 
         elif text[1:len(prefix + command["/pluginctloff"])+1] == prefix + command["/pluginctloff"]:
-            default_plugin = ["/start", "/about", "/pluginctl"]
-            plugin_list = bot.plugin_bridge.keys()
-            if len(text.split(':')) == 2:
-                plug_set = text.split(':')[1]
+            default_plugin = ["Menu", "About", "PluginCTL", "Uptime", "Schedule"]
+            plugin_list = list(plugin_bridge.keys())
+            if len(text.split(' ')) == 2:
+                plug_set = text.split(' ')[1]
                 for p in plug_set.split(','):
-                    if p == "nil":
-                        p = ''
                     if p not in plugin_list:
-                        if '' in plugin_list and p == ' ':
+                        if p == ' ' or p == '':
                             continue
                         if p == "all":
                             continue
-                        msg = "插件指令 <b>" + str(p) + "</b> 不存在，请重试!"
+                        msg = "插件 <b>" + str(p) + "</b> 不存在，请重试!"
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                         bot.message_deletor(15, chat_id, status["message_id"])
@@ -247,40 +245,47 @@ def PluginCTL(bot, message):
                         if p not in default_plugin:
                             plugin_list_alloff.append(p)
                     lock.acquire()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
                         f.write(','.join(plugin_list_alloff))
                     lock.release()
                     status = bot.sendChatAction(chat_id, "typing")
-                    status = bot.sendMessage(chat_id=chat_id, text="<b>已禁用全部插件。</b>", parse_mode="HTML", reply_to_message_id=message_id)
+                    status = bot.sendMessage(chat_id=chat_id, text="<b>已禁用全部插件,\n但必须的插件仍被保留。</b>", parse_mode="HTML", reply_to_message_id=message_id)
                     bot.message_deletor(15, chat_id, status["message_id"])
                     return False
                 elif len(plug_set.split(',')) >= 2:
                     for i, p in enumerate(plug_set.split(',')):
                         if p in default_plugin:
                             status = bot.sendChatAction(chat_id, "typing")
-                            msg = "插件命令 <b>" + str(p) + "</b> 不支持禁用!"
+                            msg = "插件 <b>" + str(p) + "</b> 不支持禁用!"
                             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                             bot.message_deletor(15, chat_id, status["message_id"])
                             return False
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     for i, plug_s in enumerate(plug_set.split(',')):
                         if plug_s not in plugin_list_off:
                             plugin_list_off.append(plug_s)
                     lock.acquire()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 else:
                     plug_set = plug_set.strip()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+                    for i, p in enumerate(plug_set.split(',')):
+                        if p in default_plugin:
+                            status = bot.sendChatAction(chat_id, "typing")
+                            msg = "插件 <b>" + str(p) + "</b> 不支持禁用!"
+                            status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
+                            bot.message_deletor(15, chat_id, status["message_id"])
+                            return False
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                         plugin_setting = f.read().strip()
                     plugin_list_off = plugin_setting.split(',')
                     if plug_set not in plugin_list_off:
                         plugin_list_off.append(plug_set)
                     lock.acquire()
-                    with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
+                    with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "w") as f:
                         f.write(','.join(plugin_list_off))
                     lock.release()
                 status = bot.sendChatAction(chat_id, "typing")

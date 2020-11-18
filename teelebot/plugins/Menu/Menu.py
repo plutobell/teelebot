@@ -1,42 +1,42 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2019-8-15
-last_modify: 2020-11-13
+last_modify: 2020-11-16
 '''
 import os
 
 def Menu(bot, message):
-    prefix = "start"
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
     chat_type = message["chat"]["type"]
 
-    plugin_list = bot.plugin_bridge.values()
-    if chat_type != "private" and "/pluginctl" in bot.plugin_bridge.keys() and bot.plugin_bridge["/pluginctl"] == "PluginCTL":
-        if os.path.exists(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
-            with open(bot.path_converter(bot.plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
+    prefix = "start"
+
+    plugin_bridge = bot.plugin_bridge
+    plugin_dir = bot.plugin_dir
+    plugin_list = list(plugin_bridge.keys())
+
+    if chat_type != "private" and "/pluginctl" in plugin_bridge.values() and plugin_bridge["PluginCTL"] == "/pluginctl":
+        if os.path.exists(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db")):
+            with open(bot.path_converter(plugin_dir + "PluginCTL/db/" + str(chat_id) + ".db"), "r") as f:
                 plugin_setting = f.read().strip()
             plugin_list_off = plugin_setting.split(',')
-            plugin_list_value = {}
-            for plug in bot.plugin_bridge.keys():
-                plugin_temp = plug
-                if plug == "" or plug == " ":
-                    plug = "nil"
-                if plug not in plugin_list_off:
-                    plug = plugin_temp
-                    plugin_list_value[plug] = bot.plugin_bridge[plug]
-            plugin_list = plugin_list_value.values()
+            plugin_list_temp = []
+            for plugin in plugin_bridge.keys():
+                if plugin not in plugin_list_off:
+                    plugin_list_temp.append(plugin)
+            plugin_list = plugin_list_temp
 
     plugin_count = len(plugin_list)
     page_size = 5
     page_total = int((plugin_count + page_size - 1) / page_size) # 总页数=（总数+每页数量-1）/每页数量
     page_callback_command = "/" + prefix + "page?page="
 
-    if not os.path.exists(bot.path_converter(bot.plugin_dir + "Menu/config.ini")):
+    if not os.path.exists(bot.path_converter(plugin_dir + "Menu/config.ini")):
         first_btn = ["交流群组", "https://t.me/teelebot_chat"]
         last_btn = ["项目地址", "https://github.com/plutobell/teelebot"]
     else:
-        with open(bot.path_converter(bot.plugin_dir + "Menu/config.ini"), 'r') as g:
+        with open(bot.path_converter(plugin_dir + "Menu/config.ini"), 'r') as g:
             first_btn = g.readline().strip().split(',')
             last_btn = g.readline().strip().split(',')
 
@@ -50,7 +50,7 @@ def Menu(bot, message):
         if callback_query_data[:len(page_callback_command)] == page_callback_command:
             if click_user_id == from_user_id:
                 page = int(callback_query_data.split('=')[1])
-                page, menu_str = menu_text(bot, page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
+                page, menu_str = menu_text(bot, plugin_dir=plugin_dir, page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
                 previous_page = page - 1
                 if previous_page < 1:
                     previous_page = 1
@@ -113,15 +113,15 @@ def Menu(bot, message):
             "inline_keyboard": inlineKeyboard
         }
 
-        page, menu_str = menu_text(bot=bot, page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
+        page, menu_str = menu_text(bot=bot, plugin_dir=plugin_dir, page=page, page_total=page_total, page_size=page_size, plugin_list=plugin_list)
 
         status = bot.sendChatAction(chat_id, "typing")
         status = bot.sendMessage(chat_id=chat_id, text=menu_str, parse_mode="HTML", reply_to_message_id=message_id, reply_markup=reply_markup)
 
         bot.message_deletor(wait_time, message["chat"]["id"], status["message_id"])
 
-def menu_text(bot, page, page_total, page_size, plugin_list):
-
+def menu_text(bot, plugin_dir, page, page_total, page_size, plugin_list):
+    VERSION = bot.version
     if page < 1:
         page = 1
     elif page > page_total:
@@ -132,7 +132,7 @@ def menu_text(bot, page, page_total, page_size, plugin_list):
         plugin_range = range(page*page_size-page_size, page*page_size-1+1)
         for i, plugin in enumerate(plugin_list): #(now_page*page_size-page_size,now_page*page_size-1)
             if i in plugin_range:
-                with open(bot.path_converter(bot.plugin_dir + plugin + r"/__init__.py"), encoding="utf-8") as f:
+                with open(bot.path_converter(plugin_dir + plugin + r"/__init__.py"), encoding="utf-8") as f:
                     line_1 = ""
                     line_2 = ""
                     for i in range(2):
@@ -141,6 +141,6 @@ def menu_text(bot, page, page_total, page_size, plugin_list):
                         elif i == 1:
                             line_2 = f.readline().strip()[1:]
                     menu_str += "<b>" + line_1 + "</b> - " + line_2 + "\n\n"
-        menu_str = "<b>插件列表 [" + str(page) + "/" + str(page_total) + "]</b>\n\n" + menu_str + "\n<code>v" + bot.VERSION + "</code>"
+        menu_str = "<b>插件列表 [" + str(page) + "/" + str(page_total) + "]</b>\n\n" + menu_str + "\n<code>v" + VERSION + "</code>"
 
         return page, menu_str

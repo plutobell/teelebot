@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modify: 2020-11-15
+@last modify: 2020-11-18
 '''
 import threading
 from uuid import uuid4
 
-class schedule:
+class _Schedule(object):
     """
     周期性任务类
     """

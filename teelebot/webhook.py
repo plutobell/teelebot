@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-10-24
+@last modify: 2020-11-19
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 #from socketserver import ThreadingMixIn
@@ -15,7 +15,7 @@ def __MakeRequestHandler(bot):
             super(RequestHandler, self).__init__(*args, **kwargs)
 
         def do_POST(self):
-            if self.command == "POST" and self.path == "/bot" + str(bot.key):
+            if self.command == "POST" and self.path == "/bot" + str(bot._key):
                 req_data = self.rfile.read(int(self.headers['content-length']))
                 res = req_data.decode('utf-8')
 
@@ -50,11 +50,11 @@ def __MakeRequestHandler(bot):
 #     pass
 
 
-def runWebhook(bot, host, port):
+def _runWebhook(bot, host, port):
     RequestHandler = __MakeRequestHandler(bot)
     server = HTTPServer((host, port), RequestHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         server.server_close()
-        sys.exit("程序终止")
+        sys.exit("Bot Exit.")

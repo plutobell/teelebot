@@ -1,20 +1,20 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modify: 2020-11-15
+@last modify: 2020-11-18
 '''
 import os
 
 import requests
 import inspect
-from .logger import logger
+from .logger import _logger
 from traceback import extract_stack
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-class request:
+class _Request(object):
     """
     接口请求类
     """
@@ -51,7 +51,7 @@ class request:
             os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
             if len(stack_info) > 8:  # 插件内
-                logger.debug("\033[1;31m" + \
+                _logger.debug("\033[1;31m" + \
                             "Request failed" + " - " + \
                             "From:" + stack_info[-3][2] + " - " + \
                             "Path:" + stack_info[5][0] + " - " + \
@@ -60,7 +60,7 @@ class request:
                             "Result:" + str(result) + \
                             "\033[0m")
             elif len(stack_info) > 3:  # 外部调用
-                logger.debug("\033[1;31m" + \
+                _logger.debug("\033[1;31m" + \
                             "Request failed" + " - " + \
                             "From:" + stack_info[0][0] + " - " + \
                             "Path:" + stack_info[1][0] + " - " + \

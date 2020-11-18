@@ -1,65 +1,78 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-8-23
-@last modify: 2020-11-12
+@last modify: 2020-11-19
 """
-from .polling import runUpdates
-from .webhook import runWebhook
+from .polling import _runUpdates
+from .webhook import _runWebhook
 from .teelebot import Bot
 
 name = "teelebot"
 __all__ = ['Bot']
 
 bot = Bot()
+VERSION = bot.version
 
-if bot.config["local_api_server"] != "False":
+if bot._local_api_server != "False":
     api_server = "Local"
 else:
     api_server = "Remote"
 
 
 def main():
-    print(" * 正在自检", end="\r")
+    print(" * Self-checking...", end="\r")
     status = bot.getWebhookInfo()
+    pending_update_count = status["pending_update_count"]
+
     if not status:
-        print("获取运行模式失败!")
-        return False
+        print("\nfailed to get running mode!")
+        return
 
-    if bot.config["webhook"]:
-        url = "https://" + str(bot.config["server_address"] + ":" + str(
-            bot.config["server_port"]) + "/bot" + str(bot.config["key"]))
-        if bot.config["drop_pending_updates"] == True \
-            or status["url"] != url or not status["has_custom_certificate"] \
-            or status["max_connections"] != int(bot.config["pool_size"]):
-            status = bot.setWebhook(
-                url=url,
-                certificate=bot.config["cert_pub"],
-                max_connections=bot.config["pool_size"],
-                drop_pending_updates=bot.config["drop_pending_updates"]
-            )
+    if bot._webhook:
+        url = "https://" + str(bot._server_address + ":" + str(
+            bot._server_port) + "/bot" + str(bot._key))
+        if (bot._drop_pending_updates == True and pending_update_count != 0) \
+            or (status["url"] != url) or (status["has_custom_certificate"] != bot._self_signed)\
+            or status["max_connections"] != int(bot._pool_size):
+            if bot._self_signed:
+                status = bot.setWebhook(
+                    url=url,
+                    certificate=bot._cert_pub,
+                    max_connections=bot._pool_size,
+                    drop_pending_updates=bot._drop_pending_updates
+                )
+            else:
+                status = bot.setWebhook(
+                    url=url,
+                    max_connections=bot._pool_size,
+                    drop_pending_updates=bot._drop_pending_updates
+                )
             if not status:
-                print("设置Webhook失败!")
-                return False
+                print("\nfailed to set Webhook!")
+                return
 
-        print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
-              "\n * 运行模式: Webhook", "\n * 最大线程: " + str(bot.config["pool_size"]),
-              "\n * 连接地址: " + api_server + "\n")
-        runWebhook(bot=bot, host=bot.config["local_address"], port=int(
-            bot.config["local_port"]))
+        print(" * The teelebot starts running",
+              "\n * Version : v" + VERSION,
+              "\n *    Mode : Webhook",
+              "\n *  Thread : " + str(bot._pool_size),
+              "\n *  Server : " + api_server + "\n")
+        _runWebhook(bot=bot,
+            host=bot._local_address,port=int(bot._local_port))
 
     else:
         if status["url"] != "" or status["has_custom_certificate"]:
             status = bot.deleteWebhook()
             if not status:
-                print("设置getUpdates失败!")
-                return False
+                print("\nfailed to set getUpdates!")
+                return
 
-        print(" * 机器人开始运行", "\n * 框架版本：teelebot v" + bot.VERSION,
-              "\n * 运行模式: Polling", "\n * 最大线程: " + str(bot.config["pool_size"]),
-              "\n * 连接地址: " + api_server + "\n")
-        pending_update_count = bot.getWebhookInfo()["pending_update_count"]
-        if bot.config["drop_pending_updates"] == True and \
+        print(" * The teelebot starts running",
+              "\n * Version : v" + VERSION,
+              "\n *    Mode : Polling",
+              "\n *  Thread : " + str(bot._pool_size),
+              "\n *  Server : " + api_server + "\n")
+        if bot._drop_pending_updates == True and \
             pending_update_count != 0:
             results = bot.getUpdates()
             messages = bot._washUpdates(results)
-        runUpdates(bot=bot)
+        _runUpdates(bot=bot)

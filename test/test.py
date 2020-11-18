@@ -5,9 +5,9 @@ sys.path.append("..")
 import teelebot
 
 bot = teelebot.Bot()
-config = bot.config
-user_id = config['root']
-chat_id = config['chat_id']
+root = bot.root
+
+print(bot.getWebhookInfo())
 
 #bot.sendMessage(chat_id=chat_id, text="测试消息", parse_mode="text")
 
@@ -221,5 +221,5 @@ results = {
 # print(req)
 
 
-from random import randint
-bot.sendSticker(chat_id=config["root"], sticker=bot.plugin_dir + "Uptime/umaru/" + str(randint(1,3)) + ".gif")
+# from random import randint
+# bot.sendSticker(chat_id=config["root"], sticker=bot.plugin_dir + "Uptime/umaru/" + str(randint(1,3)) + ".gif")

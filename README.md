@@ -144,20 +144,32 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-**teelebot method**
+**teelebot methods**
 
 *  getFileDownloadPath
 * message_deletor
-* uptime
-* response_times
-* response_chats 
-* response_users
 * path_converter
 * schedule.add
 * schedule.delete
 * schedule.find
 * schedule.clear
 * schedule.status
+
+
+
+**teelebot properties**
+
+*  root
+*  author
+*  version
+*  plugin_dir
+*  plugin_bridge
+*  uptime
+*  response_times
+*  response_chats 
+*  response_users
+
+
 
 
 
@@ -192,11 +204,27 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 pip install teelebot
 ```
 
+## 升级 ##
+
+```
+pip install teelebot --upgrade
+```
+
 
 
 
 
 ## 使用 ##
+
+#### 一行命令启动 (Polling Mode)
+
+```
+teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user id>
+```
+
+**此命令会自动生成在Polling模式下适用的配置文件，但仍需手动配置插件路径。**
+
+
 
 #### 一、运行模式
 
@@ -204,19 +232,22 @@ pip install teelebot
 
 ##### 1、Webhook 模式
 
-`teelebot` 的 Webhook 目前仅支持 **`自签名证书`**。若要以 `Webhook` 模式运行，请将配置文件字段 `webhook` 设置为 `True` ，并且添加以下字段：
+要以 `Webhook` 模式运行，请将配置文件字段 `webhook` 设置为 `True` ，此模式涉及的配置文件字段如下：
 
 ```python
 [config]
 webhook=True
-cert_pub=your public certificate dir //Optional while webhook is False
+self_signed=False
+cert_pub=your public cert path //Optional while webhook is False or self_signed is False
 server_address=your server ip address or domain //Optional while webhook is False
 server_port=your server port //Optional while webhook is False
 local_address=webhook local address //Optional while webhook is False
 local_port=webhook local port ////Optional while webhook is False
 ```
 
-`cert_pub` 为你的公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地IP地址， `local_port` 为 Webhook 本地运行的端口。
+`self_signed` 用于设置是否使用自签名证书，当`self_signed` 为 `True` 时，`cert_pub` 字段必须被设置；
+
+而 `cert_pub` 则是你的自签名证书公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口。
 
 推荐搭配 `nginx` 使用，自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
 
@@ -224,40 +255,25 @@ local_port=webhook local port ////Optional while webhook is False
 
 ##### 2、Polling 模式
 
-要以 Polling 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。
+要以 Polling 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。此模式最基本的配置文件如下:
 
-
-
-##### 3、最基本的配置文件 (以Polling模式为例)
-
-```python
+```
 [config]
 key=bot key
 pool_size=40
 webhook=False
 root=your user id
 debug=False
-timeout=60
-plugin_dir=your plugin dir //[Optional]
+plugin_dir=your plugin dir
 ```
 
 
 
 
 
-#### 二、Pip安装运行
 
-##### 安装 #####
 
-* 确保本机Python环境拥有pip包管理工具。
-
-  ```
-  pip install teelebot
-  or
-  pip3 install teelebot
-  ```
-
-##### 运行 #####
+#### 二、运行
 
 任意路径打开终端，输入以下命令：
 
@@ -267,7 +283,7 @@ plugin_dir=your plugin dir //[Optional]
 
 - 对于命令行手动指定配置文件路径的：
 
-  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
+  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。**(更多指令请通过 `-h/--help` 查看)**
 
 
 
@@ -277,66 +293,54 @@ plugin_dir=your plugin dir //[Optional]
 
 
 
-#### 三、源码运行 ####
+#### 三、配置文件 ####
 
-1.克隆或点击下载本项目到本地，保证本机安装有`Python3.x`版本和包`requests` ；
-
-
-
-2.`config.cfg` 配置文件
-
-配置文件格式:
+完整的配置文件如下所示:
 
 ```python
 [config]
 key=bot key
+plugin_dir=your plugin dir
 pool_size=40 //the thread pool size, default 40, range(1, 101)
 webhook=False
-cert_pub=your public certificate dir //Optional while webhook is False
+self_signed=False
+cert_pub=your public cert path //Optional while webhook is False or self_signed is False
 server_ip=your server ip address //Optional while webhook is False
 server_port=your server port //Optional while webhook is False
 local_address=webhook local address //Optional while webhook is False
 local_port=webhook local port //Optional while webhook is False
 root=your user id
 debug=False
-timeout=60
-plugin_dir=your plugin dir //[Optional]
 local_api_server=local api server address //[Optional]
 ```
 
-* Linux
+**在 `1.13.0` 及以上版本，支持自动生成配置文件。（默认为Polling模式）**
 
-在 `/root` 目录下创建文件夹 `.teelebot` ,并在其内新建配置文件 `config.cfg` ,按照上面的格式填写配置文件
+1.在命令行未指定配置文件路径的情况下，会在默认配置文件路径下不存在配置文件时自动生成配置文件 `config.cfg`。
 
-* Windows
+* 在Linux下，会自动在 `/root` 目录下创建文件夹 `.teelebot` ，并生成配置文件 `config.cfg` 
 
-在 `C:\Users\<username>`  目录下创建文件夹 `.teelebot` ,并在其内新建配置文件 `config.cfg` ,按照上面的格式填写配置文件
+* 在Windows下，则会在 `C:\Users\<username>`  目录下创建文件夹 `.teelebot` ，并生成配置文件 `config.cfg` 
 
-* 指定配置文件
+2.指定配置文件
 
 Linux 和 Windows 都可在命令行通过参数手动指定配置文件路径，命令格式：
 
 ```
-python -m teelebot -c/--config <configure file path>
+teelebot -c/--config <configure file path>
 ```
 
-路径必须为绝对路径。
+路径必须为绝对路径，此情况下也会在指定路径上不存在配置文件时自动生成配置文件 ，配置文件命名由指定的路径决定。
 
-**更多指令请通过 `-h/--help` 查看。**
+**Tip: 自动生成的配置文件仍未设置这几个字段值：`key`、`root`、`plugin_dir`，key 和 root 为必须，但我们仍然可以通过命令行设置他们：**
 
+```
+teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user id>
+```
 
+**使用以上命令会以Polling模式运行框架，而无需困扰于处理配置文件。**
 
-3.运行
-
-终端下进入teelebot文件夹所在目录。
-
-* 对于使用程序配置文件默认路径的：
-
-  输入`python -m teelebot` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
-
-* 对于命令行手动指定配置文件路径的：
-
-  输入`python -m teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。(更多指令请通过 `-h/--help` 查看)
+**之后请手动设置 ``plugin_dir``** 。
 
 
 
@@ -431,14 +435,6 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 #### 四、插件模板创建工具
 
 在 `v1.9.20_dev` 及以上版本，可以通过命令行指令**一键创建**插件模板。
-
-##### 一、源码运行
-
-```python
-python -m teelebot -p/--plugin <plugin name>
-```
-
-##### 二、Pip安装运行
 
 ```python
 teelebot -p/--plugin <plugin name>

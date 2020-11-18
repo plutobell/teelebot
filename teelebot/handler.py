@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-15
+@last modify: 2020-11-19
 '''
 import configparser
 import argparse
@@ -13,7 +13,11 @@ from .version import __author__, __github__, __version__
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
-                    help="specify the configuration file path")
+                    help="specify the configuration file")
+parser.add_argument("-k", "--key", type=str,
+                    help="Specify the bot key")
+parser.add_argument("-r", "--root", type=str,
+                    help="Specify the root user id")
 parser.add_argument("-p", "--plugin", type=str,
                     help="create a plugin template")
 parser.add_argument(
@@ -29,25 +33,55 @@ if len(sys.argv) == 2 and args.version:
     os._exit(0)
 
 
-def config():
+def _config():
     '''
-    获取bot配置信息
+    获取bot配置信息及初始化
     '''
     config = {}
 
     if len(sys.argv) == 3 and args.config:
         config_dir = os.path.abspath(str(Path(args.config)))
     else:
-        if not os.path.exists(str(Path(os.path.abspath(os.path.expanduser('~')) + "/.teelebot"))):
-            os.mkdir(str(Path(os.path.abspath(os.path.expanduser('~')) + "/.teelebot")))
-        if not os.path.exists(str(Path(os.path.abspath(
-            os.path.expanduser('~')) + "/.teelebot/config.cfg"))):
-            print("the configuration file does not exist.")
-            os._exit(0)
-        else:
-            config_dir = str(Path(os.path.abspath(
+        config_dir = str(Path(os.path.abspath(
                 os.path.expanduser('~')) + "/.teelebot/config.cfg"))
-
+    (path, filename) = os.path.split(config_dir)
+    (filename_, extension) = os.path.splitext(filename)
+    if extension != ".cfg":
+        print("only support configuration files with .cfg suffix.")
+        os._exit(0)
+    if not os.path.exists(str(Path(path))):
+        os.makedirs(str(Path(path)))
+    if not os.path.exists(str(Path(config_dir))):
+        print("the configuration file does not exist.")
+        key = ""
+        if args.key:
+            key = args.key
+        root = ""
+        if args.root:
+            root = args.root
+        with open(config_dir, "w") as conf_file:
+            conf_file.writelines([
+                "[config]" + "\n",
+                "key=" + str(key) + "\n",
+                "root=" + str(root) + "\n",
+                "plugin_dir=" + "\n",
+                "pool_size=40" + "\n",
+                "debug=False" + "\n",
+                "drop_pending_updates=False" + "\n",
+                "webhook=False" + "\n",
+                "self_signed=False" + "\n",
+                "cert_pub=" + "\n",
+                "server_address=" + "\n",
+                "server_port=" + "\n",
+                "local_address=" + "\n",
+                "local_port="
+            ])
+            print("the configuration file has been created automatically.")
+        if not args.key or not args.root:
+            print("please modify the relevant parameters and restart the teelebot.")
+            os._exit(0)
+        # else:
+        #     print("\n")
     # if len(sys.argv) == 1 or args.debug or len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel", "bdist_rpm"):
 
     conf = configparser.ConfigParser()
@@ -55,38 +89,69 @@ def config():
     options = conf.options("config")
 
     if args.debug:
-        default_args = ["key", "webhook", "root", "timeout", "debug"]
+        conf.set("config", "debug", str(True))
+    if args.key:
+        conf.set("config", "key", str(args.key))
+    if args.root:
+        conf.set("config", "root", str(args.root))
+
+    if args.debug:
+        default_args = ["key", "webhook", "root", "debug"]
     else:
-        default_args = ["key", "webhook", "root", "timeout"]
+        default_args = ["key", "webhook", "root"]
     for default_arg in default_args:
         if default_arg not in options:
-            print("the configuration file is missing necessary parameters.")
+            print("the configuration file is missing necessary parameters.",
+                "\nnecessary parameters:" + default_args)
             return False
 
     for option in options:
         config[str(option)] = conf.get("config", option)
+
+    none_count = 0
+    for default_arg in default_args:
+        if config[default_arg] == "" or\
+            config[default_arg] == None:
+            none_count += 1
+            print("field " + default_arg + " is not set in configuration file.")
+    if none_count != 0:
+        os._exit(0)
 
     if any(["version" in config.keys(), "author" in config.keys()]):
         print("error in configuration file.")
         os._exit(0)
 
     if config["webhook"] == "True":
-        webhook_args = ["cert_pub", "server_address",
-                        "server_port", "local_address", "local_port"]
+        webhook_args = ["self_signed",
+                        "server_address", "server_port",
+                        "local_address", "local_port"]
+        if "self_signed" not in config.keys():
+            print("the self_signed field must exist in webhook mode.")
+            return False
+        else:
+            if "cert_pub" not in config.keys():
+                print("the field cert_pub must exist when self_signed is true.")
+                return False
+            else:
+                webhook_args.append("cert_pub")
         for w in webhook_args:
             if w not in config.keys():
                 print("please check if the following fields exist in the configuration file: \n" +
-                    "cert_pub server_address server_port local_address local_port")
+                    "cert_pub self_signed server_address server_port local_address local_port")
                 return False
 
     plugin_dir_in_config = False
     if "plugin_dir" in config.keys():
-        plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
-        plugin_dir_in_config = True
+        if config["plugin_dir"] == "" or config["plugin_dir"] == None:
+            plugin_dir = str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/plugins/")) + os.sep
+        else:
+            plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
+            plugin_dir_in_config = True
     else:
         plugin_dir = str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/plugins/")) + os.sep
 
-    if os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/__pycache__"))):
+    if os.path.exists(str(Path(os.path.dirname(
+        os.path.abspath(__file__)) + r"/__pycache__"))):
         shutil.rmtree(str(Path(os.path.dirname(
             os.path.abspath(__file__)) + r"/__pycache__")))
 
@@ -110,7 +175,15 @@ def config():
                         "\n",
                         "def " + plugin_name + "(bot, message):\n",
                         "\n" + \
-                        '    text = message["text"]\n' + \
+                        "    # root = bot.root\n" + \
+                        "    # author = bot.author\n" + \
+                        "    # version = bot.version\n" + \
+                        "    # plugin_dir = bot.plugin_dir\n" + \
+                        "    # plugin_bridge = bot.plugin_bridge\n" + \
+                        "    # uptime = bot.uptime\n" + \
+                        "    # response_times = bot.response_times\n" + \
+                        "    # response_chats = bot.response_chats\n" + \
+                        "    # response_users = bot.response_users\n" + \
                         "\n" + \
                         '    chat_id = message["chat"]["id"]\n' + \
                         '    user_id = message["from"]["id"]\n' + \
@@ -143,7 +216,7 @@ def config():
             print("plugin " + plugin_name + " already exists.")
         os._exit(0)
     elif args.plugin and not plugin_dir_in_config:
-        print("the plugin path is not set in the configuration file.")
+        print("the plugin_dir is not set in the configuration file.")
         os._exit(0)
 
     if "pool_size" in config.keys():
@@ -170,13 +243,24 @@ def config():
     else:
         config["local_api_server"] = "False"
 
+    if "self_signed" in config.keys():
+        if config["self_signed"] == "True":
+            config["self_signed"] = True
+        elif config["self_signed"] == "False":
+            config["self_signed"] = False
+        else:
+            print("The self_signed field value in the configuration file is wrong.")
+            os._exit(0)
+    else:
+        config["self_signed"] = False
+
     if "drop_pending_updates" in config.keys():
         if config["drop_pending_updates"] == "True":
             config["drop_pending_updates"] = True
         elif config["drop_pending_updates"] == "False":
             config["drop_pending_updates"] = False
         else:
-            print("The drop_pending_updates field value in the configuration file is wrong")
+            print("The drop_pending_updates field value in the configuration file is wrong.")
             os._exit(0)
     else:
         config["drop_pending_updates"] = False
@@ -186,7 +270,7 @@ def config():
     elif config["debug"] == "False":
         config["debug"] = False
     else:
-        print("The debug field value in the configuration file is wrong")
+        print("The debug field value in the configuration file is wrong.")
         os._exit(0)
 
     if config["webhook"] == "True":
@@ -194,15 +278,15 @@ def config():
     elif config["webhook"] == "False":
         config["webhook"] = False
     else:
-        print("The webhook field value in the configuration file is wrong")
+        print("The webhook field value in the configuration file is wrong.")
         os._exit(0)
 
     config["author"] = __author__
     config["version"] = __version__
     config["plugin_dir"] = plugin_dir
-    config["plugin_bridge"] = bridge(config["plugin_dir"])
-    config["plugin_info"] = plugin_info(
-        config["plugin_bridge"].values(), config["plugin_dir"])
+    config["plugin_bridge"] = _bridge(config["plugin_dir"])
+    config["plugin_info"] = _plugin_info(
+        config["plugin_bridge"].keys(), config["plugin_dir"])
 
     if args.debug:
         config["debug"] = True
@@ -210,8 +294,7 @@ def config():
     # print(config)
     return config
 
-
-def bridge(plugin_dir):
+def _bridge(plugin_dir):
     '''
     获取插件和指令的映射
     '''
@@ -226,13 +309,12 @@ def bridge(plugin_dir):
         with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
             row_one = f.readline().strip()[1:]
             if row_one != "~~":  # Hidden plugin
-                plugin_bridge[row_one] = plugin
+                plugin_bridge[plugin] = row_one
 
     # print(plugin_bridge)
     return plugin_bridge
 
-
-def plugin_info(plugin_list, plugin_dir):
+def _plugin_info(plugin_list, plugin_dir):
     '''
     获取插件修改状态
     '''
