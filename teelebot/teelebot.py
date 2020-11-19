@@ -4,7 +4,7 @@
 @creation date: 2019-8-13
 @last modify: 2020-11-19
 @author: Pluto (github:plutobell)
-@version: 1.13.2
+@version: 1.13.3
 """
 import inspect
 import time
@@ -58,7 +58,8 @@ class Bot(object):
         self._pool_size = config["pool_size"]
         self._drop_pending_updates = config["drop_pending_updates"]
 
-        self.__root = config["root"]
+        self.__root_id = config["root_id"]
+        self.__bot_id = self._key.split(":")[0]
         self.__AUTHOR = config["author"]
         self.__VERSION = config["version"]
         self.__plugin_dir = config["plugin_dir"]
@@ -390,12 +391,20 @@ class Bot(object):
         return self.__AUTHOR
 
     @property
-    def root(self):
+    def root_id(self):
         """
-        root用户ID
+        获取root用户ID
         """
 
-        return self.__root
+        return self.__root_id
+
+    @property
+    def bot_id(self):
+        """
+        获取Bot的ID
+        """
+
+        return self.__bot_id
 
     @property
     def uptime(self):

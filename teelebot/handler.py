@@ -63,7 +63,7 @@ def _config():
             conf_file.writelines([
                 "[config]" + "\n",
                 "key=" + str(key) + "\n",
-                "root=" + str(root) + "\n",
+                "root_id=" + str(root) + "\n",
                 "plugin_dir=" + "\n",
                 "pool_size=40" + "\n",
                 "debug=False" + "\n",
@@ -93,17 +93,17 @@ def _config():
     if args.key:
         conf.set("config", "key", str(args.key))
     if args.root:
-        conf.set("config", "root", str(args.root))
+        conf.set("config", "root_id", str(args.root))
 
     if args.debug:
-        default_args = ["key", "webhook", "root", "debug"]
+        default_args = ["key", "webhook", "root_id", "debug"]
     else:
-        default_args = ["key", "webhook", "root"]
+        default_args = ["key", "webhook", "root_id"]
     for default_arg in default_args:
         if default_arg not in options:
             print("the configuration file is missing necessary parameters.",
                 "\nnecessary parameters:" + default_args)
-            return False
+            os._exit(0)
 
     for option in options:
         config[str(option)] = conf.get("config", option)
@@ -127,18 +127,18 @@ def _config():
                         "local_address", "local_port"]
         if "self_signed" not in config.keys():
             print("the self_signed field must exist in webhook mode.")
-            return False
+            os._exit(0)
         else:
             if "cert_pub" not in config.keys():
                 print("the field cert_pub must exist when self_signed is true.")
-                return False
+                os._exit(0)
             else:
                 webhook_args.append("cert_pub")
         for w in webhook_args:
             if w not in config.keys():
                 print("please check if the following fields exist in the configuration file: \n" +
                     "cert_pub self_signed server_address server_port local_address local_port")
-                return False
+                os._exit(0)
 
     plugin_dir_in_config = False
     if "plugin_dir" in config.keys():
@@ -175,7 +175,8 @@ def _config():
                         "\n",
                         "def " + plugin_name + "(bot, message):\n",
                         "\n" + \
-                        "    # root = bot.root\n" + \
+                        "    # root_id = bot.root_id\n" + \
+                        "    # bot_id = bot.bot_id\n" + \
                         "    # author = bot.author\n" + \
                         "    # version = bot.version\n" + \
                         "    # plugin_dir = bot.plugin_dir\n" + \

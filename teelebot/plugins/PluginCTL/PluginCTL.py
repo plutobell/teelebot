@@ -17,7 +17,7 @@ def PluginCTL(bot, message):
     prefix = "pluginctl"
 
     plugin_dir = bot.plugin_dir
-    root = bot.root
+    root_id = bot.root_id
     plugin_bridge = bot.plugin_bridge
 
     if not os.path.exists(bot.path_converter(plugin_dir + "PluginCTL/db/")):
@@ -39,8 +39,8 @@ def PluginCTL(bot, message):
 
     if message["chat"]["type"] != "private":
         admins = administrators(bot=bot, chat_id=chat_id)
-        if str(root) not in admins:
-            admins.append(str(root)) #root permission
+        if str(root_id) not in admins:
+            admins.append(str(root_id)) #root permission
 
     if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
         status = bot.sendChatAction(chat_id, "typing")

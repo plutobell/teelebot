@@ -3,6 +3,7 @@
 @creation date: 2019-8-23
 @last modify: 2020-11-19
 """
+import os
 from .polling import _runUpdates
 from .webhook import _runWebhook
 from .teelebot import Bot
@@ -26,7 +27,7 @@ def main():
 
     if not status:
         print("\nfailed to get running mode!")
-        return
+        os._exit(0)
 
     if bot._webhook:
         url = "https://" + str(bot._server_address + ":" + str(
@@ -49,7 +50,7 @@ def main():
                 )
             if not status:
                 print("\nfailed to set Webhook!")
-                return
+                os._exit(0)
 
         print(" * The teelebot starts running",
               "\n * Version : v" + VERSION,
@@ -64,7 +65,7 @@ def main():
             status = bot.deleteWebhook()
             if not status:
                 print("\nfailed to set getUpdates!")
-                return
+                os._exit(0)
 
         print(" * The teelebot starts running",
               "\n * Version : v" + VERSION,

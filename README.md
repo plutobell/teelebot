@@ -159,7 +159,8 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 **teelebot properties**
 
-*  root
+*  root_id
+*  bot_id
 *  author
 *  version
 *  plugin_dir

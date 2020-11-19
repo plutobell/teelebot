@@ -5,7 +5,7 @@ def About(bot, message):
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
     text = message["text"]
-    bot_id = str(bot.getMe()["id"])
+    bot_id = bot.bot_id
     prefix = "about"
 
     plugin_dir = bot.plugin_dir

@@ -11,7 +11,7 @@ def Schedule(bot, message):
     message_id = message["message_id"]
     text = message["text"]
 
-    root = bot.root
+    root_id = bot.root_id
 
     gaps = {
         "1s": 1,
@@ -61,7 +61,7 @@ def Schedule(bot, message):
         if c in str(text):
             count += 1
 
-    if text.split(" ")[0] != prefix and prefix in text and str(user_id) != root:
+    if text.split(" ")[0] != prefix and prefix in text and str(user_id) != root_id:
         status = bot.sendMessage(chat_id, text="<b>无权限</b>", parse_mode="HTML",
             reply_to_message_id=message_id)
         bot.message_deletor(15, status["chat"]["id"], status["message_id"])
