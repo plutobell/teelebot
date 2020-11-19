@@ -333,7 +333,7 @@ teelebot -c/--config <configure file path>
 
 路径必须为绝对路径，此情况下也会在指定路径上不存在配置文件时自动生成配置文件 ，配置文件命名由指定的路径决定。
 
-**Tip: 自动生成的配置文件仍未设置这几个字段值：`key`、`root`、`plugin_dir`，key 和 root 为必须，但我们仍然可以通过命令行设置他们：**
+**Tip: 自动生成的配置文件仍未设置这几个字段值：`key`、`root_id`、`plugin_dir`，key 和 root_id 为必须，但我们仍然可以通过命令行设置他们：**
 
 ```
 teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user id>
