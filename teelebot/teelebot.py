@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-19
+@last modify: 2020-11-23
 @author: Pluto (github:plutobell)
-@version: 1.13.3
+@version: 1.14.0
 """
 import inspect
 import time
@@ -36,18 +36,19 @@ class Bot(object):
         elif key == "":
             self._key = config["key"]
 
+        self._cloud_api_server = config["cloud_api_server"]
         self._local_api_server = config["local_api_server"]
         if self._local_api_server != "False":
             self._basic_url = config["local_api_server"]
         else:
-            self._basic_url = "https://api.telegram.org/"
+            self._basic_url = self._cloud_api_server
         self._url = self._basic_url + r"bot" + self._key + r"/"
 
         self._webhook = config["webhook"]
         if self._webhook:
             self._self_signed = config["self_signed"]
-            if self._self_signed:
-                self._cert_pub = config["cert_pub"]
+            self._cert_key = config["cert_key"]
+            self._cert_pub = config["cert_pub"]
             self._server_address = config["server_address"]
             self._server_port = config["server_port"]
             self._local_address = config["local_address"]
@@ -436,6 +437,24 @@ class Bot(object):
         """
         return self.__response_users
 
+    def getChatCreator(self, chat_id):
+        """
+        获取群组创建者信息
+        """
+        if str(chat_id)[0] == "-":
+            req = self.getChatAdministrators(str(chat_id))
+            if req:
+                creator = []
+                for i, user in enumerate(req):
+                    if user["status"] == "creator":
+                        creator.append(req[i])
+                if len(creator) == 1:
+                    return creator[0]
+                else:
+                    return False
+        else:
+            return False
+
     def getFileDownloadPath(self, file_id):
         """
         生成文件下载链接
@@ -443,11 +462,13 @@ class Bot(object):
         """
         req = self.getFile(file_id=file_id)
         if req:
-
             file_path = req["file_path"]
-            file_download_path = self._basic_url + "file/bot" + self._key + r"/" + file_path
-
-            return file_download_path
+            if (self._local_api_server != "False" and
+                "telegram.org" not in self._basic_url):
+                return file_path
+            else:
+                file_download_path = self._basic_url + "file/bot" + self._key + r"/" + file_path
+                return file_download_path
         else:
             return False
 
@@ -845,7 +866,7 @@ class Bot(object):
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
 
-        return self.request.postJson(self, addr, medias)
+        return self.request.postJson(addr, medias)
 
     def sendDocument(self, chat_id, document, caption=None, parse_mode="Text",
         reply_to_message_id=None, reply_markup=None, disable_content_type_detection=None,

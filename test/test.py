@@ -5,9 +5,13 @@ sys.path.append("..")
 import teelebot
 
 bot = teelebot.Bot()
-root = bot.root
+root = bot.root_id
 
+# print(bot.logOut())
+# print(bot.close())
 print(bot.getWebhookInfo())
+
+
 
 #bot.sendMessage(chat_id=chat_id, text="测试消息", parse_mode="text")
 

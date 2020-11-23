@@ -147,6 +147,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 **teelebot methods**
 
 *  getFileDownloadPath
+*  getChatCreator
 * message_deletor
 * path_converter
 * schedule.add
@@ -239,16 +240,15 @@ teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user 
 [config]
 webhook=True
 self_signed=False
-cert_pub=your public cert path //Optional while webhook is False or self_signed is False
-server_address=your server ip address or domain //Optional while webhook is False
-server_port=your server port //Optional while webhook is False
-local_address=webhook local address //Optional while webhook is False
-local_port=webhook local port ////Optional while webhook is False
+cert_key=your private cert path
+cert_pub=your public cert path
+server_address=your server ip address or domain
+server_port=your server port
+local_address=webhook local address
+local_port=webhook local port
 ```
 
-`self_signed` 用于设置是否使用自签名证书，当`self_signed` 为 `True` 时，`cert_pub` 字段必须被设置；
-
-而 `cert_pub` 则是你的自签名证书公钥路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口。
+`self_signed` 用于设置是否使用自签名证书，而 `cert_key` 和 `cert_pub` 则是你的证书路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口。
 
 推荐搭配 `nginx` 使用，自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
 
@@ -296,7 +296,7 @@ plugin_dir=your plugin dir
 
 #### 三、配置文件 ####
 
-完整的配置文件如下所示:
+**完整的配置文件**如下所示:
 
 ```python
 [config]
@@ -304,14 +304,16 @@ key=bot key
 plugin_dir=your plugin dir
 pool_size=40 //the thread pool size, default 40, range(1, 101)
 webhook=False
-self_signed=False
-cert_pub=your public cert path //Optional while webhook is False or self_signed is False
+self_signed=False //Optional while webhook is False
+cert_key=your private cert path //Optional while webhook is False
+cert_pub=your public cert path //Optional while webhook is False
 server_ip=your server ip address //Optional while webhook is False
 server_port=your server port //Optional while webhook is False
 local_address=webhook local address //Optional while webhook is False
 local_port=webhook local port //Optional while webhook is False
 root_id=your user id
 debug=False
+drop_pending_updates=False
 local_api_server=local api server address //[Optional]
 ```
 
@@ -319,7 +321,7 @@ local_api_server=local api server address //[Optional]
 
 1.在命令行未指定配置文件路径的情况下，会在默认配置文件路径下不存在配置文件时自动生成配置文件 `config.cfg`。
 
-* 在Linux下，会自动在 `/root` 目录下创建文件夹 `.teelebot` ，并生成配置文件 `config.cfg` 
+* 在Linux下，会自动在用户目录下创建文件夹 `.teelebot` ，并生成配置文件 `config.cfg`
 
 * 在Windows下，则会在 `C:\Users\<username>`  目录下创建文件夹 `.teelebot` ，并生成配置文件 `config.cfg` 
 
@@ -333,7 +335,7 @@ teelebot -c/--config <configure file path>
 
 路径必须为绝对路径，此情况下也会在指定路径上不存在配置文件时自动生成配置文件 ，配置文件命名由指定的路径决定。
 
-**Tip: 自动生成的配置文件仍未设置这几个字段值：`key`、`root_id`、`plugin_dir`，key 和 root_id 为必须，但我们仍然可以通过命令行设置他们：**
+**Tip: 自动生成的配置文件未设置这几个字段值：`key`、`root_id`、`plugin_dir`，key 和 root_id 为必须，但我们仍然可以通过命令行设置他们：**
 
 ```
 teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user id>

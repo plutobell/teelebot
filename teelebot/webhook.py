@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-11-19
+@last modify: 2020-11-23
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 #from socketserver import ThreadingMixIn
-import json
+import ssl
 import sys
+import json
 
 
 def __MakeRequestHandler(bot):
@@ -52,9 +53,21 @@ def __MakeRequestHandler(bot):
 
 def _runWebhook(bot, host, port):
     RequestHandler = __MakeRequestHandler(bot)
-    server = HTTPServer((host, port), RequestHandler)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        server.server_close()
-        sys.exit("Bot Exit.")
+    if bot._local_address == "0.0.0.0":
+        try:
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain(bot._cert_pub, bot._cert_key)
+
+            server = HTTPServer((host, port), RequestHandler)
+            server.socket = context.wrap_socket(server.socket, server_side=True)
+            server.serve_forever()
+        except KeyboardInterrupt:
+            server.server_close()
+            sys.exit("Bot Exit.")
+    else:
+        try:
+            server = HTTPServer((host, port), RequestHandler)
+            server.serve_forever()
+        except KeyboardInterrupt:
+            server.server_close()
+            sys.exit("Bot Exit.")

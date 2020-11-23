@@ -9,4 +9,5 @@ run.cmd
 build/
 dist/
 *.egg-info/
+TODO.md
 

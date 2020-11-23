@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modify: 2020-11-18
+@last modify: 2020-11-23
 '''
 import os
 
@@ -70,35 +70,47 @@ class _Request(object):
                             "\033[0m")
 
     def post(self, addr):
-        with self.__session.post(self.__url + addr) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
+        try:
+            with self.__session.post(self.__url + addr) as req:
+                self.__debug_info(req.json())
+                if req.json().get("ok"):
+                    return req.json().get("result")
+                elif not req.json().get("ok"):
+                    return req.json().get("ok")
+        except:
+            return False
 
     def postFile(self, addr, file_data):
-        with self.__session.post(self.__url + addr, files=file_data) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
+        try:
+            with self.__session.post(self.__url + addr, files=file_data) as req:
+                self.__debug_info(req.json())
+                if req.json().get("ok"):
+                    return req.json().get("result")
+                elif not req.json().get("ok"):
+                    return req.json().get("ok")
+        except:
+            return False
 
     def postJson(self, addr, json):
-        with self.__session.get(self.__url + addr, json=json) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
+        try:
+            with self.__session.get(self.__url + addr, json=json) as req:
+                self.__debug_info(req.json())
+                if req.json().get("ok"):
+                    return req.json().get("result")
+                elif not req.json().get("ok"):
+                    return req.json().get("ok")
+        except:
+            return False
 
     def get(self, addr):
-        with self.__session.get(self.__url + addr) as req:
-            self.__debug_info(req.json())
-            if req.json().get("ok"):
-                return req.json().get("result")
-            elif not req.json().get("ok"):
-                return req.json().get("ok")
+        try:
+            with self.__session.get(self.__url + addr) as req:
+                self.__debug_info(req.json())
+                if req.json().get("ok"):
+                    return req.json().get("result")
+                elif not req.json().get("ok"):
+                    return req.json().get("ok")
+        except:
+            return False
 
 

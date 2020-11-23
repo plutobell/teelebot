@@ -1,15 +1,21 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-19
+@last modify: 2020-11-23
 '''
 import configparser
 import argparse
 import os
 import sys
 import shutil
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from pathlib import Path
 from .version import __author__, __github__, __version__
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+cloud_api_server = "https://api.telegram.org/"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
@@ -20,6 +26,12 @@ parser.add_argument("-r", "--root", type=str,
                     help="Specify the root user id")
 parser.add_argument("-p", "--plugin", type=str,
                     help="create a plugin template")
+parser.add_argument("-L", "--logout",
+                    help="use it to log out from the cloud Bot API server before launching the bot locally.",
+                    action="store_true")
+parser.add_argument("-C", "--close",
+                    help="use it to close the bot instance before moving it from one local server to another.",
+                    action="store_true")
 parser.add_argument(
     "-d", "--debug", help="run teelebot in debug mode", action="store_true")
 parser.add_argument(
@@ -67,9 +79,11 @@ def _config():
                 "plugin_dir=" + "\n",
                 "pool_size=40" + "\n",
                 "debug=False" + "\n",
+                "local_api_server=False" + "\n",
                 "drop_pending_updates=False" + "\n",
                 "webhook=False" + "\n",
                 "self_signed=False" + "\n",
+                "cert_key=" + "\n",
                 "cert_pub=" + "\n",
                 "server_address=" + "\n",
                 "server_port=" + "\n",
@@ -77,12 +91,12 @@ def _config():
                 "local_port="
             ])
             print("the configuration file has been created automatically.")
+            print("configuration file path: " + str(config_dir))
         if not args.key or not args.root:
             print("please modify the relevant parameters and restart the teelebot.")
             os._exit(0)
         # else:
         #     print("\n")
-    # if len(sys.argv) == 1 or args.debug or len(sys.argv) == 2 and sys.argv[1] in ("check", "sdist", "bdist_wheel", "bdist_rpm"):
 
     conf = configparser.ConfigParser()
     conf.read(config_dir)
@@ -124,20 +138,12 @@ def _config():
     if config["webhook"] == "True":
         webhook_args = ["self_signed",
                         "server_address", "server_port",
-                        "local_address", "local_port"]
-        if "self_signed" not in config.keys():
-            print("the self_signed field must exist in webhook mode.")
-            os._exit(0)
-        else:
-            if "cert_pub" not in config.keys():
-                print("the field cert_pub must exist when self_signed is true.")
-                os._exit(0)
-            else:
-                webhook_args.append("cert_pub")
+                        "local_address", "local_port",
+                        "cert_pub", "cert_key"]
         for w in webhook_args:
             if w not in config.keys():
                 print("please check if the following fields exist in the configuration file: \n" +
-                    "cert_pub self_signed server_address server_port local_address local_port")
+                    "cert_pub cert_key self_signed server_address server_port local_address local_port")
                 os._exit(0)
 
     plugin_dir_in_config = False
@@ -229,13 +235,19 @@ def _config():
 
     if "local_api_server" in config.keys():
         local_api_server = config["local_api_server"]
-        if local_api_server == None or local_api_server == "" or len(local_api_server) < 7:
+        if (local_api_server == None or
+            local_api_server == "" or
+            local_api_server == "False" or
+            len(local_api_server) < 7):
             config["local_api_server"] = "False"
         else:
             if "https://" in local_api_server:
                 print("local api server address not support https.")
                 os._exit(0)
             if "http://" not in local_api_server:
+                print("local api server address incorrect.")
+                os._exit(0)
+            if "telegram.org" in local_api_server:
                 print("local api server address incorrect.")
                 os._exit(0)
             if local_api_server[len(local_api_server)-1] != "/":
@@ -288,6 +300,7 @@ def _config():
     config["plugin_bridge"] = _bridge(config["plugin_dir"])
     config["plugin_info"] = _plugin_info(
         config["plugin_bridge"].keys(), config["plugin_dir"])
+    config["cloud_api_server"] = cloud_api_server
 
     if args.debug:
         config["debug"] = True
@@ -325,3 +338,47 @@ def _plugin_info(plugin_list, plugin_dir):
         plugin_info[plugin] = mtime
 
     return plugin_info
+
+
+if args.close and args.logout:
+    print("only one of logout and close can be used at the same time.")
+    os._exit(0)
+
+elif args.logout and not args.close:
+    config = _config()
+    logout_url = cloud_api_server + "bot" + config["key"] + "/logOut"
+    try:
+        req = requests.post(url=logout_url, verify=False)
+    except:
+        print("error request the cloud Bot API server.")
+        os._exit(0)
+    if req.json().get("ok"):
+        print("successfully log out from the cloud Bot API server.")
+    elif not req.json().get("ok"):
+        print("error log out from the cloud Bot API server.")
+        if (req.json().get("error_code") == 401 and
+            req.json().get("description") == "Unauthorized"):
+            print("if you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
+    os._exit(0)
+
+elif args.close and not args.logout:
+    config = _config()
+    if config["local_api_server"] == "False":
+        print("close can only be used when local_api_server is configured.")
+        os._exit(0)
+
+    close_url = config["local_api_server"] + "bot" + config["key"] + "/close"
+    try:
+        req = requests.post(url=close_url, verify=False)
+    except:
+        print("error request the the local API server.")
+        os._exit(0)
+    if req.json().get("ok"):
+        print("successfully close from the local API server.")
+    elif not req.json().get("ok"):
+        print("error close from the local API server.")
+        if req.json().get("error_code") == 429:
+            print("too many requests, please retry after " + str(req.json().get("parameters")["retry_after"]) + " seconds.")
+    os._exit(0)
+
+

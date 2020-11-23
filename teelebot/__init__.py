@@ -1,12 +1,16 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-8-23
-@last modify: 2020-11-19
+@last modify: 2020-11-23
 """
 import os
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from .polling import _runUpdates
 from .webhook import _runWebhook
 from .teelebot import Bot
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 name = "teelebot"
 __all__ = ['Bot']
@@ -22,15 +26,23 @@ else:
 
 def main():
     print(" * Self-checking...", end="\r")
-    status = bot.getWebhookInfo()
-    pending_update_count = status["pending_update_count"]
-
-    if not status:
-        print("\nfailed to get running mode!")
+    req = requests.post(url=bot._url + "getWebhookInfo", verify=False)
+    if not req.json().get("ok"):
+        if (req.json().get("error_code") == 401 and
+            req.json().get("description") == "Unauthorized"):
+            print("\nif you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
+        else:
+            print("\nfailed to get running mode!")
         os._exit(0)
 
+    status = req.json().get("result")
+    pending_update_count = status["pending_update_count"]
+
     if bot._webhook:
-        url = "https://" + str(bot._server_address + ":" + str(
+        protocol = "https://"
+        if bot._local_api_server != "False":
+            protocol = "http://"
+        url = protocol + str(bot._server_address + ":" + str(
             bot._server_port) + "/bot" + str(bot._key))
         if (bot._drop_pending_updates == True and pending_update_count != 0) \
             or (status["url"] != url) or (status["has_custom_certificate"] != bot._self_signed)\

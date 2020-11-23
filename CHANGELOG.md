@@ -1,5 +1,20 @@
 # 更新日志
 
+#### 2020-11-23 ####
+
+* v1.14.0 :
+  * 完全适配 local api server 模式
+  * 新增命令行参数 -C/--close 和 -L/--logout，用于配合 local api server 使用
+  * 新增方法 getChatCreator，可获取群组创建者的信息
+  * 完善 webhook 模式，现在可以根据配置文件自动切换 http 和 https
+  * 完善了 handler 模块
+  * 完善了 request 模块
+  * 配置文件新增字段 cert_key
+  * 方法 getFileDownloadPath 适配 local api server 模式
+  * 修复运行模式检测的bug
+  * 修复Bot类方法sendMediaGroup的bug
+  * 其他细节优化
+
 #### 2020-11-19 ####
 
 * v1.13.3 :
