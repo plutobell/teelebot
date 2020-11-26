@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-11-23
+@last modify: 2020-11-27
 @author: Pluto (github:plutobell)
-@version: 1.14.0
+@version: 1.14.1
 """
 import inspect
 import time
@@ -77,7 +77,7 @@ class Bot(object):
 
         self.__thread_pool = ThreadPoolExecutor(
             max_workers=thread_pool_size)
-        self.__message_deletor_thread_pool = ThreadPoolExecutor(
+        self.__timer_thread_pool = ThreadPoolExecutor(
             max_workers=int(self._pool_size) * 5)
 
         self.__plugin_info = config["plugin_info"]
@@ -88,7 +88,7 @@ class Bot(object):
 
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
-        self.__message_deletor_thread_pool.shutdown(wait=True)
+        self.__timer_thread_pool.shutdown(wait=True)
         del self.request
         del self.schedule
 
@@ -344,8 +344,30 @@ class Bot(object):
             if time_gap == 0:
                 message_deletor_func(chat_id, message_id)
             else:
-                fur = self.__message_deletor_thread_pool.submit(
+                fur = self.__timer_thread_pool.submit(
                     message_deletor_func, time_gap, chat_id, message_id)
+                fur.add_done_callback(self.__threadpool_exception)
+
+            return "ok"
+
+    def timer(self, time_gap, func, args):
+        """
+        单次定时器，时间范围：[0, 900],单位秒
+        """
+        if time_gap < 0 or time_gap > 900:
+            return "time_gap_error"
+        elif type(args) is not tuple:
+            return "args_must_be_tuple"
+        else:
+            def timer_func(time_gap, func, args):
+                time.sleep(int(time_gap))
+                func(*args)
+
+            if time_gap == 0:
+                func(args)
+            else:
+                fur = self.__timer_thread_pool.submit(
+                    timer_func, time_gap, func, args)
                 fur.add_done_callback(self.__threadpool_exception)
 
             return "ok"
@@ -1168,53 +1190,56 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def sendPoll(self, chat_id, question, option, is_anonymous=None,
+    def sendPoll(self, chat_id, question, options, is_anonymous=None,
         type_=None, allows_multiple_answers=None, correct_option_id=None,
         explanation=None, explanation_parse_mode=None, explanation_entities=None,
         open_period=None, close_date=None, is_closed=None, disable_notification=None,
         reply_to_message_id=None, allow_sending_without_reply=None, reply_markup=None):
         """
-        使用此方法发起投票
+        使用此方法发起投票(quiz or regular, defaults to regular)
+        options格式:
+        options = [
+            "option 1",
+            "option 2"
+        ]
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&question=" + str(question)
+        addr += "&options=" + json.dumps(options)
 
         if is_anonymous is not None:
             addr += "&is_anonymous=" + str(is_anonymous)
         if type_ is not None:
-                addr += "&type=" + str(type_)
+            addr += "&type=" + str(type_)
 
-        if type_ is not None and type_ in ("quiz", "regular"):
-            if type_ == "quiz":
-                if allows_multiple_answers is not None:
-                    addr += "&allows_multiple_answers=" + str(allows_multiple_answers)
-                if correct_option_id is not None:
-                    addr += "&correct_option_id=" + str(correct_option_id)
-                if explanation is not None:
-                    addr += "&explanation=" + str(explanation)
-                if explanation_parse_mode is not None:
-                    addr += "&explanation_parse_mode=" + str(explanation_parse_mode)
-                if explanation_entities is not None:
-                    addr += "&explanation_entities=" + json.dumps(explanation_entities)
+        if type_ == "quiz":
+            if allows_multiple_answers is not None:
+                addr += "&allows_multiple_answers=" + str(allows_multiple_answers)
+            if correct_option_id is not None:
+                addr += "&correct_option_id=" + str(correct_option_id)
+            if explanation is not None:
+                addr += "&explanation=" + str(explanation)
+            if explanation_parse_mode is not None:
+                addr += "&explanation_parse_mode=" + str(explanation_parse_mode)
+            if explanation_entities is not None:
+                addr += "&explanation_entities=" + json.dumps(explanation_entities)
 
-            if open_period is not None:
-                addr += "&open_period=" + str(open_period)
-            if close_date is not None:
-                addr += "&close_date=" + str(close_date)
-            if is_closed is not None:
-                addr += "&is_closed=" + str(is_closed)
-            if disable_notification is not None:
-                addr += "&disable_notification=" + str(disable_notification)
-            if reply_to_message_id is not None:
-                addr += "&reply_to_message_id=" + str(reply_to_message_id)
-            if allow_sending_without_reply is not None:
-                addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
-            if reply_markup is not None:
-                addr += "&reply_markup=" + json.dumps(reply_markup)
+        if open_period is not None:
+            addr += "&open_period=" + str(open_period)
+        if close_date is not None:
+            addr += "&close_date=" + str(close_date)
+        if is_closed is not None:
+            addr += "&is_closed=" + str(is_closed)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + str(disable_notification)
+        if reply_to_message_id is not None:
+            addr += "&reply_to_message_id=" + str(reply_to_message_id)
+        if allow_sending_without_reply is not None:
+            addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if reply_markup is not None:
+            addr += "&reply_markup=" + json.dumps(reply_markup)
 
-            return self.request.postJson(addr, option)
-        else:
-            return False
+        return self.request.post(addr)
 
     def sendDice(self, chat_id, emoji, disable_notification=None,
         reply_to_message_id=None, allow_sending_without_reply=None,
@@ -1657,7 +1682,7 @@ class Bot(object):
         停止投票？并返回最终结果
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id" + str(chat_id) + "&message_id=" + str(message_id)
+        addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
 
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
