@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 creation time: 2020-6-15
-last_modify: 2020-11-13
+last_modify: 2020-11-28
 '''
 import os
 from threading import Lock
@@ -44,7 +44,7 @@ def PluginCTL(bot, message):
 
     if message["chat"]["type"] == "private" and text[1:len(prefix)+1] == prefix: #判断是否为私人对话
         status = bot.sendChatAction(chat_id, "typing")
-        status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话!", parse_mode="text", reply_to_message_id=message_id)
+        status = bot.sendMessage(chat_id, "抱歉，该指令不支持私人会话.", parse_mode="text", reply_to_message_id=message_id)
         bot.message_deletor(15, chat_id, status["message_id"])
     elif text[1:len(prefix)+1] == prefix and count == 0:
         status = bot.sendChatAction(chat_id, "typing")
@@ -52,8 +52,8 @@ def PluginCTL(bot, message):
             "<b>/pluginctlshow</b> - 展示插件开启状态 \n" +\
             "<b>/pluginctlon</b> - 启用插件。格式：/pluginctlon接要启用的插件名，以空格分隔 \n" +\
             "<b>/pluginctloff</b> - 禁用插件。格式：/pluginctloff接要禁用的插件名，以空格分隔 \n" +\
-            "<b>/pluginctlon:all</b> - 启用所有插件 \n" +\
-            "<b>/pluginctloff:all</b> - 禁用所有插件，但必须的插件将被保留 \n" +\
+            "<b>/pluginctlon all</b> - 启用所有插件 \n" +\
+            "<b>/pluginctloff all</b> - 禁用所有插件，但必须的插件将被保留 \n" +\
             "<b>\n同时操作多个插件请用英文逗号分隔</b>\n"
         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message["message_id"])
         bot.message_deletor(30, chat_id, status["message_id"])
@@ -131,7 +131,7 @@ def PluginCTL(bot, message):
     elif count > 0:
         if str(user_id) not in admins:
             status = bot.sendChatAction(chat_id, "typing")
-            status = bot.sendMessage(chat_id=chat_id, text="抱歉，您无权操作!", parse_mode="HTML", reply_to_message_id=message_id)
+            status = bot.sendMessage(chat_id=chat_id, text="抱歉，您无权操作.", parse_mode="HTML", reply_to_message_id=message_id)
             bot.message_deletor(15, chat_id, status["message_id"])
         elif text[1:len(prefix + command["/pluginctlshow"])+1] == prefix + command["/pluginctlshow"]:
             inlineKeyboard = [
@@ -173,7 +173,7 @@ def PluginCTL(bot, message):
                             continue
                         if p == "all":
                             continue
-                        msg = "插件 <b>" + str(p) + "</b> 不存在，请重试!"
+                        msg = "插件 <b>" + str(p) + "</b> 不存在，请重试."
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                         bot.message_deletor(15, chat_id, status["message_id"])
@@ -218,7 +218,7 @@ def PluginCTL(bot, message):
                 bot.message_deletor(15, chat_id, status["message_id"])
             else:
                 status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
+                status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查.", parse_mode="HTML", reply_to_message_id=message_id)
                 bot.message_deletor(15, chat_id, status["message_id"])
 
         elif text[1:len(prefix + command["/pluginctloff"])+1] == prefix + command["/pluginctloff"]:
@@ -232,7 +232,7 @@ def PluginCTL(bot, message):
                             continue
                         if p == "all":
                             continue
-                        msg = "插件 <b>" + str(p) + "</b> 不存在，请重试!"
+                        msg = "插件 <b>" + str(p) + "</b> 不存在，请重试."
                         status = bot.sendChatAction(chat_id, "typing")
                         status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                         bot.message_deletor(15, chat_id, status["message_id"])
@@ -256,7 +256,7 @@ def PluginCTL(bot, message):
                     for i, p in enumerate(plug_set.split(',')):
                         if p in default_plugin:
                             status = bot.sendChatAction(chat_id, "typing")
-                            msg = "插件 <b>" + str(p) + "</b> 不支持禁用!"
+                            msg = "插件 <b>" + str(p) + "</b> 不支持禁用."
                             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                             bot.message_deletor(15, chat_id, status["message_id"])
                             return False
@@ -275,7 +275,7 @@ def PluginCTL(bot, message):
                     for i, p in enumerate(plug_set.split(',')):
                         if p in default_plugin:
                             status = bot.sendChatAction(chat_id, "typing")
-                            msg = "插件 <b>" + str(p) + "</b> 不支持禁用!"
+                            msg = "插件 <b>" + str(p) + "</b> 不支持禁用."
                             status = bot.sendMessage(chat_id=chat_id, text=msg, parse_mode="HTML", reply_to_message_id=message_id)
                             bot.message_deletor(15, chat_id, status["message_id"])
                             return False
@@ -293,13 +293,13 @@ def PluginCTL(bot, message):
                 bot.message_deletor(15, chat_id, status["message_id"])
             else:
                 status = bot.sendChatAction(chat_id, "typing")
-                status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
+                status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查.", parse_mode="HTML", reply_to_message_id=message_id)
                 bot.message_deletor(15, chat_id, status["message_id"])
 
 
     else:
         status = bot.sendChatAction(chat_id, "typing")
-        status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查!", parse_mode="HTML", reply_to_message_id=message_id)
+        status = bot.sendMessage(chat_id=chat_id, text="指令错误，请检查.", parse_mode="HTML", reply_to_message_id=message_id)
         bot.message_deletor(15, chat_id, status["message_id"])
 
 
