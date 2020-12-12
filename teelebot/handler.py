@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-11-23
+@last modify: 2020-12-12
 '''
 import configparser
 import argparse
@@ -21,10 +21,12 @@ parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
                     help="specify the configuration file")
 parser.add_argument("-k", "--key", type=str,
-                    help="Specify the bot key")
+                    help="specify the bot key")
 parser.add_argument("-r", "--root", type=str,
-                    help="Specify the root user id")
+                    help="specify the root user id")
 parser.add_argument("-p", "--plugin", type=str,
+                    help="specify the plugin path")
+parser.add_argument("-mp", "--make_plugin", type=str,
                     help="create a plugin template")
 parser.add_argument("-L", "--logout",
                     help="use it to log out from the cloud Bot API server before launching the bot locally.",
@@ -65,30 +67,36 @@ def _config():
         os.makedirs(str(Path(path)))
     if not os.path.exists(str(Path(config_dir))):
         print("the configuration file does not exist.")
+        plugin_dir = ""
+        if args.plugin:
+            plugin_dir = args.plugin
         key = ""
         if args.key:
             key = args.key
         root = ""
         if args.root:
             root = args.root
+        debug = "False"
+        if args.debug:
+            debug = "True"
         with open(config_dir, "w") as conf_file:
             conf_file.writelines([
                 "[config]" + "\n",
-                "key=" + str(key) + "\n",
-                "root_id=" + str(root) + "\n",
-                "plugin_dir=" + "\n",
-                "pool_size=40" + "\n",
-                "debug=False" + "\n",
-                "local_api_server=False" + "\n",
-                "drop_pending_updates=False" + "\n",
-                "webhook=False" + "\n",
-                "self_signed=False" + "\n",
-                "cert_key=" + "\n",
-                "cert_pub=" + "\n",
-                "server_address=" + "\n",
-                "server_port=" + "\n",
-                "local_address=" + "\n",
-                "local_port="
+                "key = " + str(key) + "\n",
+                "root_id = " + str(root) + "\n",
+                "plugin_dir = " + str(plugin_dir) + "\n",
+                "pool_size = 40" + "\n",
+                "debug = " + str(debug) + "\n",
+                "local_api_server = False" + "\n",
+                "drop_pending_updates = False" + "\n",
+                "webhook = False" + "\n",
+                "self_signed = False" + "\n",
+                "cert_key = " + "\n",
+                "cert_pub = " + "\n",
+                "server_address = " + "\n",
+                "server_port = " + "\n",
+                "local_address = " + "\n",
+                "local_port = "
             ])
             print("the configuration file has been created automatically.")
             print("configuration file path: " + str(config_dir))
@@ -104,19 +112,24 @@ def _config():
 
     if args.debug:
         conf.set("config", "debug", str(True))
+    if args.plugin:
+        conf.set("config", "plugin_dir", str(args.plugin))
     if args.key:
         conf.set("config", "key", str(args.key))
     if args.root:
         conf.set("config", "root_id", str(args.root))
 
+    with open(config_dir, 'w') as configfile:
+        conf.write(configfile)
+
     if args.debug:
-        default_args = ["key", "webhook", "root_id", "debug"]
+        default_args = ["plugin_dir", "key", "webhook", "root_id", "debug"]
     else:
-        default_args = ["key", "webhook", "root_id"]
+        default_args = ["plugin_dir", "key", "webhook", "root_id"]
     for default_arg in default_args:
         if default_arg not in options:
             print("the configuration file is missing necessary parameters.",
-                "\nnecessary parameters:" + default_args)
+                "\nnecessary parameters:", default_args)
             os._exit(0)
 
     for option in options:
@@ -149,12 +162,14 @@ def _config():
     plugin_dir_in_config = False
     if "plugin_dir" in config.keys():
         if config["plugin_dir"] == "" or config["plugin_dir"] == None:
-            plugin_dir = str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/plugins/")) + os.sep
+            print("field plugin_dir is not set in configuration file.")
+            os._exit(0)
         else:
             plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
             plugin_dir_in_config = True
     else:
-        plugin_dir = str(Path(os.path.dirname(os.path.abspath(__file__)) + r"/plugins/")) + os.sep
+        print("field plugin_dir does not exist in configuration file.")
+        os._exit(0)
 
     if os.path.exists(str(Path(os.path.dirname(
         os.path.abspath(__file__)) + r"/__pycache__"))):
@@ -162,18 +177,24 @@ def _config():
             os.path.abspath(__file__)) + r"/__pycache__")))
 
     if not os.path.isdir(plugin_dir):  # 插件目录检测
-        # os.makedirs(plugin_dir)
-        os.mkdir(plugin_dir)
+        os.makedirs(plugin_dir)
+        # os.mkdir(plugin_dir)
         with open(str(Path(plugin_dir + "__init__.py")), "w") as f:
             pass
     elif not os.path.exists(str(Path(plugin_dir + "__init__.py"))):
         with open(str(Path(plugin_dir + "__init__.py")), "w") as f:
             pass
 
-    if args.plugin and plugin_dir_in_config: #插件模板创建
-        plugin_name = args.plugin
+    if args.make_plugin and plugin_dir_in_config: #插件模板创建
+        plugin_name = args.make_plugin
         if not os.path.exists(str(Path(plugin_dir + plugin_name))):
             os.mkdir(str(Path(plugin_dir + plugin_name)))
+            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py"))):
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w") as init:
+                    init.writelines([
+                        "#/" + plugin_name.lower() + "\n",
+                        "#" + plugin_name + " Plugin\n"
+                    ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py")), "w") as enter:
                     enter.writelines([
@@ -199,15 +220,11 @@ def _config():
                         '    message_type = message["message_type"]\n' + \
                         '    chat_type = message["chat"]["type"]\n' + \
                         "\n" + \
-                        '    prefix = "/' + plugin_name.lower() + '"\n' + \
+                        '    prefix = ""\n' + \
+                        '    with open(bot.path_converter(bot.plugin_dir + "' + plugin_name + os.sep + '__init__.py"), "r") as init:\n' + \
+                        '        prefix = init.readline()[1:].strip()\n' + \
                         "\n\n" + \
                         "    # Write your plugin code below"
-                    ])
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w") as init:
-                    init.writelines([
-                        "#/" + plugin_name.lower() + "\n",
-                        "#" + plugin_name + " Plugin\n"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "readme.md"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + "readme.md")), "w") as readme:
@@ -222,7 +239,7 @@ def _config():
         else:
             print("plugin " + plugin_name + " already exists.")
         os._exit(0)
-    elif args.plugin and not plugin_dir_in_config:
+    elif args.make_plugin and not plugin_dir_in_config:
         print("the plugin_dir is not set in the configuration file.")
         os._exit(0)
 
@@ -301,9 +318,6 @@ def _config():
     config["plugin_info"] = _plugin_info(
         config["plugin_bridge"].keys(), config["plugin_dir"])
     config["cloud_api_server"] = cloud_api_server
-
-    if args.debug:
-        config["debug"] = True
 
     # print(config)
     return config

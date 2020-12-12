@@ -7,20 +7,11 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 ## 说明 ##
 
-本项目是基于Python和Telegram Bot API实现的Telegram Bot**框架**，具有**插件系统**。目前预置插件有以下几个：
-
-1. Menu - 自动生成的插件菜单
-
-2. Chat - 调用 [青云客聊天机器人API](http://api.qingyunke.com/) 实现的对话功能
-3. About - 关于
-4. Uptime - 获取Bot运行状态
-5. Schedule - 周期性执行特定任务
-6. PluginCTL - 插件开关控制
-7. Hello - Hello World插件例子
+**teelebot** 是Python编写的Telegram Bot框架。**teelebot** 具有**插件系统**，Bot功能以插件的形式组织，你只需要实现具有特定功能的插件，其余细节交给 **teelebot** 框架处理，极大地提高了Bot的开发部署效率。**你可以自由地组合插件，来搭建具有特定功能的Bot**。
 
 
 
-**更多插件请前往：[官方插件仓库](https://github.com/plutobell/teelebot-plugins)**
+**插件请前往：[官方插件仓库](https://github.com/plutobell/teelebot-plugins)**
 
 
 
@@ -221,11 +212,13 @@ pip install teelebot --upgrade
 
 #### 一行命令启动 (Polling Mode)
 
+请自行替换 `< ... >` 的内容
+
 ```
-teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user id>
+teelebot -c/--config <config file path> -p/--plugin <plugin path> -k/--key <bot key> -r/--root <your user id>
 ```
 
-**此命令会自动生成在Polling模式下适用的配置文件，但仍需手动配置插件路径。**
+**此命令会自动生成在Polling模式下适用的配置文件，并且，-c/--config 参数可以省略(省略将使用默认配置文件路径)。**
 
 
 
@@ -365,6 +358,8 @@ Hello/
   ./requirement.txt
 ```
 
+
+
 #### 二、规则
 
 ##### 命名
@@ -440,8 +435,16 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 
 在 `v1.9.20_dev` 及以上版本，可以通过命令行指令**一键创建**插件模板。
 
+* 1.14.1 以前的版本
+
 ```python
 teelebot -p/--plugin <plugin name>
+```
+
+* 1.14.1 以后的版本
+
+```python
+teelebot -mp/--make_plugin <plugin name>
 ```
 
 该指令会使用框架配置文件(config.cfg)中的插件路径作为所创建插件模板的存放路径。

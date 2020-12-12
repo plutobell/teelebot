@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modify: 2020-11-23
+@last modify: 2020-12-12
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 #from socketserver import ThreadingMixIn
 import ssl
-import sys
+import os
 import json
 
 
@@ -63,11 +63,13 @@ def _runWebhook(bot, host, port):
             server.serve_forever()
         except KeyboardInterrupt:
             server.server_close()
-            sys.exit("Bot Exit.")
+            print("Bot Exit.")
+            os._exit(0)
     else:
         try:
             server = HTTPServer((host, port), RequestHandler)
             server.serve_forever()
         except KeyboardInterrupt:
             server.server_close()
-            sys.exit("Bot Exit.")
+            print("Bot Exit.")
+            os._exit(0)
