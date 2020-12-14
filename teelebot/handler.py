@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-12-12
+@last modify: 2020-12-14
 '''
 import configparser
 import argparse
@@ -9,11 +9,9 @@ import os
 import sys
 import shutil
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 from pathlib import Path
 from .version import __author__, __github__, __version__
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 cloud_api_server = "https://api.telegram.org/"
 

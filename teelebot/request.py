@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modify: 2020-11-23
+@last modify: 2020-12-14
 '''
 import os
 
@@ -9,9 +9,6 @@ import requests
 import inspect
 from .logger import _logger
 from traceback import extract_stack
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class _Request(object):
@@ -48,9 +45,9 @@ class _Request(object):
         debug模式
         """
         if self.__debug and not result.get("ok"):
-            os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
             stack_info = extract_stack()
             if len(stack_info) > 8:  # 插件内
+                os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
                 _logger.debug("\033[1;31m" + \
                             "Request failed" + " - " + \
                             "From:" + stack_info[-3][2] + " - " + \
@@ -60,6 +57,7 @@ class _Request(object):
                             "Result:" + str(result) + \
                             "\033[0m")
             elif len(stack_info) > 3:  # 外部调用
+                os.system("")  # "玄学"解决Windows下颜色显示失效的问题...
                 _logger.debug("\033[1;31m" + \
                             "Request failed" + " - " + \
                             "From:" + stack_info[0][0] + " - " + \

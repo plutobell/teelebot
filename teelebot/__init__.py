@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-8-23
-@last modify: 2020-11-23
+@last modify: 2020-12-14
 """
 import os
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import urllib3
+
 from .polling import _runUpdates
 from .webhook import _runWebhook
 from .teelebot import Bot
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 name = "teelebot"
 __all__ = ['Bot']
@@ -25,6 +26,13 @@ else:
 
 
 def main():
+    print(
+        "    __            __     __          __  " + "\n" + \
+        "   / /____  ___  / /__  / /_  ____  / /_ " + "\n" + \
+        "  / __/ _ \/ _ \/ / _ \/ __ \/ __ \/ __/ " + "\n" + \
+        " / /_/  __/  __/ /  __/ /_/ / /_/ / /_   " + "\n" + \
+        " \__/\___/\___/_/\___/_.___/\____/\__/   " + "\n"
+    )
     print(" * Self-checking...", end="\r")
     req = requests.post(url=bot._url + "getWebhookInfo", verify=False)
     if not req.json().get("ok"):

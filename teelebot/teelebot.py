@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2020-12-12
+@last modify: 2020-12-14
 @author: Pluto (github:plutobell)
-@version: 1.14.2
+@version: 1.14.3
 """
 import inspect
 import time
@@ -98,6 +98,7 @@ class Bot(object):
         线程池异常回调
         """
         if fur.exception() is not None:
+            os.system("")
             _logger.debug("EXCEPTION" + " - " + str(fur.result()))
 
     def __import_module(self, plugin_name):
@@ -123,6 +124,7 @@ class Bot(object):
             self.__plugin_info[plugin_name] = now_mtime
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
+            os.system("")
             _logger.info("The plugin " + plugin_name + " has been updated")
 
     def __load_plugin(self, now_plugin_bridge, now_plugin_info):
@@ -131,10 +133,12 @@ class Bot(object):
         """
         for plugin in list(now_plugin_bridge.keys()):
             if plugin not in list(self.__plugin_bridge.keys()):
+                os.system("")
                 _logger.info("The plugin " + plugin + " has been installed")
                 self.__plugin_info[plugin] = now_plugin_info[plugin]
         for plugin in list(self.__plugin_bridge.keys()):
             if plugin not in list(now_plugin_bridge.keys()):
+                os.system("")
                 _logger.info("The plugin " + plugin + " has been uninstalled")
                 self.__plugin_info.pop(plugin)
 
@@ -228,12 +232,14 @@ class Bot(object):
                     user_name += message["from"]["last_name"]
 
         if message["message_type"] == "unknown":
+            os.system("")
             _logger.info(
             "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
             "User:" + user_name + "(" + str(from_id) + ") - " + \
             "Plugin: " + "" + " - " + \
             "Type:" + message["message_type"])
         else:
+            os.system("")
             _logger.info(
                 "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
                 "User:" + user_name + "(" + str(from_id) + ") - " + \
