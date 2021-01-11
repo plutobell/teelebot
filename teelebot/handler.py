@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2020-12-14
+@last modify: 2021-01-11
 '''
 import configparser
 import argparse
@@ -51,7 +51,7 @@ def _config():
     '''
     config = {}
 
-    if len(sys.argv) == 3 and args.config:
+    if args.config:
         config_dir = os.path.abspath(str(Path(args.config)))
     else:
         config_dir = str(Path(os.path.abspath(
