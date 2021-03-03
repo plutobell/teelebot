@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-8-13
-@last modify: 2021-01-11
+@last modify: 2021-03-03
 @author: Pluto (github:plutobell)
-@version: 1.14.4
+@version: 1.14.5
 """
 import inspect
 import time

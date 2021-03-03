@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-8-23
-@last modify: 2021-01-11
+@last modify: 2021-03-03
 '''
 import configparser
 import argparse
@@ -77,7 +77,7 @@ def _config():
         debug = "False"
         if args.debug:
             debug = "True"
-        with open(config_dir, "w") as conf_file:
+        with open(config_dir, "w", encoding="utf-8") as conf_file:
             conf_file.writelines([
                 "[config]" + "\n",
                 "key = " + str(key) + "\n",
@@ -117,7 +117,7 @@ def _config():
     if args.root:
         conf.set("config", "root_id", str(args.root))
 
-    with open(config_dir, 'w') as configfile:
+    with open(config_dir, 'w', encoding="utf-8") as configfile:
         conf.write(configfile)
 
     if args.debug:
@@ -177,10 +177,10 @@ def _config():
     if not os.path.isdir(plugin_dir):  # 插件目录检测
         os.makedirs(plugin_dir)
         # os.mkdir(plugin_dir)
-        with open(str(Path(plugin_dir + "__init__.py")), "w") as f:
+        with open(str(Path(plugin_dir + "__init__.py")), "w", encoding="utf-8") as f:
             pass
     elif not os.path.exists(str(Path(plugin_dir + "__init__.py"))):
-        with open(str(Path(plugin_dir + "__init__.py")), "w") as f:
+        with open(str(Path(plugin_dir + "__init__.py")), "w", encoding="utf-8") as f:
             pass
 
     if args.make_plugin and plugin_dir_in_config: #插件模板创建
@@ -188,13 +188,13 @@ def _config():
         if not os.path.exists(str(Path(plugin_dir + plugin_name))):
             os.mkdir(str(Path(plugin_dir + plugin_name)))
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w") as init:
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w", encoding="utf-8") as init:
                     init.writelines([
                         "#/" + plugin_name.lower() + "\n",
                         "#" + plugin_name + " Plugin\n"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py")), "w") as enter:
+                with open(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py")), "w", encoding="utf-8") as enter:
                     enter.writelines([
                         "# -*- coding:utf-8 -*-\n",
                         "\n",
@@ -219,18 +219,18 @@ def _config():
                         '    chat_type = message["chat"]["type"]\n' + \
                         "\n" + \
                         '    prefix = ""\n' + \
-                        '    with open(bot.path_converter(bot.plugin_dir + "' + plugin_name + os.sep + '__init__.py"), "r") as init:\n' + \
+                        '    with open(bot.path_converter(bot.plugin_dir + "' + plugin_name + os.sep + '__init__.py"), "r", encoding="utf-8") as init:\n' + \
                         '        prefix = init.readline()[1:].strip()\n' + \
                         "\n\n" + \
                         "    # Write your plugin code below"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "readme.md"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "readme.md")), "w") as readme:
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "readme.md")), "w", encoding='utf-8') as readme:
                     readme.writelines([
                         "# " + plugin_name + " #\n"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt")), "w") as requirement:
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt")), "w", encoding='utf-8') as requirement:
                     pass
 
             print("plugin " + plugin_name + " was created successfully.")
