@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 """
 @description:基于Telegram Bot Api 的机器人框架
-@creation date: 2019-8-13
-@last modify: 2021-03-03
+@creation date: 2019-08-13
+@last modify: 2021-03-10
 @author: Pluto (github:plutobell)
-@version: 1.14.5
+@version: 1.15.0
 """
 import inspect
 import time
@@ -58,6 +58,25 @@ class Bot(object):
         self._debug = config["debug"]
         self._pool_size = config["pool_size"]
         self._drop_pending_updates = config["drop_pending_updates"]
+        self._updates_chat_member = config["updates_chat_member"]
+        self._allowed_updates = []
+        if self._updates_chat_member:
+            self._allowed_updates = [
+                "update_id",
+                "message",
+                "edited_message",
+                "channel_post",
+                "edited_channel_post",
+                "inline_query",
+                "chosen_inline_result",
+                "callback_query",
+                "shipping_query",
+                "pre_checkout_query",
+                "poll",
+                "poll_answer",
+                "my_chat_member",
+                "chat_member"
+            ]
 
         self.__root_id = config["root_id"]
         self.__bot_id = self._key.split(":")[0]
@@ -163,10 +182,38 @@ class Bot(object):
         if "callback_query_id" in message.keys():  # callback query
             message["message_type"] = "callback_query_data"
             message_type = "callback_query_data"
-        elif ("new_chat_members" in message.keys()) or ("left_chat_member" in message.keys()):
-            message["message_type"] = "text"
-            message_type = "text"
-            message["text"] = ""  # default prefix of command
+        elif "voice_chat_started" in message.keys():
+            message["message_type"] = "voice_started"
+            message_type = "voice_started"
+            message["voice_started"] = ""
+        elif "voice_chat_ended" in message.keys():
+            message["message_type"] = "voice_ended"
+            message_type = "voice_ended"
+            message["voice_ended"] = ""
+        elif "voice_chat_participants_invited" in message.keys():
+            message["message_type"] = "voice_invited"
+            message_type = "voice_invited"
+            message["voice_invited"] = ""
+        elif "message_auto_delete_timer_changed" in message.keys():
+            message["message_type"] = "message__timer_changed"
+            message_type = "message__timer_changed"
+            message["message__timer_changed"] = ""
+        elif "my_chat_member_id" in message.keys():
+            message["message_type"] = "my_chat_member_data"
+            message_type = "my_chat_member_data"
+            message["my_chat_member_data"] = ""
+        elif "chat_member_id" in message.keys():
+            message["message_type"] = "chat_member_data"
+            message_type = "chat_member_data"
+            message["chat_member_data"] = ""
+        elif "new_chat_members" in message.keys():
+            message["message_type"] = "chat_members"
+            message_type = "chat_members"
+            message["chat_members"] = ""  # default prefix of command
+        elif "left_chat_member" in message.keys():
+            message["message_type"] = "left_member"
+            message_type = "left_member"
+            message["left_member"] = ""
         elif "photo" in message.keys():
             message["message_type"] = "photo"
             message_type = "message_type"
@@ -315,6 +362,10 @@ class Bot(object):
                 query_or_message = "inline_query"
             elif result.get("callback_query"):
                 query_or_message = "callback_query"
+            elif result.get("my_chat_member"):
+                query_or_message = "my_chat_member"
+            elif result.get("chat_member"):
+                query_or_message = "chat_member"
             elif result.get("message"):
                 query_or_message = "message"
             update_ids.append(result.get("update_id"))
@@ -328,6 +379,16 @@ class Bot(object):
                 callback_query["callback_query_data"] = result.get(
                     query_or_message).get("data")
                 messages.append(callback_query)
+            elif query_or_message == "my_chat_member":
+                my_chat_member = result.get(query_or_message)
+                my_chat_member["message_id"] = result.get("update_id")
+                my_chat_member["my_chat_member_id"] = result.get("update_id")
+                messages.append(my_chat_member)
+            elif query_or_message == "chat_member":
+                chat_member = result.get(query_or_message)
+                chat_member["message_id"] = result.get("update_id")
+                chat_member["chat_member_id"] = result.get("update_id")
+                messages.append(chat_member)
             else:
                 messages.append(result.get(query_or_message))
         if len(update_ids) >= 1:
@@ -1074,18 +1135,21 @@ class Bot(object):
         return self.request.postJson(addr, permissions)
 
     def promoteChatMember(self, chat_id, user_id, is_anonymous=None,
-        can_change_info=None, can_post_messages=None, can_edit_messages=None,
-        can_delete_messages=None, can_invite_users=None, can_restrict_members=None,
+        can_manage_chat=None, can_change_info=None, can_post_messages=None,
+        can_edit_messages=None, can_delete_messages=None, can_manage_voice_chats=None,
+        can_invite_users=None, can_restrict_members=None,
         can_pin_messages=None, can_promote_members=None):
         """
         修改管理员权限(只能修改由机器人任命的管理员的权限,
         范围为机器人权限的子集)
         {
-        'is_anonymous':None,
+        'is_anonymous':False,
+        'can_manage_chat':False,
         'can_change_info':False,
         'can_post_messages':False,
         'can_edit_messages':False,
         'can_delete_messages':False,
+        'can_manage_voice_chats':False,
         'can_invite_users':False,
         'can_restrict_members':False,
         'can_pin_messages':False,
@@ -1098,6 +1162,8 @@ class Bot(object):
 
         if is_anonymous is not None:
             addr += "&is_anonymous=" + str(is_anonymous)
+        if can_manage_chat is not None:
+            addr += "&can_manage_chat=" + str(can_manage_chat)
         if can_change_info is not None:
             addr += "&can_change_info=" + str(can_change_info)
         if can_post_messages is not None:
@@ -1106,6 +1172,8 @@ class Bot(object):
             addr += "&can_edit_messages=" + str(can_edit_messages)
         if can_delete_messages is not None:
             addr += "&can_delete_messages=" + str(can_delete_messages)
+        if can_manage_voice_chats is not None:
+            addr += "&can_manage_voice_chats=" + str(can_manage_voice_chats)
         if can_invite_users is not None:
             addr += "&can_invite_users=" + str(can_invite_users)
         if can_restrict_members is not None:
@@ -1247,22 +1315,25 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def sendDice(self, chat_id, emoji, disable_notification=None,
+    def sendDice(self, chat_id, emoji=None, disable_notification=None,
         reply_to_message_id=None, allow_sending_without_reply=None,
         reply_markup=None):
         """
         使用此方法发送一个动画表情
         emoji参数必须是以下几种：
-            1.dice(骰子) values 1-6
-            2.darts(飞镖) values 1-6
-            3.basketball(篮球) values 1-5
-            4.football(足球) values 1-5
-            5.slot machine(老虎机) values 1-64
+            1.🎲dice(骰子) values 1-6
+            2.🎯darts(飞镖) values 1-6
+            3.🎳bowling(保龄球) values 1-6
+            4.🏀basketball(篮球) values 1-5
+            5.⚽football(足球) values 1-5
+            6.🎰slot machine(老虎机) values 1-64
             默认为骰子
         """
         command = inspect.stack()[0].function
-        addr = command + "?chat_id=" + str(chat_id) + "&emoji=" + str(emoji)
+        addr = command + "?chat_id=" + str(chat_id)
 
+        if emoji is not None:
+            addr += "&emoji=" + str(emoji)
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
         if reply_to_message_id is not None:
@@ -1367,20 +1438,23 @@ class Bot(object):
             return self.request.post(addr)
 
 
-    def kickChatMember(self, chat_id, user_id, until_date=None):
+    def kickChatMember(self, chat_id, user_id, until_date=None,
+        revoke_messages=None):
         """
-        从Group、Supergroup或者Channel中踢人，被踢者在until_date期限内不可再次加入
+        从Group、Supergroup或者Channel中踢人，
+        被踢者在until_date期限内不可再次加入
+        可通过revoke_messages参数删除被踢者发送的所有消息
         until_date format:
         timestamp + offset
         """
 
         command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
         if until_date is not None:
             until_date = int(time.time()) + int(until_date)
-            addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id) + "&until_date=" + str(until_date)
-        if until_date is None:
-            addr = command + "?chat_id=" + \
-                str(chat_id) + "&user_id=" + str(user_id)
+            addr += "&until_date=" + str(until_date)
+        if revoke_messages is not None:
+            addr += "&revoke_messages=" + str(revoke_messages) #似乎无效
 
         return self.request.post(addr)
 
@@ -1419,10 +1493,55 @@ class Bot(object):
 
     def exportChatInviteLink(self, chat_id):
         """
-        使用此方法生成新的群组分享链接，旧有分享链接全部失效,成功返回分享链接
+        使用此方法生成新的群组分享链接，
+        旧有分享链接全部失效,成功返回分享链接
+        聊天中的每个管理员都会生成自己的邀请链接
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
+
+        return self.request.post(addr)
+
+    def createChatInviteLink(self, chat_id, expire_date=None, member_limit=None):
+        """
+        使用此方法为聊天创建一个额外的邀请链接，
+        可以使用方法 revokeChatInviteLink 撤销该链接
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id)
+
+        if expire_date is not None:
+            expire_date = int(time.time()) + int(expire_date)
+            addr += "&expire_date=" + str(expire_date)
+        if member_limit is not None:
+            addr += "&member_limit=" + str(member_limit)
+
+        return self.request.post(addr)
+
+    def editChatInviteLink(self, chat_id, invite_link, expire_date=None, member_limit=None):
+        """
+        使用此方法编辑机器人创建的非主要邀请链接。
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + \
+            "&invite_link=" + str(invite_link)
+
+        if expire_date is not None:
+            expire_date = int(time.time()) + int(expire_date)
+            addr += "&expire_date=" + str(expire_date)
+        if member_limit is not None:
+            addr += "&member_limit=" + str(member_limit)
+
+        return self.request.post(addr)
+
+    def revokeChatInviteLink(self, chat_id, invite_link):
+        """
+        使用此方法撤销机器人创建的邀请链接,
+        如果主要链接被撤销，则会自动生成一个新的链接。
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + \
+            "&invite_link=" + str(invite_link)
 
         return self.request.post(addr)
 

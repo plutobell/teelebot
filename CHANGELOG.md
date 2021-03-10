@@ -1,5 +1,23 @@
 # 更新日志
 
+#### 2021-03-10 ####
+
+* v1.15.0 : 
+  * 升级至 Bot API 5.1
+    * 配置文件新增字段 updates_chat_member ，用以指定是否接受 chat_member 消息
+    * 新增方法 createChatInviteLink
+    * 新增方法 editChatInviteLink
+    * 新增方法 revokeChatInviteLink
+    * 新增消息类型 voice_started、voice_ended、voice_invited
+    * 新增消息类型 message__timer_changed
+    * 新增消息类型 my_chat_member_data
+    * 新增消息类型 chat_member_data
+    * 新增消息类型 new_chat_members、left_chat_member
+    * 为 sendDice 方法适配新 emoji 动画：bowling
+    * 为 kickChatMember 方法增加字段：revoke_messages
+    * 为 promoteChatMember 方法增加字段：can_manage_chat、can_manage_voice_chats
+  * 其他细节调整
+
 #### 2021-01-11 ####
 
 * v1.14.4 : 

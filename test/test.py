@@ -9,7 +9,7 @@ root = bot.root_id
 
 # print(bot.logOut())
 # print(bot.close())
-print(bot.getWebhookInfo())
+# print(bot.getWebhookInfo())
 
 
 
@@ -227,3 +227,58 @@ results = {
 
 # from random import randint
 # bot.sendSticker(chat_id=config["root"], sticker=bot.plugin_dir + "Uptime/umaru/" + str(randint(1,3)) + ".gif")
+
+
+# status = bot.createChatInviteLink(chat_id="chat_id",
+#     expire_date=600, member_limit=10)
+# print(status)
+
+# status = bot.editChatInviteLink(chat_id="chat_id",
+#     invite_link="invite_link", expire_date=100, member_limit=100)
+# print(status)
+
+# status = bot.revokeChatInviteLink(chat_id="chat_id",
+#     invite_link="invite_link")
+# print(status)
+
+
+# status = bot.kickChatMember(chat_id="chat_id", user_id="user_id",
+#     until_date=60, revoke_messages=True)
+# print(status)
+
+
+
+# permissions = {
+#     'is_anonymous':False,
+#     'can_manage_chat':True,
+#     'can_change_info':False,
+#     'can_post_messages':False,
+#     'can_edit_messages':False,
+#     'can_delete_messages':False,
+#     'can_manage_voice_chats':False,
+#     'can_invite_users':False,
+#     'can_restrict_members':False,
+#     'can_pin_messages':False,
+#     'can_promote_members':False
+# }
+# ok = bot.promoteChatMember(
+#     chat_id = "chat_id",
+#     user_id = "user_id",
+#     is_anonymous = False,
+#     can_manage_chat=True,
+#     can_change_info = False,
+#     can_post_messages = False,
+#     can_edit_messages = False,
+#     can_delete_messages = False,
+#     can_invite_users = False,
+#     can_restrict_members = False,
+#     can_pin_messages = False,
+#     can_promote_members = False
+# )
+# print(ok)
+
+
+
+# status = bot.sendDice(chat_id="chat_id", emoji="🎳")
+# print(status)
+

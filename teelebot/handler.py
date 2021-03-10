@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
-@creation date: 2019-8-23
-@last modify: 2021-03-03
+@creation date: 2019-08-23
+@last modify: 2021-03-10
 '''
 import configparser
 import argparse
@@ -94,7 +94,8 @@ def _config():
                 "server_address = " + "\n",
                 "server_port = " + "\n",
                 "local_address = " + "\n",
-                "local_port = "
+                "local_port = " + "\n",
+                "updates_chat_member = False"
             ])
             print("the configuration file has been created automatically.")
             print("configuration file path: " + str(config_dir))
@@ -292,6 +293,17 @@ def _config():
             os._exit(0)
     else:
         config["drop_pending_updates"] = False
+
+    if "updates_chat_member" in config.keys():
+        if config["updates_chat_member"] == "True":
+            config["updates_chat_member"] = True
+        elif config["updates_chat_member"] == "False":
+            config["updates_chat_member"] = False
+        else:
+            print("The updates_chat_member field value in the configuration file is wrong.")
+            os._exit(0)
+    else:
+        config["updates_chat_member"] = False
 
     if config["debug"] == "True":
         config["debug"] = True

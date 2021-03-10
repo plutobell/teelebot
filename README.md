@@ -36,7 +36,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-## 已升级至 Telegram Bot API 5.0（2020/11/9）
+## 已升级至 Telegram Bot API 5.1（2021/03/10）
 
 **Getting updates**
 
@@ -90,6 +90,9 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * restrictChatMember
 * setChatAdministratorCustomTitle
 * exportChatInviteLink
+* createChatInviteLink
+* editChatInviteLink
+* revokeChatInviteLink
 * setChatStickerSet
 * deleteChatStickerSet
 * sendMediaGroup
@@ -318,6 +321,7 @@ root_id=your user id
 debug=False
 drop_pending_updates=False
 local_api_server=local api server address //[Optional]
+updates_chat_member=False //[Optional]
 ```
 
 **在 `1.13.0` 及以上版本，支持自动生成配置文件。（默认为Polling模式）**
