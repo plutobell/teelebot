@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modify: 2021-03-10
+@last modify: 2021-03-30
 '''
 import configparser
 import argparse
@@ -220,7 +220,7 @@ def _config():
                         '    chat_type = message["chat"]["type"]\n' + \
                         "\n" + \
                         '    prefix = ""\n' + \
-                        '    with open(bot.path_converter(bot.plugin_dir + "' + plugin_name + os.sep + '__init__.py"), "r", encoding="utf-8") as init:\n' + \
+                        '    with open(bot.path_converter(bot.plugin_dir + "' + plugin_name + '/__init__.py"), "r", encoding="utf-8") as init:\n' + \
                         '        prefix = init.readline()[1:].strip()\n' + \
                         "\n\n" + \
                         "    # Write your plugin code below"

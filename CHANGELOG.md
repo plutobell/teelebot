@@ -1,5 +1,10 @@
 # 更新日志
 
+#### 2021-03-30 ####
+
+* v1.15.1 : 
+  * 修复插件模板创建工具的bug
+
 #### 2021-03-10 ####
 
 * v1.15.0 : 
@@ -17,6 +22,11 @@
     * 为 kickChatMember 方法增加字段：revoke_messages
     * 为 promoteChatMember 方法增加字段：can_manage_chat、can_manage_voice_chats
   * 其他细节调整
+
+#### 2021-03-03 ####
+
+* v1.14.5 : 
+  * 修复插件模板创建工具的bug
 
 #### 2021-01-11 ####
 
