@@ -1,5 +1,19 @@
 # 更新日志
 
+#### 2021-05-16 ####
+
+* v1.16.0 : 
+  * 升级至 Bot API 5.2
+    * 方法 sendInvoice 新增参数 max_tip_amount 和 suggested_tip_amounts
+    * 方法 sendInvoice 的参数 start_parameter 变为可选
+  * 新增方法 getChatMemberStatus
+  * 新增 buffer 文件暂存区
+  * 配置文件新增参数 buffer_size
+  * 修复方法 getUpdates 参数 allowed_updates 无效的bug
+  * 修复方法 setWebhook 参数 allowed_updates 无效的bug
+  * 修复 webHook 模式下参数 allowed_updates 无效的bug
+  * 完善方法 editMessageMedia
+
 #### 2021-03-30 ####
 
 * v1.15.1 : 
