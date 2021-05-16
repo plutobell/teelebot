@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modify: 2020-11-18
+@last modify: 2021-04-25
 '''
 import threading
 from uuid import uuid4
@@ -14,6 +14,9 @@ class _Schedule(object):
         self.__queue_size = queue_size
         self.__queue_mutex = threading.Lock()
         self.__queue = {}
+
+    def __del__(self):
+        del self.__queue
 
     def __create(self, gap, func, args):
         class RepeatingTimer(threading.Timer):

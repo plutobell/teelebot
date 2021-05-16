@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modify: 2021-03-30
+@last modify: 2021-05-16
 @author: Pluto (github:plutobell)
-@version: 1.15.1
+@version: 1.16.0
 """
 import inspect
 import time
@@ -22,6 +22,7 @@ from concurrent.futures import ThreadPoolExecutor
 from .handler import _config, _bridge, _plugin_info
 from .logger import _logger
 from .schedule import _Schedule
+from .buffer import _Buffer
 from .request import _Request
 
 
@@ -57,6 +58,7 @@ class Bot(object):
         self._timeout = 60
         self._debug = config["debug"]
         self._pool_size = config["pool_size"]
+        self._buffer_size = config["buffer_size"]
         self._drop_pending_updates = config["drop_pending_updates"]
         self._updates_chat_member = config["updates_chat_member"]
         self._allowed_updates = []
@@ -93,6 +95,8 @@ class Bot(object):
         schedule_queue_size = int(self._pool_size) - thread_pool_size
         self.request = _Request(thread_pool_size, self._url, self._debug)
         self.schedule = _Schedule(schedule_queue_size)
+        self.buffer = _Buffer(int(self._buffer_size) * 1024 * 1024,
+            self.__plugin_bridge.keys(), self.__plugin_dir)
 
         self.__thread_pool = ThreadPoolExecutor(
             max_workers=thread_pool_size)
@@ -150,7 +154,7 @@ class Bot(object):
         """
         动态装载插件
         """
-        for plugin in list(now_plugin_bridge.keys()):
+        for plugin in list(now_plugin_bridge.keys()): # 动态装载插件
             if plugin not in list(self.__plugin_bridge.keys()):
                 os.system("")
                 _logger.info("The plugin " + plugin + " has been installed")
@@ -162,6 +166,8 @@ class Bot(object):
                 self.__plugin_info.pop(plugin)
 
         self.__plugin_bridge = now_plugin_bridge
+
+        self.buffer._update(now_plugin_bridge.keys()) # Buffer动态更新
 
     def __control_plugin(self, plugin_bridge, chat_type, chat_id):
         if chat_type != "private" and "PluginCTL" in plugin_bridge.keys() \
@@ -309,11 +315,16 @@ class Bot(object):
         if len(now_plugin_info) != len(self.__plugin_info) or \
             now_plugin_info != self.__plugin_info: # 动态更新插件信息
             for plugin_name in list(self.__plugin_bridge.keys()):
-                self.__update_plugin(plugin_name) #热更新插件
+                self.__update_plugin(plugin_name) # 热更新插件
 
         if len(self.__plugin_bridge) == 0:
             os.system("")
             _logger.warn("\033[1;31mNo plugins installed\033[0m")
+
+        ok, buffer_status = self.buffer.status() # 数据暂存区容量监测
+        if ok and buffer_status["used"] >= buffer_status["size"]:
+            os.system("")
+            _logger.warn("\033[1;31m The data buffer area is full \033[0m")
 
         plugin_bridge = self.__control_plugin( # pluginctl控制
             self.__plugin_bridge, message["chat"]["type"], message["chat"]["id"])
@@ -544,6 +555,24 @@ class Bot(object):
         else:
             return False
 
+    def getChatMemberStatus(self, chat_id, user_id):
+        """
+        获取群组用户状态
+        "creator",
+        "administrator",
+        "member",
+        "restricted",
+        "left",
+        "kicked"
+        """
+        if str(chat_id)[0] == "-":
+            req = self.getChatMember(chat_id=chat_id, user_id=user_id)
+
+            if req != False:
+                return req["status"]
+        else:
+            return False
+
     def getFileDownloadPath(self, file_id):
         """
         生成文件下载链接
@@ -571,9 +600,9 @@ class Bot(object):
             "&limit=" + str(limit) + "&timeout=" + str(self._timeout)
 
         if allowed_updates is not None:
-            return self.request.postJson(addr, allowed_updates)
-        else:
-            return self.request.get(addr)
+            addr += "&allowed_updates=" + json.dumps(allowed_updates)
+
+        return self.request.get(addr)
 
     def setWebhook(self, url, certificate=None, ip_address=None,
         max_connections=None, allowed_updates=None, drop_pending_updates=None):
@@ -588,7 +617,7 @@ class Bot(object):
         if max_connections is not None:
             addr += "&max_connections=" + str(max_connections)
         if allowed_updates is not None:
-            addr += "&allowed_updates=" + str(allowed_updates)
+            addr += "&allowed_updates=" + json.dumps(allowed_updates)
         if drop_pending_updates is not None:
             addr += "&drop_pending_updates=" + str(drop_pending_updates)
 
@@ -620,6 +649,7 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command
+
         return self.request.post(addr)
 
     # Available methods
@@ -1752,18 +1782,21 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def editMessageMedia(self, media, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
+    def editMessageMedia(self, media, type_, chat_id=None, message_id=None,
+        caption=None, parse_mode=None, inline_message_id=None, reply_markup=None):
         """
         编辑消息媒体
         在未指定inline_message_id的时候chat_id和message_id为必须存在的参数
-        media format:
-        media = {
+        media_dict format(not bytes):
+        media_dict = {
             'media':{
                     'type': 'photo',
-                    'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg',
-                    'caption': '编辑后的Media'
+                    'media': 'uri or file_id',
+                    'caption': 'caption'
             }
         }
+
+        refer https://stackoverflow.com/questions/63843589/telegram-editmessagemedia-alternative-for-telepot
         """
         command = inspect.stack()[0].function
         if inline_message_id is None:
@@ -1779,7 +1812,58 @@ class Bot(object):
         if reply_markup is not None:
             addr += "&reply_markup=" + json.dumps(reply_markup)
 
-        return self.request.postJson(addr, media)
+        if media[:7] == "http://" or media[:7] == "https:/":
+            file_data = None
+            media_dict = {
+                'media':{
+                    'type': str(type_),
+                    'media': str(media)
+                }
+            }
+        elif type(media) == bytes:
+            file_data = {
+                'media': media,
+            }
+            media_dict = {
+                'type': str(type_),
+                'media': "attach://media",
+            }
+        elif type(media) == str and '.' not in media:
+            file_data = None
+            media_dict = {
+                'media':{
+                    'type': str(type_),
+                    'media': str(media)
+                }
+            }
+        else:
+            file_data = {
+                'media': open(str(media), "rb"),
+            }
+            media_dict = {
+                'type': str(type_),
+                'media': "attach://media",
+            }
+
+        if file_data is not None:
+            if caption is not None:
+                media_dict["caption"] = str(caption)
+            if parse_mode is not None:
+                if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
+                    media_dict["parse_mode"] = str(parse_mode)
+        else:
+            if caption is not None:
+                media_dict["media"]["caption"] = str(caption)
+            if parse_mode is not None:
+                if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
+                    media_dict["media"]["parse_mode"] = str(parse_mode)
+
+        if file_data is not None:
+            media_json = json.dumps(media_dict)
+            addr += f"&media={media_json}"
+            return self.request.postFile(addr, file_data)
+        else:
+            return self.request.postJson(addr, media_dict)
 
     def editMessageReplyMarkup(self, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
         """
@@ -2122,14 +2206,14 @@ class Bot(object):
             return self.request.postFile(addr, file_data)
 
     # Payments
-    def sendInvoice(self, chat_id, title, description, payload, provider_token, start_parameter,
-                    currency, prices, provider_data=None, photo_url=None,
+    def sendInvoice(self, chat_id, title, description, payload, provider_token,
+                    currency, prices, start_parameter=None, provider_data=None, photo_url=None,
                     photo_size=None, photo_width=None, photo_height=None,
                     need_name=None, need_phone_number=None, need_email=None,
                     need_shipping_address=None, send_phone_number_to_provider=None,
                     send_email_to_provider=None, is_flexible=None, disable_notification=None,
-                    reply_to_message_id=None, reply_markup=None,
-                    allow_sending_without_reply=None):
+                    reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
+                    max_tip_amount=None, suggested_tip_amounts=None):
         """
         使用此方法发送发票
         """
@@ -2139,10 +2223,11 @@ class Bot(object):
         addr += "&description=" + str(description)
         addr += "&payload" + str(payload)
         addr += "&provider_token=" + str(provider_token)
-        addr += "&start_parameter=" + str(start_parameter)
         addr += "&currency=" + str(currency)
         addr += "&prices=" + json.dumps(prices)
 
+        if start_parameter is not None:
+            addr += "&start_parameter=" + str(start_parameter)
         if provider_data is not None:
             addr += "&provider_data=" + str(provider_data)
         if photo_url is not None:
@@ -2176,6 +2261,11 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
         if allow_sending_without_reply is not None:
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
+        if max_tip_amount is not None:
+            addr += "&max_tip_amount=" + str(max_tip_amount)
+        if suggested_tip_amounts is not None:
+            addr += "&suggested_tip_amounts=" + str(suggested_tip_amounts)
+
 
         return self.request.post(addr)
 

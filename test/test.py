@@ -282,3 +282,11 @@ results = {
 # status = bot.sendDice(chat_id="chat_id", emoji="🎳")
 # print(status)
 
+
+
+# with open('test.jpg', 'rb') as f:
+#     fbytes = f.read()
+# status = bot.editMessageMedia(chat_id=bot.root_id,
+#     message_id="id", type_="photo", media=fbytes,
+#     caption="测试修改<b>test</b>", parse_mode="HTML")
+# print(status)

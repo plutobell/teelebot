@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modify: 2021-03-10
+@last modify: 2021-04-26
 """
 import os
 import requests
@@ -45,6 +45,7 @@ def main():
 
     status = req.json().get("result")
     pending_update_count = status["pending_update_count"]
+    allowed_updates = status.get("allowed_updates", [])
 
     if bot._webhook:
         protocol = "https://"
@@ -53,8 +54,9 @@ def main():
         url = protocol + str(bot._server_address + ":" + str(
             bot._server_port) + "/bot" + str(bot._key))
         if (bot._drop_pending_updates == True and pending_update_count != 0) \
-            or (status["url"] != url) or (status["has_custom_certificate"] != bot._self_signed)\
-            or status["max_connections"] != int(bot._pool_size):
+            or (status["url"] != url) or (status["has_custom_certificate"] != bot._self_signed) \
+            or status["max_connections"] != int(bot._pool_size) \
+            or allowed_updates != bot._allowed_updates:
             if bot._self_signed:
                 status = bot.setWebhook(
                     url=url,
@@ -70,6 +72,7 @@ def main():
                     allowed_updates=bot._allowed_updates,
                     drop_pending_updates=bot._drop_pending_updates
                 )
+
             if not status:
                 print("\nfailed to set Webhook!")
                 os._exit(0)
@@ -96,6 +99,6 @@ def main():
               "\n *  Server : " + api_server + "\n")
         if bot._drop_pending_updates == True and \
             pending_update_count != 0:
-            results = bot.getUpdates()
+            results = bot.getUpdates(allowed_updates=bot._allowed_updates)
             messages = bot._washUpdates(results)
         _runUpdates(bot=bot)

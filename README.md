@@ -36,7 +36,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-## 已升级至 Telegram Bot API 5.1（2021/03/10）
+## 已升级至 Telegram Bot API 5.2（2021/05/16）
 
 **Getting updates**
 
@@ -150,6 +150,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 **teelebot methods**
 
 *  getFileDownloadPath
+*  getChatMemberStatus
 *  getChatCreator
 * message_deletor
 * path_converter
@@ -309,6 +310,7 @@ plugin_dir=your plugin dir
 key=bot key
 plugin_dir=your plugin dir
 pool_size=40 //the thread pool size, default 40, range(1, 101)
+buffer_size=16 //the buffer area size, default 16(MB)
 webhook=False
 self_signed=False //Optional while webhook is False
 cert_key=your private cert path //Optional while webhook is False
@@ -356,7 +358,7 @@ teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user 
 
 
 
-## 插件开发指南 (以 Hello 插件为例) BETA 0.8
+## 插件开发指南 (以 Hello 插件为例) BETA 0.9
 
 #### 一、插件结构
 
@@ -486,9 +488,49 @@ ok, uid = bot.schedule.clear()
 ok, uid = bot.schedule.status()
 ```
 
-
-
 周期性任务池的大小为全局线程池的**三分之一** ，线程池大小则可通过配置文件指定。
+
+
+
+#### 六、数据暂存器 ####
+
+在 `v1.16.0` 及以上版本，每个插件将拥有一个用于**临时存储数据**的暂存区，可通过以下方法对暂存区进行操作。
+
+可获得的方法:
+
+* **buffer.status** : 获取数据暂存区的使用情况， 单位为字节
+* **buffer.sizeof** : 获取单个插件数据暂存区占用内存大小，单位为字节
+* **buffer.read** : 从暂存区读取数据，返回的数据类型为字典
+* **buffer.write** : 写入数据到暂存区，写入的数据类型为字典
+
+例：
+
+```python
+ok, buf = bot.buffer.status()
+ok, buf = bot.buffer.sizeof(plugin_name="")
+ok, buf = bot.buffer.read(plugin_name="")
+ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
+```
+
+**所有方法的参数 `plugin_name` 为可选参数，默认为调用插件的名字**
+
+
+
+可通过每个插件的 `__init__.py` 文件**控制其他插件对本插件暂存区的访问权限**，格式如下**(读:写)**：
+
+```python
+#file Hello/__init__.py
+
+#/helloworld
+#Hello World插件例子
+#True:False
+```
+
+**在上面的配置下，其他插件可以读取 `Hello` 插件的暂存区，但是不能修改其暂存区。**
+
+**留空的默认权限为 `False:False`**
+
+
 
 
 

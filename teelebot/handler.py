@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modify: 2021-03-30
+@last modify: 2021-04-26
 '''
 import configparser
 import argparse
@@ -84,6 +84,7 @@ def _config():
                 "root_id = " + str(root) + "\n",
                 "plugin_dir = " + str(plugin_dir) + "\n",
                 "pool_size = 40" + "\n",
+                "buffer_size = 16" + "\n",
                 "debug = " + str(debug) + "\n",
                 "local_api_server = False" + "\n",
                 "drop_pending_updates = False" + "\n",
@@ -248,6 +249,13 @@ def _config():
             os._exit(0)
     else:
         config["pool_size"] = "40"
+
+    if "buffer_size" in config.keys():
+        if int(config["buffer_size"]) <= 0:
+            print("data buffer_size is out of range (> 0 MiB).")
+            os._exit(0)
+    else:
+        config["buffer_size"] = "16"
 
     if "local_api_server" in config.keys():
         local_api_server = config["local_api_server"]
