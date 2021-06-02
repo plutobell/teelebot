@@ -516,7 +516,7 @@ ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
 
 
 
-可通过每个插件的 `__init__.py` 文件**控制其他插件对本插件暂存区的访问权限**，格式如下**(读:写)**：
+可通过每个插件的 `__init__.py` 文件**控制其他插件对本插件暂存区的访问权限** ，格式如下 **(读:写)**：
 
 ```python
 #file Hello/__init__.py

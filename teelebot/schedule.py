@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modify: 2021-04-25
+@last modify: 2021-06-02
 '''
 import threading
 from uuid import uuid4
@@ -70,9 +70,10 @@ class _Schedule(object):
         获取周期性任务池的使用情况
         """
         try:
-            used = len(self.__queue)
-            free = self.__queue_size - used
-            size = self.__queue_size
+            with self.__queue_mutex:
+                used = len(self.__queue)
+                free = self.__queue_size - used
+                size = self.__queue_size
 
             result = {
                 "used": used,
@@ -87,13 +88,14 @@ class _Schedule(object):
         """
         查找周期性任务
         """
-        if len(self.__queue) <= 0:
-            return False, "Empty"
+        with self.__queue_mutex:
+            if len(self.__queue) <= 0:
+                return False, "Empty"
 
-        if str(uid) in self.__queue.keys():
-            return True, str(uid)
-        else:
-            return False, "NotFound"
+            if str(uid) in self.__queue.keys():
+                return True, str(uid)
+            else:
+                return False, "NotFound"
 
     def delete(self, uid):
         """

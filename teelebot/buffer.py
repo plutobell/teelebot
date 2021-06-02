@@ -1,6 +1,6 @@
 '''
 @creation date: 2021-04-25
-@last modify: 2021-04-26
+@last modify: 2021-06-02
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
@@ -14,6 +14,7 @@ except ImportError:
 import threading
 import inspect
 import os
+import copy
 from pathlib import Path
 
 
@@ -40,9 +41,10 @@ class _Buffer(object):
         单位为字节
         """
         try:
-            used = self.__total_size(self.__buffer)
-            free = self.__buffer_size - used
-            size = self.__buffer_size
+            with self.__buffer_mutex:
+                used = self.__total_size(self.__buffer)
+                free = self.__buffer_size - used
+                size = self.__buffer_size
 
             result = {
                 "used": used,
@@ -87,7 +89,7 @@ class _Buffer(object):
                 return False, permission
 
             with self.__buffer_mutex:
-                return True, self.__buffer.get(plugin_name, {}).copy()
+                return True, copy.deepcopy(self.__buffer.get(plugin_name, {}))
         else:
             return False, "NoPlugin"
 
@@ -111,18 +113,14 @@ class _Buffer(object):
                 return False, permission
 
             with self.__buffer_mutex:
-                buffer_temp = buffer.copy()
-                self.__buffer[plugin_name] = buffer
+                old_total_used = self.__total_size(self.__buffer)
+                old_buffer_used = self.__total_size(self.__buffer[plugin_name])
+                new_buffer_used = self.__total_size(buffer)
 
-                ok, result = self.status()
-                if ok:
-                    used = result["used"]
-                    size = result["size"]
-
-                if used >= size:
-                    self.__buffer[plugin_name] = buffer_temp
+                if (old_total_used - old_buffer_used) + new_buffer_used > self.__buffer_size:
                     return False, "BufferAreaIsFull"
                 else:
+                    self.__buffer[plugin_name] = copy.deepcopy(buffer)
                     changed_size = self.__total_size(buffer)
                     return True, str(changed_size)
         else:
