@@ -207,15 +207,60 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 
 ## 安装 ##
 
+**1.Pip**
+
 ```bash
 pip install teelebot
 ```
 
+**2.Docker**
+
+```bash
+# 无代理
+docker run -it \
+	--name teelebot \
+	--restart always \
+	-v /path/to/teelebot/config:/config \
+	-v /path/to/teelebot/plugins:/plugins \
+	ghcr.io/plutobell/teelebot
+	
+# 有代理
+docker run -it \
+	--name teelebot \
+	--restart always \
+	--network host \
+	-e http_proxy="http://ip:port" \
+	-e https_proxy="http://ip:port" \
+	-v /path/to/teelebot/config:/config \
+	-v /path/to/teelebot/plugins:/plugins \
+	ghcr.io/plutobell/teelebot
+```
+
+**Tip1: 容器创建后请完善配置文件参数，然后重启容器。**
+
+**Tip2: 请根据框架版本和系统架构自行选择镜像标签。**
+
+
+
+
+
+
+
 ## 升级 ##
+
+**1.Pip**
 
 ```
 pip install teelebot --upgrade
 ```
+
+**2.Docker**
+
+```bash
+# 与Docker容器升级方法相同
+```
+
+
 
 
 
