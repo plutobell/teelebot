@@ -222,7 +222,7 @@ docker run -it \
 	--restart always \
 	-v /path/to/teelebot/config:/config \
 	-v /path/to/teelebot/plugins:/plugins \
-	ghcr.io/plutobell/teelebot
+	ghcr.io/plutobell/teelebot:latest
 	
 # 有代理
 docker run -it \
@@ -233,12 +233,10 @@ docker run -it \
 	-e https_proxy="http://ip:port" \
 	-v /path/to/teelebot/config:/config \
 	-v /path/to/teelebot/plugins:/plugins \
-	ghcr.io/plutobell/teelebot
+	ghcr.io/plutobell/teelebot:latest
 ```
 
-**Tip1: 容器创建后请完善配置文件参数，然后重启容器。**
-
-**Tip2: 请根据框架版本和系统架构自行选择镜像标签。**
+**Tip: 容器创建后请完善配置文件参数，然后重启容器。**
 
 
 
