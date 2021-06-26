@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modify: 2021-06-02
+@last modify: 2021-06-26
 @author: Pluto (github:plutobell)
-@version: 1.16.2
+@version: 1.17.0
 """
 import inspect
 import time
@@ -1053,7 +1053,7 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         return self.request.post(addr)
 
-    def getChatMembersCount(self, chat_id):
+    def getChatMemberCount(self, chat_id):
         """
         获取群组成员总数
         """
@@ -1468,7 +1468,7 @@ class Bot(object):
             return self.request.post(addr)
 
 
-    def kickChatMember(self, chat_id, user_id, until_date=None,
+    def banChatMember(self, chat_id, user_id, until_date=None,
         revoke_messages=None):
         """
         从Group、Supergroup或者Channel中踢人，
@@ -1696,29 +1696,81 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def setMyCommands(self, commands):
+    def setMyCommands(self, commands, scope=None, language_code=None):
         """
         使用此方法更改机器人的命令列表
+
         commands传入格式示例：
-        commands = [
-            {"command": "start", "description": "插件列表"},
-            {"command": "bing", "description": "获取每日Bing壁纸"}
-        ]
+            commands = [
+                {"command": "start", "description": "插件列表"},
+                {"command": "bing", "description": "获取每日Bing壁纸"}
+            ]
+        scope传入格式示例：
+            scope = {
+                "type": "all_private_chats"
+            }
+        language_code:
+            A two-letter ISO 639-1 language code.(e.g. zh en)
         """
         command = inspect.stack()[0].function
         addr = command
-        commands = {"commands": commands}
+        data = {"commands": commands}
+        if scope is not None:
+            data["scope"] = scope
+        if language_code is not None:
+            data["language_code"] = str(language_code)
 
-        return self.request.postJson(addr, commands)
+        return self.request.postJson(addr, data)
 
-    def getMyCommands(self):
+    def getMyCommands(self, scope=None, language_code=None):
         """
-        使用此方法获取机器人当前的命令列表
+        使用此方法获取给定范围和用户语言的机器人命令的当前列表
+
+        scope传入格式示例：
+            scope = {
+                "type": "all_private_chats"
+            }
+        language_code:
+            A two-letter ISO 639-1 language code.(e.g. zh en)
         """
         command = inspect.stack()[0].function
         addr = command
 
-        return self.request.post(addr)
+        data = {}
+        if scope is not None:
+            data["scope"] = scope
+        if language_code is not None:
+            data["language_code"] = str(language_code)
+
+        if len(data) != 0:
+            return self.request.postJson(addr, data)
+        else:
+            return self.request.post(addr)
+
+    def deleteMyCommands(self, scope=None, language_code=None):
+        """
+        使用此方法删除给定范围和用户语言的机器人命令列表
+
+        scope传入格式示例：
+            scope = {
+                "type": "all_private_chats"
+            }
+        language_code:
+            A two-letter ISO 639-1 language code.(e.g. zh en)
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        data = {}
+        if scope is not None:
+            data["scope"] = scope
+        if language_code is not None:
+            data["language_code"] = str(language_code)
+
+        if len(data) != 0:
+            return self.request.postJson(addr, data)
+        else:
+            return self.request.post(addr)
 
     # Updating messages
     def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None,

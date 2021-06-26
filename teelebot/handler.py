@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modify: 2021-04-26
+@last modify: 2021-06-25
 '''
 import configparser
 import argparse
@@ -226,14 +226,27 @@ def _config():
                         "\n\n" + \
                         "    # Write your plugin code below"
                     ])
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "readme.md"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "readme.md")), "w", encoding='utf-8') as readme:
+            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "README.md"))):
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "README.md")), "w", encoding='utf-8') as readme:
                     readme.writelines([
                         "# " + plugin_name + " #\n"
                     ])
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "requirement.txt")), "w", encoding='utf-8') as requirement:
-                    pass
+            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "METADATA"))):
+                with open(str(Path(plugin_dir + plugin_name + os.sep + "METADATA")), "w", encoding='utf-8') as metadata:
+                    metadata.writelines([
+                        "Metadata-version: 1.0\n",
+                        "Plugin-name: " + plugin_name + "\n",
+                        "Version: 0.1.0\n",
+                        "Summary: \n",
+                        "Home-page: \n",
+                        "Author: \n",
+                        "Author-email: \n",
+                        "License: \n",
+                        "Keywords: \n",
+                        "Requires-teelebot: >=" + __version__ + "\n",
+                        "Requires-dist: \n",
+                        "Source: "
+                    ])
 
             print("plugin " + plugin_name + " was created successfully.")
         else:
@@ -385,9 +398,9 @@ elif args.logout and not args.close:
         print("error request the cloud Bot API server.")
         os._exit(0)
     if req.json().get("ok"):
-        print("successfully log out from the cloud Bot API server.")
+        print("successfully logout from the cloud Bot API server.")
     elif not req.json().get("ok"):
-        print("error log out from the cloud Bot API server.")
+        print("error logout from the cloud Bot API server.")
         if (req.json().get("error_code") == 401 and
             req.json().get("description") == "Unauthorized"):
             print("if you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")

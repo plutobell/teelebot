@@ -1,5 +1,20 @@
 # 更新日志
 
+#### 2021-06-26 ####
+
+* v1.17.0 : 
+  * 升级至 Bot API 5.3
+    * 新增方法 deleteMyCommands
+    * 方法 setMyCommands 新增参数 scope 和 language_code
+    * 方法 getMyCommands 新增参数 scope 和 language_code
+    * 重命名方法 kickChatMember 到 banChatMember
+    * 重命名方法 getChatMembersCount 到 getChatMemberCount
+  * 插件结构调整
+    * 移除文件 requirement.txt
+    * 重命名文件 readme.md 到 README.md
+    * 新增插件信息存储文件 METADATA
+  * 其他细节优化
+
 #### 2021-06-02 ####
 
 * v1.16.2 : 

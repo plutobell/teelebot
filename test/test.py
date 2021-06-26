@@ -290,3 +290,26 @@ results = {
 #     message_id="id", type_="photo", media=fbytes,
 #     caption="测试修改<b>test</b>", parse_mode="HTML")
 # print(status)
+
+
+# commands = [
+#     {"command": "start", "description": "插件列表"},
+#     {"command": "test", "description": "测试API5.3"}
+# ]
+# scope = {"type": "all_chat_administrators"}
+
+# req = bot.setMyCommands(commands, scope, "zh")
+# print(req)
+
+# commands = [
+#     {"command": "testen", "description": "插件列表en"}
+# ]
+# req = bot.setMyCommands(commands, language_code="en")
+# print(req)
+# req = bot.getMyCommands(language_code="en")
+# print(req)
+
+# req = bot.deleteMyCommands(language_code="en")
+# print(req)
+# req = bot.getMyCommands()
+# print(req)

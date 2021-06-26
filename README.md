@@ -22,7 +22,19 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 **插件请前往：[官方插件仓库](https://github.com/plutobell/teelebot-plugins)**
 
+**推荐插件：**
 
+* **Menu** - 自动生成的插件菜单
+
+* **Uptime** - 获取Bot运行状态
+
+* **PluginCTL** - 插件分群开关控制
+
+* **PluginManagementTools** - 插件包管理工具
+
+* **Guard** - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
+
+  
 
 
 
@@ -36,7 +48,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-## 已升级至 Telegram Bot API 5.2（2021/05/16）
+## 已升级至 Telegram Bot API 5.3（2021/06/26）
 
 **Getting updates**
 
@@ -54,12 +66,12 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * sendMessage
 * sendPhoto
 * sendDocument
-* kickChatMember
+* banChatMember
 * unbanChatMember
 * leaveChat
 * getChat
 * getChatAdministrators
-* getChatMembersCount
+* getChatMemberCount
 * getChatMember
 * setChatPermissions
 * restrictChatMember
@@ -85,7 +97,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * sendChatAction
 * forwardMessage
 * copyMessage
-* kickChatMember
+* banChatMember
 * unbanChatMember
 * restrictChatMember
 * setChatAdministratorCustomTitle
@@ -98,6 +110,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * sendMediaGroup
 * getMyCommands
 * setMyCommands
+* deleteMyCommands
 * editMessageLiveLocation
 * stopMessageLiveLocation
 
@@ -213,6 +226,10 @@ teelebot 只支持 Python3.x，不支持Python2.x。
 pip install teelebot
 ```
 
+**此方式推荐使用Python虚拟环境安装**
+
+
+
 **2.Docker**
 
 ```bash
@@ -236,7 +253,7 @@ docker run -it \
 	ghcr.io/plutobell/teelebot:latest
 ```
 
-**Tip: 容器创建后请完善配置文件参数，然后重启容器。**
+**Tip: 容器创建后请完善配置文件参数，然后重启容器**
 
 
 
@@ -258,7 +275,7 @@ pip install teelebot --upgrade
 # 与Docker容器升级方法相同
 ```
 
-
+另外，可通过 `exec` 指令在容器中执行命令 `pip install teelebot --upgrade` 进行升级
 
 
 
@@ -401,7 +418,7 @@ teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user 
 
 
 
-## 插件开发指南 (以 Hello 插件为例) BETA 0.9
+## 插件开发指南 (以 Hello 插件为例) v1.0
 
 #### 一、插件结构
 
@@ -412,8 +429,8 @@ Hello/
   ./__init__.py
   ./Hello.py
   ./Hello_screenshot.png
-  ./readme.md
-  ./requirement.txt
+  ./README.md
+  ./METADATA
 ```
 
 
@@ -572,6 +589,33 @@ ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
 **在上面的配置下，其他插件可以读取 `Hello` 插件的暂存区，但是不能修改其暂存区。**
 
 **留空的默认权限为 `False:False`**
+
+
+
+#### 七、METADATA文件内容 （Metadata-version: 1.0） ####
+
+在 `v1.17.0` 及以上版本，插件包引入了文件 `METADATA` ，以存储插件信息。
+
+以`Hello` 插件为例， `METADATA`文件内容如下：
+
+```python
+Metadata-version: 1.0
+Plugin-name: Hello
+Version: 1.0.0
+Summary: Hello World插件例子
+Home-page: https://github.com/plutobell/teelebot
+Author: Pluto (github.com/plutobell)
+Author-email: hi#ojoll.com (#==@)
+License: GPLv3
+Keywords: Hello World
+Requires-teelebot: >=1.17.0
+Requires-dist: 
+Source: https://github.com/plutobell/teelebot-plugins
+```
+
+其中，`Requires-dist:` 为插件包的依赖（例如：requests），各个依赖间请使用英文字符 **","** 进行分隔。
+
+**Tip: 此文件在使用插件模板创建工具创建插件时会自动生成**
 
 
 
