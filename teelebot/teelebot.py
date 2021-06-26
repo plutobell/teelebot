@@ -4,7 +4,7 @@
 @creation date: 2019-08-13
 @last modify: 2021-06-26
 @author: Pluto (github:plutobell)
-@version: 1.17.0
+@version: 1.17.1
 """
 import inspect
 import time

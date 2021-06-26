@@ -4,10 +4,10 @@
 @creation date: 2019-11-15
 @last modify: 2021-06-26
 @author: Pluto (github:plutobell)
-@version: 1.17.0
+@version: 1.17.1
 """
 
-__version__ = "1.17.0"
+__version__ = "1.17.1"
 __author__ = "Pluto"
 __email__ = "hi@ojoll.com"
 __blog__ = "https://ojoll.com"

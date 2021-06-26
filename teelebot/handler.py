@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modify: 2021-06-25
+@last modify: 2021-06-26
 '''
 import configparser
 import argparse
@@ -363,7 +363,14 @@ def _bridge(plugin_dir):
     plugin_lis = os.listdir(plugin_dir)
     for plugi in plugin_lis:
         if os.path.isdir(str(Path(plugin_dir + plugi))) and plugi != "__pycache__" and plugi[0] != '.':
-            plugin_list.append(plugi)
+            package_file_list = os.listdir(str(Path(plugin_dir + plugi)))
+            if plugi + ".py" in package_file_list and \
+                "__init__.py" in package_file_list and \
+                "METADATA" in package_file_list:
+                plugin_list.append(plugi)
+            else:
+                print(plugi + " plugin is corrupted.")
+
     for plugin in plugin_list:
         with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
             row_one = f.readline().strip()[1:]
