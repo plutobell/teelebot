@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modify: 2021-06-26
+@last modification: 2021-09-11
 '''
 import configparser
 import argparse
@@ -14,6 +14,8 @@ from pathlib import Path
 from .version import __author__, __github__, __version__
 
 cloud_api_server = "https://api.telegram.org/"
+common_pkg_prefix = "~~"
+inline_mode_prefix = "?:"
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
@@ -349,6 +351,8 @@ def _config():
     config["plugin_info"] = _plugin_info(
         config["plugin_bridge"].keys(), config["plugin_dir"])
     config["cloud_api_server"] = cloud_api_server
+    config["common_pkg_prefix"] = common_pkg_prefix
+    config["inline_mode_prefix"] = inline_mode_prefix
 
     # print(config)
     return config
@@ -374,7 +378,7 @@ def _bridge(plugin_dir):
     for plugin in plugin_list:
         with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
             row_one = f.readline().strip()[1:]
-            if row_one != "~~":  # Hidden plugin
+            if row_one != common_pkg_prefix:  # Hidden plugin
                 plugin_bridge[plugin] = row_one
 
     # print(plugin_bridge)

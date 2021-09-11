@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modify: 2021-06-26
+@last modification: 2021-09-11
 @author: Pluto (github:plutobell)
-@version: 1.17.1
+@version: 1.17.2
 """
 import inspect
 import time
@@ -82,6 +82,8 @@ class Bot(object):
 
         self.__root_id = config["root_id"]
         self.__bot_id = self._key.split(":")[0]
+        self.__common_pkg_prefix = config["common_pkg_prefix"]
+        self.__inline_mode_prefix = config["inline_mode_prefix"]
         self.__AUTHOR = config["author"]
         self.__VERSION = config["version"]
         self.__plugin_dir = config["plugin_dir"]
@@ -188,6 +190,9 @@ class Bot(object):
         if "callback_query_id" in message.keys():  # callback query
             message["message_type"] = "callback_query_data"
             message_type = "callback_query_data"
+        elif "query" in message.keys():
+            message["message_type"] = "inline_query"
+            message_type = "query"
         elif "voice_chat_started" in message.keys():
             message["message_type"] = "voice_started"
             message_type = "voice_started"
@@ -241,9 +246,6 @@ class Bot(object):
         elif "caption" in message.keys():
             message["message_type"] = "caption"
             message_type = "caption"
-        elif "query" in message.keys():
-            message["message_type"] = "query"
-            message_type = "query"
         else:
             message["message_type"] = "unknown"
             message_type = "unknown"
@@ -337,6 +339,10 @@ class Bot(object):
             return
 
         for plugin, command in plugin_bridge.items():
+            if message_type == "query":
+                if command in ["", " ", None]:
+                    continue
+
             if message.get(message_type)[:len(command)] == command:
                 module = self.__import_module(plugin)
                 pluginFunc = getattr(module, plugin)
@@ -381,7 +387,17 @@ class Bot(object):
                 query_or_message = "message"
             update_ids.append(result.get("update_id"))
 
-            if query_or_message == "callback_query":
+            if query_or_message == "inline_query":
+                inline_query = result.get(query_or_message)
+                inline_query["message_id"] = result["update_id"]
+                inline_query["chat"] = {}
+                inline_query["chat"]["id"] = "inlinequery"
+                inline_query["chat"]["type"] = "private"
+                inline_query["chat"]["title"] = "inline-query"
+                inline_query["chat"]["username"] = "inline-query"
+                inline_query["query"] = self.__inline_mode_prefix + inline_query["query"] # Inline Mode Plugin Prefix
+                messages.append(inline_query)
+            elif query_or_message == "callback_query":
                 callback_query = result.get(query_or_message).get("message")
                 callback_query["click_user"] = result.get(query_or_message)[
                     "from"]
@@ -1965,9 +1981,32 @@ class Bot(object):
         is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
         """
         使用此方法发送Inline mode的应答
+        results format:
+            results = [
+                {
+                    "type": "article",
+                    "id": "item_id_1",
+                    "title": "Item 1",
+                    "input_message_content": {
+                        "message_text": "123",
+                        "parse_mode": "HTML"
+                    }
+                },
+                {
+                    "type": "article",
+                    "id": "item_id_2",
+                    "title": "Item 2",
+                    "input_message_content": {
+                        "message_text": "456",
+                        "parse_mode": "HTML"
+                    }
+                }
+            ]
         """
         command = inspect.stack()[0].function
         addr = command + "?inline_query_id=" + str(inline_query_id)
+        addr += "&results=" + json.dumps(results)
+
         if cache_time is not None:
             addr += "&cache_time=" + str(cache_time)
         if is_personal is not None:
@@ -1979,7 +2018,7 @@ class Bot(object):
         if switch_pm_parameter is not None:
             addr += "&switch_pm_parameter=" + str(switch_pm_parameter)
 
-        return self.request.postJson(addr, results)
+        return self.request.post(addr)
 
     def answerCallbackQuery(self, callback_query_id, text=None, show_alert="false", url=None, cache_time=0):
         """

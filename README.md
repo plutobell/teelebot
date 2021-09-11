@@ -418,7 +418,7 @@ teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user 
 
 
 
-## 插件开发指南 (以 Hello 插件为例) v1.0
+## 插件开发指南 (以 Hello 插件为例) v1.1
 
 #### 一、插件结构
 
@@ -503,6 +503,46 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
   - Menu    #插件包
   - tools   #非插件包
 ```
+
+
+
+##### Inline Mode 下的插件指令 #####
+
+若要编写 **`Inline Mode`** 类型插件，请将**触发指令前缀**更改为 **`?:`** 。
+
+以插件 `InlineModeDemo` 为例，`__init__.py` 文件内容如下：
+
+```python
+#file InlineModeDemo/__init__.py
+
+#?:search:
+#InlineModeDemo InlineMode插件例子
+```
+
+根据`__init__.py` 文件的触发指令，在Telegram客户端使用插件 `InlineModeDemo` 应遵循以下格式:
+
+```bash
+@bot_username search:<search content>
+```
+
+
+
+另外，也可以去掉触发指令 `search:` ，只保留前缀，插件 `InlineModeDemo` 将响应所有`inline_query` 消息：
+
+```python
+#file InlineModeDemo/__init__.py
+
+#?:
+#InlineModeDemo InlineMode插件例子
+```
+
+此时，在Telegram客户端使用插件 `InlineModeDemo` 应遵循以下格式:
+
+```bash
+@bot_username <search content>
+```
+
+
 
 
 
