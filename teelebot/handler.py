@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2021-09-11
+@last modification: 2021-09-12
 '''
 import configparser
 import argparse
@@ -90,6 +90,7 @@ def _config():
                 "debug = " + str(debug) + "\n",
                 "local_api_server = False" + "\n",
                 "drop_pending_updates = False" + "\n",
+                "updates_chat_member = False" + "\n",
                 "webhook = False" + "\n",
                 "self_signed = False" + "\n",
                 "cert_key = " + "\n",
@@ -97,8 +98,7 @@ def _config():
                 "server_address = " + "\n",
                 "server_port = " + "\n",
                 "local_address = " + "\n",
-                "local_port = " + "\n",
-                "updates_chat_member = False"
+                "local_port = "
             ])
             print("the configuration file has been created automatically.")
             print("configuration file path: " + str(config_dir))

@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2021-09-11
+@last modification: 2021-09-12
 @author: Pluto (github:plutobell)
-@version: 1.17.2
+@version: 1.17.3
 """
 import inspect
 import time
@@ -390,11 +390,11 @@ class Bot(object):
             if query_or_message == "inline_query":
                 inline_query = result.get(query_or_message)
                 inline_query["message_id"] = result["update_id"]
-                inline_query["chat"] = {}
-                inline_query["chat"]["id"] = "inlinequery"
+                inline_query["chat"] = inline_query.get("from")
+                inline_query["chat"].pop("language_code")
+                inline_query["chat"].pop("is_bot")
                 inline_query["chat"]["type"] = "private"
-                inline_query["chat"]["title"] = "inline-query"
-                inline_query["chat"]["username"] = "inline-query"
+                inline_query["text"] = ""
                 inline_query["query"] = self.__inline_mode_prefix + inline_query["query"] # Inline Mode Plugin Prefix
                 messages.append(inline_query)
             elif query_or_message == "callback_query":
