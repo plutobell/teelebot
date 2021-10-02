@@ -172,6 +172,10 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * schedule.find
 * schedule.clear
 * schedule.status
+* buffer.status
+*  buffer.sizeof
+*  buffer.read
+*  buffer.write
 * timer
 
 
@@ -487,13 +491,19 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 
 ##### 不用作插件的特殊情况
 
-通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载，请将触发指令设置为 `~~`  。以 `tools` 共用包为例， `__init__.py` 文件内容如下：
+通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载为插件，请将触发指令设置为 `~~`  。以 `tools` 共用包为例， `__init__.py` 文件内容如下：
 
 ```python
 #fille tools/__init__.py
 
 #~~
 #tools 包的简介
+```
+
+插件共用包应当直接通过import导入：
+
+```python
+import tools
 ```
 
 建议用作插件的包名遵守 `Pascal命名法`，即每个单词的首字母大写；而不用做插件的包名使用全小写的包名，每个单词之间以`_`  分隔。以区分 `插件包` 和 `非插件包` ：
@@ -503,6 +513,8 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
   - Menu    #插件包
   - tools   #非插件包
 ```
+
+**Tip: 插件共用包的结构也应当遵循插件结构**
 
 
 

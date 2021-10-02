@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2021-09-12
+@last modification: 2021-10-03
 '''
 import configparser
 import argparse
@@ -347,9 +347,11 @@ def _config():
     config["author"] = __author__
     config["version"] = __version__
     config["plugin_dir"] = plugin_dir
-    config["plugin_bridge"] = _bridge(config["plugin_dir"])
+    config["plugin_bridge"], config["non_plugin_list"] = _bridge(config["plugin_dir"])
     config["plugin_info"] = _plugin_info(
         config["plugin_bridge"].keys(), config["plugin_dir"])
+    config["non_plugin_info"] = _plugin_info(
+        config["non_plugin_list"], config["plugin_dir"])
     config["cloud_api_server"] = cloud_api_server
     config["common_pkg_prefix"] = common_pkg_prefix
     config["inline_mode_prefix"] = inline_mode_prefix
@@ -362,7 +364,9 @@ def _bridge(plugin_dir):
     获取插件和指令的映射
     '''
     plugin_bridge = {}
+    non_plugin_list = []
     plugin_list = []
+    corrupted_plugin_list = []
 
     plugin_lis = os.listdir(plugin_dir)
     for plugi in plugin_lis:
@@ -373,16 +377,28 @@ def _bridge(plugin_dir):
                 "METADATA" in package_file_list:
                 plugin_list.append(plugi)
             else:
-                print(plugi + " plugin is corrupted.")
+                os.system("")
+                print("\033[1;31m" + plugi + " plugin is corrupted." + "\033[0m")
+                corrupted_plugin_list.append(plugi)
 
     for plugin in plugin_list:
         with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
             row_one = f.readline().strip()[1:]
             if row_one != common_pkg_prefix:  # Hidden plugin
                 plugin_bridge[plugin] = row_one
+            else:
+                if plugin in corrupted_plugin_list:
+                    if (plugin_dir + plugin) in sys.path:
+                        sys.modules.pop(plugin_dir + plugin)
+                        sys.path.remove(plugin_dir + plugin)
+                else:
+                    non_plugin_list.append(plugin)
+                    if (plugin_dir + plugin) not in sys.path:
+                        sys.path.append(plugin_dir + plugin)
 
-    # print(plugin_bridge)
-    return plugin_bridge
+    # print(sys.path)
+    # print(plugin_bridge, non_plugin_list)
+    return plugin_bridge, non_plugin_list
 
 def _plugin_info(plugin_list, plugin_dir):
     '''

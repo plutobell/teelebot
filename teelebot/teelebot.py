@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2021-09-12
+@last modification: 2021-10-03
 @author: Pluto (github:plutobell)
-@version: 1.17.3
+@version: 1.17.4
 """
 import inspect
 import time
@@ -88,6 +88,7 @@ class Bot(object):
         self.__VERSION = config["version"]
         self.__plugin_dir = config["plugin_dir"]
         self.__plugin_bridge = config["plugin_bridge"]
+        self.__non_plugin_list = config["non_plugin_list"]
         self.__start_time = int(time.time())
         self.__response_times = 0
         self.__response_chats = []
@@ -106,6 +107,7 @@ class Bot(object):
             max_workers=int(self._pool_size) * 5)
 
         self.__plugin_info = config["plugin_info"]
+        self.__non_plugin_info = config["non_plugin_info"]
 
         del config
         del thread_pool_size
@@ -135,41 +137,75 @@ class Bot(object):
 
         return Module
 
-    def __update_plugin(self, plugin_name):
+    def __update_plugin(self, plugin_name, as_plugin=True):
         """
         热更新插件
         """
+
+        if as_plugin:
+            plugin_info = self.__plugin_info
+        else:
+            plugin_info = self.__non_plugin_info
+
         plugin_uri = self.path_converter(
             self.__plugin_dir + plugin_name + os.sep + plugin_name + ".py")
         now_mtime = os.stat(plugin_uri).st_mtime
         # print(now_mtime, self.__plugin_info[plugin_name])
-        if now_mtime != self.__plugin_info[plugin_name]:  # 插件热更新
+        if now_mtime != plugin_info[plugin_name]:  # 插件热更新
             if os.path.exists(self.path_converter(self.__plugin_dir + plugin_name + r"/__pycache__")):
                 shutil.rmtree(self.path_converter(self.__plugin_dir + plugin_name + r"/__pycache__"))
-            self.__plugin_info[plugin_name] = now_mtime
+            plugin_info[plugin_name] = now_mtime
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
             os.system("")
             _logger.info("The plugin " + plugin_name + " has been updated")
 
-    def __load_plugin(self, now_plugin_bridge, now_plugin_info):
+    def __load_plugin(self, now_plugin_info, as_plugin=True,
+        now_plugin_bridge={}, now_non_plugin_list=[]):
         """
         动态装载插件
         """
-        for plugin in list(now_plugin_bridge.keys()): # 动态装载插件
-            if plugin not in list(self.__plugin_bridge.keys()):
-                os.system("")
-                _logger.info("The plugin " + plugin + " has been installed")
-                self.__plugin_info[plugin] = now_plugin_info[plugin]
-        for plugin in list(self.__plugin_bridge.keys()):
-            if plugin not in list(now_plugin_bridge.keys()):
-                os.system("")
-                _logger.info("The plugin " + plugin + " has been uninstalled")
-                self.__plugin_info.pop(plugin)
+        if as_plugin:
+            for plugin in list(now_plugin_bridge.keys()): # 动态装载插件
+                if plugin not in list(self.__plugin_bridge.keys()):
+                    os.system("")
+                    _logger.info("The plugin " + plugin + " has been installed")
+                    self.__plugin_info[plugin] = now_plugin_info[plugin]
+            for plugin in list(self.__plugin_bridge.keys()):
+                if plugin not in list(now_plugin_bridge.keys()):
+                    os.system("")
+                    _logger.info("The plugin " + plugin + " has been uninstalled")
+                    self.__plugin_info.pop(plugin)
 
-        self.__plugin_bridge = now_plugin_bridge
+                    if (self.__plugin_dir + plugin) in sys.path:
+                        sys.modules.pop(self.__plugin_dir + plugin)
+                        sys.path.remove(self.__plugin_dir + plugin)
 
-        self.buffer._update(now_plugin_bridge.keys()) # Buffer动态更新
+            self.__plugin_bridge = now_plugin_bridge
+
+            self.buffer._update(now_plugin_bridge.keys()) # Buffer动态更新
+
+        else:
+            for plugin in list(now_non_plugin_list): # 动态装载非插件包
+                if plugin not in list(self.__non_plugin_list):
+                    os.system("")
+                    _logger.info("The plugin " + plugin + " has been installed")
+                    self.__non_plugin_info[plugin] = now_plugin_info[plugin]
+
+                    if (self.__plugin_dir + plugin) not in sys.path:
+                        sys.path.append(self.__plugin_dir + plugin)
+
+            for plugin in list(self.__non_plugin_list):
+                if plugin not in list(now_non_plugin_list):
+                    os.system("")
+                    _logger.info("The plugin " + plugin + " has been uninstalled")
+                    self.__non_plugin_info.pop(plugin)
+
+                    if (self.__plugin_dir + plugin) in sys.path:
+                        sys.modules.pop(self.__plugin_dir + plugin)
+                        sys.path.remove(self.__plugin_dir + plugin)
+
+            self.__non_plugin_list = now_non_plugin_list
 
     def __control_plugin(self, plugin_bridge, chat_type, chat_id):
         if chat_type != "private" and "PluginCTL" in plugin_bridge.keys() \
@@ -308,16 +344,24 @@ class Bot(object):
         if message is None:
             return
 
-        now_plugin_bridge = _bridge(self.__plugin_dir)
+        now_plugin_bridge, now_non_plugin_list = _bridge(self.__plugin_dir)
         now_plugin_info = _plugin_info(now_plugin_bridge.keys(), self.__plugin_dir)
+        now_non_plugin_info = _plugin_info(now_non_plugin_list, self.__plugin_dir)
 
         if now_plugin_bridge != self.__plugin_bridge: # 动态装载插件
-            self.__load_plugin(now_plugin_bridge, now_plugin_info)
-
+            self.__load_plugin(now_plugin_info=now_plugin_info, now_plugin_bridge=now_plugin_bridge)
         if len(now_plugin_info) != len(self.__plugin_info) or \
             now_plugin_info != self.__plugin_info: # 动态更新插件信息
             for plugin_name in list(self.__plugin_bridge.keys()):
                 self.__update_plugin(plugin_name) # 热更新插件
+
+        if now_non_plugin_list != self.__non_plugin_list: # 动态装载非插件包
+            self.__load_plugin(now_plugin_info=now_non_plugin_info, as_plugin=False,
+                now_non_plugin_list=now_non_plugin_list)
+        if len(now_non_plugin_info) != len(self.__non_plugin_info) or \
+            now_non_plugin_info != self.__non_plugin_info: # 动态更新非插件包信息
+            for plugin_name in list(self.__non_plugin_list):
+                self.__update_plugin(plugin_name, as_plugin=False) # 热更新非插件包
 
         if len(self.__plugin_bridge) == 0:
             os.system("")
@@ -2020,7 +2064,7 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def answerCallbackQuery(self, callback_query_id, text=None, show_alert="false", url=None, cache_time=0):
+    def answerCallbackQuery(self, callback_query_id, text=None, show_alert=False, url=None, cache_time=0):
         """
         使用此方法发送CallbackQuery的应答
         InlineKeyboardMarkup格式:
@@ -2064,10 +2108,11 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?callback_query_id=" + str(callback_query_id)
+
         if text is not None:
             addr += "&text=" + quote(str(text))
-        if show_alert == "true":
-            addr += "&show_alert=" + str(bool(show_alert))
+        if show_alert == True:
+            addr += "&show_alert=true"
         if url is not None:
             addr += "&url=" + str(url)
         if cache_time != 0:
