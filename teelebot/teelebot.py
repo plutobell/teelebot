@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2021-10-03
+@last modification: 2021-11-17
 @author: Pluto (github:plutobell)
-@version: 1.17.4
+@version: 1.18.0
 """
 import inspect
 import time
@@ -77,7 +77,8 @@ class Bot(object):
                 "poll",
                 "poll_answer",
                 "my_chat_member",
-                "chat_member"
+                "chat_member",
+                "chat_join_request"
             ]
 
         self.__root_id = config["root_id"]
@@ -253,6 +254,10 @@ class Bot(object):
             message["message_type"] = "chat_member_data"
             message_type = "chat_member_data"
             message["chat_member_data"] = ""
+        elif "chat_join_request_id" in message.keys():
+            message["message_type"] = "chat_join_request_data"
+            message_type = "chat_join_request_data"
+            message["chat_join_request_data"] = ""
         elif "new_chat_members" in message.keys():
             message["message_type"] = "chat_members"
             message_type = "chat_members"
@@ -427,6 +432,8 @@ class Bot(object):
                 query_or_message = "my_chat_member"
             elif result.get("chat_member"):
                 query_or_message = "chat_member"
+            elif result.get("chat_join_request"):
+                query_or_message = "chat_join_request"
             elif result.get("message"):
                 query_or_message = "message"
             update_ids.append(result.get("update_id"))
@@ -460,6 +467,11 @@ class Bot(object):
                 chat_member["message_id"] = result.get("update_id")
                 chat_member["chat_member_id"] = result.get("update_id")
                 messages.append(chat_member)
+            elif query_or_message == "chat_join_request":
+                chat_join_request = result.get(query_or_message)
+                chat_join_request["message_id"] = result.get("update_id")
+                chat_join_request["chat_join_request_id"] = result.get("update_id")
+                messages.append(chat_join_request)
             else:
                 messages.append(result.get(query_or_message))
         if len(update_ids) >= 1:
@@ -1474,8 +1486,9 @@ class Bot(object):
             typing :for text messages,
             upload_photo :for photos,
             record_video/upload_video :for videos,
-            record_audio/upload_audio :for audio files,
+            record_voice/upload_voice: for voice notes,
             upload_document :for general files,
+            choose_sticker: for stickers,
             find_location :for location data,
             record_video_note/upload_video_note :for video notes.
         """
@@ -1592,7 +1605,8 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def createChatInviteLink(self, chat_id, expire_date=None, member_limit=None):
+    def createChatInviteLink(self, chat_id, name=None,
+        expire_date=None, member_limit=None, creates_join_request=None):
         """
         使用此方法为聊天创建一个额外的邀请链接，
         可以使用方法 revokeChatInviteLink 撤销该链接
@@ -1600,15 +1614,25 @@ class Bot(object):
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
 
+        if name is not None:
+            addr += "&name=" + str(name)
         if expire_date is not None:
             expire_date = int(time.time()) + int(expire_date)
             addr += "&expire_date=" + str(expire_date)
         if member_limit is not None:
             addr += "&member_limit=" + str(member_limit)
+        if creates_join_request is not None:
+            bool_val = ""
+            if  creates_join_request == True:
+                bool_val = "true"
+            elif creates_join_request == False:
+                bool_val = "false"
+            addr += "&creates_join_request=" + bool_val
 
         return self.request.post(addr)
 
-    def editChatInviteLink(self, chat_id, invite_link, expire_date=None, member_limit=None):
+    def editChatInviteLink(self, chat_id, invite_link,
+        name=None, expire_date=None, member_limit=None, creates_join_request=None):
         """
         使用此方法编辑机器人创建的非主要邀请链接。
         """
@@ -1616,11 +1640,20 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id) + \
             "&invite_link=" + str(invite_link)
 
+        if name is not None:
+            addr += "&name=" + str(name)
         if expire_date is not None:
             expire_date = int(time.time()) + int(expire_date)
             addr += "&expire_date=" + str(expire_date)
         if member_limit is not None:
             addr += "&member_limit=" + str(member_limit)
+        if creates_join_request is not None:
+            bool_val = ""
+            if  creates_join_request == True:
+                bool_val = "true"
+            elif creates_join_request == False:
+                bool_val = "false"
+            addr += "&creates_join_request=" + bool_val
 
         return self.request.post(addr)
 
@@ -1632,6 +1665,26 @@ class Bot(object):
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + \
             "&invite_link=" + str(invite_link)
+
+        return self.request.post(addr)
+
+    def approveChatJoinRequest(self, chat_id, user_id):
+        """
+        使用此方法批准聊天加入请求
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + \
+            "&user_id=" + str(user_id)
+
+        return self.request.post(addr)
+
+    def declineChatJoinRequest(self, chat_id, user_id):
+        """
+        使用此方法拒绝聊天加入请求
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + \
+            "&user_id=" + str(user_id)
 
         return self.request.post(addr)
 

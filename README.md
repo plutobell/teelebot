@@ -48,7 +48,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-## 已升级至 Telegram Bot API 5.3（2021/06/26）
+## 已升级至 Telegram Bot API 5.4（2021/11/18）
 
 **Getting updates**
 
@@ -104,6 +104,8 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * exportChatInviteLink
 * createChatInviteLink
 * editChatInviteLink
+* approveChatJoinRequest
+* declineChatJoinRequest
 * revokeChatInviteLink
 * setChatStickerSet
 * deleteChatStickerSet

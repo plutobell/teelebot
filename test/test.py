@@ -313,3 +313,15 @@ results = {
 # print(req)
 # req = bot.getMyCommands()
 # print(req)
+
+
+# req = bot.createChatInviteLink(chat_id="chat_id",
+#     creates_join_request=True, name="test")
+# print(req)
+# req = bot.editChatInviteLink(chat_id="chat_id",
+#     invite_link=req["invite_link"],
+#     name="test1", creates_join_request=False)
+# print(req)
+# req = bot.revokeChatInviteLink(chat_id="chat_id",
+#     invite_link=req["invite_link"])
+# print(req)

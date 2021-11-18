@@ -1,5 +1,15 @@
 # 更新日志
 
+#### 2021-11-18 ####
+
+* v1.18.0 : 
+  * 升级至 Bot API 5.4
+    * 新增方法 approveChatJoinRequest
+    * 新增方法 declineChatJoinRequest
+    * 新增消息类型 chat_join_request_data
+    * 方法 createChatInviteLink 新增参数 name 和 creates_join_request
+    * 方法 editChatInviteLink 新增参数 name 和 creates_join_request
+
 #### 2021-10-03 ####
 
 * v1.17.4 : 
