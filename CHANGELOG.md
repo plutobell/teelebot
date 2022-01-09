@@ -1,5 +1,17 @@
 # 更新日志
 
+#### 2022-01-09 ####
+
+* v1.19.0 : 
+  * 升级至 Bot API 5.6
+    * 17个send*方法 新增参数 protect_content
+    * 方法 forwardMessage 新增参数 protect_content
+    * 方法 copyMessage 新增参数 protect_content
+  * 升级至 Bot API 5.5
+    * 新增方法 banChatSenderChat
+    * 新增方法 unbanChatSenderChat
+  * 新增对 edited_message 的识别
+
 #### 2021-11-18 ####
 
 * v1.18.0 : 
