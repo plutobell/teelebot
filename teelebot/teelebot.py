@@ -2,15 +2,17 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2022-01-09
+@last modification: 2022-08-14
 @author: Pluto (github:plutobell)
-@version: 1.19.0
+@version: 1.20.0
 """
 import inspect
 import time
 import sys
 import os
 import json
+import string
+import random
 import shutil
 import importlib
 import threading
@@ -54,6 +56,7 @@ class Bot(object):
             self._server_port = config["server_port"]
             self._local_address = config["local_address"]
             self._local_port = config["local_port"]
+            self._secret_token = self.__make_token()
         self._offset = 0
         self._timeout = 60
         self._debug = config["debug"]
@@ -341,6 +344,16 @@ class Bot(object):
                 "User:" + user_name + "(" + str(from_id) + ") - " + \
                 "Plugin: " + str(plugin) + " - " + \
                 "Type:" + message["message_type"])
+
+    def __make_token(self, len=64):
+        """
+        生成指定长度的token
+        """
+        if len > 64:
+            return "Specified length is too long."
+        else:
+            token = ''.join(random.sample(string.ascii_letters + string.digits + "-_", 64))
+            return token
 
     def _pluginRun(self, bot, message):
         """
@@ -679,8 +692,8 @@ class Bot(object):
 
         return self.request.get(addr)
 
-    def setWebhook(self, url, certificate=None, ip_address=None,
-        max_connections=None, allowed_updates=None, drop_pending_updates=None):
+    def setWebhook(self, url, certificate=None, ip_address=None, max_connections=None,
+        allowed_updates=None, drop_pending_updates=None, secret_token=None):
         """
         设置Webhook
         Ports currently supported for Webhooks: 443, 80, 88, 8443.
@@ -695,6 +708,8 @@ class Bot(object):
             addr += "&allowed_updates=" + json.dumps(allowed_updates)
         if drop_pending_updates is not None:
             addr += "&drop_pending_updates=" + str(drop_pending_updates)
+        if secret_token is not None:
+            addr += "&secret_token=" + str(secret_token)
 
         file_data = None
         if certificate is not None:
@@ -1264,7 +1279,7 @@ class Bot(object):
 
     def promoteChatMember(self, chat_id, user_id, is_anonymous=None,
         can_manage_chat=None, can_change_info=None, can_post_messages=None,
-        can_edit_messages=None, can_delete_messages=None, can_manage_voice_chats=None,
+        can_edit_messages=None, can_delete_messages=None, can_manage_video_chats=None,
         can_invite_users=None, can_restrict_members=None,
         can_pin_messages=None, can_promote_members=None):
         """
@@ -1277,7 +1292,7 @@ class Bot(object):
         'can_post_messages':False,
         'can_edit_messages':False,
         'can_delete_messages':False,
-        'can_manage_voice_chats':False,
+        'can_manage_video_chats':False,
         'can_invite_users':False,
         'can_restrict_members':False,
         'can_pin_messages':False,
@@ -1300,8 +1315,8 @@ class Bot(object):
             addr += "&can_edit_messages=" + str(can_edit_messages)
         if can_delete_messages is not None:
             addr += "&can_delete_messages=" + str(can_delete_messages)
-        if can_manage_voice_chats is not None:
-            addr += "&can_manage_voice_chats=" + str(can_manage_voice_chats)
+        if can_manage_video_chats is not None:
+            addr += "&can_manage_video_chats=" + str(can_manage_video_chats)
         if can_invite_users is not None:
             addr += "&can_invite_users=" + str(can_invite_users)
         if can_restrict_members is not None:
@@ -1945,6 +1960,94 @@ class Bot(object):
         else:
             return self.request.post(addr)
 
+    def setChatMenuButton(self, chat_id=None, menu_button=None):
+        """
+        使用此方法在私人聊天中更改机器人的菜单按钮或默认菜单按钮
+
+        menu_button传入格式示例：
+            menu_button = {
+                "type": "web_app",  # 类型只能是 default | command | web_app
+                "text": "botton text",
+                "web_app": {
+                    "url": "https://google.com"
+                }
+            }
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        data = {}
+        if chat_id is not None:
+            data["chat_id"] = str(chat_id)
+        if menu_button is not None:
+            data["menu_button"] = menu_button
+        
+        if len(data) != 0:
+            return self.request.postJson(addr, data)
+        else:
+            return self.request.post(addr)
+    
+    def getChatMenuButton(self, chat_id=None):
+        """
+        使用此方法在私人聊天中获取机器人菜单按钮的当前值或默认值
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        if chat_id is not None:
+            addr += "?chat_id=" + str(chat_id)
+        
+        return self.request.post(addr)
+
+    def setMyDefaultAdministratorRights(self, rights=None, for_channels=None):
+        """
+        使用此方法更改机器人作为管理员将其添加到组或渠道时所要求的默认管理员权利
+
+        rights传入格式示例：
+            rights = {
+                "is_anonymous": False,
+                "can_manage_chat": False,
+                "can_delete_messages": False,
+                "can_manage_video_chats": False,
+                "can_restrict_members": False,
+                "can_promote_members": False,
+                "can_change_info": False,
+                "can_invite_users": False,
+                "can_post_messages": False,
+                "can_edit_messages": False,
+                "can_pin_messages": False
+            }
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        data = {}
+        if rights is not None:
+            data["rights"] = rights
+        if for_channels is not None:
+            data["for_channels"] = bool(for_channels)
+        
+        if len(data) != 0:
+            return self.request.postJson(addr, data)
+        else:
+            return self.request.post(addr)
+    
+    def getMyDefaultAdministratorRights(self, for_channels=None):
+        """
+        使用此方法获取机器人的当前默认管理员权限
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        data = {}
+        if for_channels is not None:
+            data["for_channels"] = bool(for_channels)
+        
+        if len(data) != 0:
+            return self.request.postJson(addr, data)
+        else:
+            return self.request.post(addr)
+
     # Updating messages
     def editMessageText(self, text, chat_id=None, message_id=None, inline_message_id=None,
         parse_mode="Text", disable_web_page_preview=None,
@@ -2233,6 +2336,21 @@ class Bot(object):
 
         return self.request.post(addr)
 
+    def answerWebAppQuery(web_app_query_id, result):
+        """
+        使用此方法设置与Web App的互动结果
+        并代表用户向查询来源的聊天室发送相应的消息
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        data = {}
+        data["web_app_query_id"] = str(web_app_query_id)
+        data["result"] = result
+        
+        return self.request.postJson(addr, data)
+    
+
     # Stickers
     def sendSticker(self, chat_id, sticker, disable_notification=None,
         reply_to_message_id=None, reply_markup=None,
@@ -2279,6 +2397,19 @@ class Bot(object):
         addr = command + "?name=" + str(name)
 
         return self.request.post(addr)
+    
+    def getCustomEmojiStickers(self, custom_emoji_ids):
+        """
+        使用此方法通过其标识符获取有关自定义表情符号贴纸的信息
+        返回一系列贴纸对象
+        """
+        command = inspect.stack()[0].function
+        addr = command
+        data = {}
+        data["custom_emoji_ids"] = custom_emoji_ids
+
+        return self.request.postJson(addr, data)
+
 
     def uploadStickerFile(self, user_id, name, title, emojis,
         png_sticker=None, tgs_sticker=None, contains_masks=None,
@@ -2309,12 +2440,16 @@ class Bot(object):
         else:
             return self.request.postFile(addr, file_data)
 
-    def createNewStickerSet(self, user_id, name, title, emojis, png_sticker=None, tgs_sticker=None,
-        contains_masks=None, mask_position=None):
+    def createNewStickerSet(self, user_id, name, title, emojis,
+        png_sticker=None, tgs_sticker=None, webm_sticker=None,
+        contains_masks=None, sticker_type=None, mask_position=None):
         """
         使用此方法可以创建用户拥有的新贴纸集
         机器人将能够编辑由此创建的贴纸集
-        png_sticker或tgs_sticker字段只能且必须存在一个
+        png_sticker、webm_sticker和tgs_sticker字段不能同时存在，有且只有一个
+
+        参数contains_masks已从方法createNewStickerSet的文档中删除,
+        为了向后兼容，该参数仍然有效，但新的应用请使用参数sticker_type代替。
         """
         command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
@@ -2322,9 +2457,10 @@ class Bot(object):
         addr += "&title=" + str(title)
         addr += "&emojis=" + str(emojis)
 
-        if png_sticker is None and tgs_sticker is None:
+        if png_sticker is None and tgs_sticker is None and webm_sticker is None:
             return False
-        elif png_sticker is not None and tgs_sticker is not None:
+        elif png_sticker is not None and tgs_sticker is not None \
+            and webm_sticker is not None:
             return False
         else:
             if png_sticker is not None:
@@ -2349,9 +2485,22 @@ class Bot(object):
                     addr += "&tgs_sticker=" + tgs_sticker
                 else:
                     file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
+            elif webm_sticker is not None:
+                if webm_sticker[:7] == "http://" or webm_sticker[:7] == "https:/":
+                    file_data = None
+                    addr += "&webm_sticker=" + webm_sticker
+                elif type(webm_sticker) == bytes:
+                    file_data = {"webm_sticker": webm_sticker}
+                elif type(webm_sticker) == str and '.' not in webm_sticker:
+                    file_data = None
+                    addr += "&webm_sticker=" + webm_sticker
+                else:
+                    file_data = {"webm_sticker": open(webms_sticker, 'rb')}
 
-            if contains_masks is not None:
-                addr += "&contains_masks=" + str(contains_masks)
+            if (contains_masks is not None) and (sticker_type is None):
+                sticker_type = contains_masks
+            if sticker_type is not None:
+                addr += "&sticker_type=" + str(sticker_type)
                 if mask_position is not None:
                     addr += "&mask_position=" + json.dumps(mask_position)
                 else:
@@ -2362,11 +2511,11 @@ class Bot(object):
             else:
                 return self.request.postFile(addr, file_data)
 
-    def addStickerToSet(self, user_id, name, emojis, png_sticker=None, tgs_sticker=None,
-        mask_position=None):
+    def addStickerToSet(self, user_id, name, emojis, png_sticker=None,
+        tgs_sticker=None, webm_sticker=None, smask_position=None):
         """
         使用此方法可以将新标签添加到由机器人创建的集合中
-        png_sticker或tgs_sticker字段只能且必须存在一个。
+        png_sticker、webm_sticker和tgs_sticker字段不能同时存在，有且只有一个
         可以将动画贴纸添加到动画贴纸集中，并且只能添加到它们
         动画贴纸集最多可以包含50个贴纸。 静态贴纸集最多可包含120个贴纸
         """
@@ -2375,9 +2524,10 @@ class Bot(object):
         addr += "&name=" + str(name)
         addr += "&emojis=" + str(emojis)
 
-        if png_sticker is None and tgs_sticker is None:
+        if png_sticker is None and tgs_sticker is None and webm_sticker is None:
             return False
-        elif png_sticker is not None and tgs_sticker is not None:
+        elif png_sticker is not None and tgs_sticker is not None \
+            and webm_sticker is not None:
             return False
         else:
             if png_sticker is not None:
@@ -2402,6 +2552,17 @@ class Bot(object):
                     addr += "&tgs_sticker=" + tgs_sticker
                 else:
                     file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
+            elif webm_sticker is not None:
+                if webm_sticker[:7] == "http://" or webm_sticker[:7] == "https:/":
+                    file_data = None
+                    addr += "&webm_sticker=" + webm_sticker
+                elif type(webm_sticker) == bytes:
+                    file_data = {"webm_sticker": webm_sticker}
+                elif type(webm_sticker) == str and '.' not in webm_sticker:
+                    file_data = None
+                    addr += "&webm_sticker=" + webm_sticker
+                else:
+                    file_data = {"webm_sticker": open(webms_sticker, 'rb')}
 
             if mask_position is not None:
                 addr += "&mask_position=" + json.dumps(mask_position)
@@ -2521,6 +2682,57 @@ class Bot(object):
 
         return self.request.post(addr)
 
+    def createInvoiceLink(self, title, description, payload, provider_token, currency,
+        prices, max_tip_amount=None, suggested_tip_amounts=None, provider_data=None,
+        photo_url=None, photo_size=None, photo_width=None, photo_height=None,
+        need_name=None, need_phone_number=None, need_email=None,
+        need_shipping_address=None, send_phone_number_to_provider=None,
+        send_email_to_provider=None, is_flexible=None
+        ):
+        """
+        使用此方法为发票创建链接
+        返回创建的发票链接作为成功的字符串
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?title=" + str(title)
+        addr += "&description=" + str(description)
+        addr += "&payload" + str(payload)
+        addr += "&provider_token=" + str(provider_token)
+        addr += "&currency=" + str(currency)
+        addr += "&prices=" + json.dumps(prices)
+
+        if max_tip_amount is not None:
+            addr += "&max_tip_amount=" + str(max_tip_amount)
+        if suggested_tip_amounts is not None:
+            addr += "&suggested_tip_amounts=" + json.dumps(suggested_tip_amounts)
+        if provider_data is not None:
+            addr += "&provider_data=" + str(provider_data)
+        if photo_url is not None:
+            addr += "&photo_url=" + str(photo_url)
+        if photo_size is not None:
+            addr += "&photo_size=" + str(photo_size)
+        if photo_width is not None:
+            addr += "&photo_width=" + str(photo_width)
+        if photo_height is not None:
+            addr += "&photo_height=" + str(photo_height)
+        if need_name is not None:
+            addr += "&need_name=" + str(need_name)
+        if need_phone_number is not None:
+            addr += "&need_phone_number=" + str(need_phone_number)
+        if need_email is not None:
+            addr += "&need_email=" + str(need_email)
+        if need_shipping_address is not None:
+            addr += "&need_shipping_address=" + str(need_shipping_address)
+        if send_phone_number_to_provider is not None:
+            addr += "&send_phone_number_to_provider=" + \
+                    str(send_phone_number_to_provider)
+        if send_email_to_provider is not None:
+            addr += "&send_email_to_provider=" + str(send_email_to_provider)
+        if is_flexible is not None:
+            addr += "&is_flexible=" + str(is_flexible)
+
+        return self.request.post(addr)
+        
     def answerShippingQuery(self, shipping_query_id, ok, shipping_options=None, error_message=None):
         """
         使用此方法可以答复运输查询

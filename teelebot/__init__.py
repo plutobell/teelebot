@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2021-09-11
+@last modification: 2022-08-14
 """
 import os
 import requests
@@ -63,14 +63,16 @@ def main():
                     certificate=bot._cert_pub,
                     max_connections=bot._pool_size,
                     allowed_updates=bot._allowed_updates,
-                    drop_pending_updates=bot._drop_pending_updates
+                    drop_pending_updates=bot._drop_pending_updates,
+                    secret_token=bot._secret_token
                 )
             else:
                 status = bot.setWebhook(
                     url=url,
                     max_connections=bot._pool_size,
                     allowed_updates=bot._allowed_updates,
-                    drop_pending_updates=bot._drop_pending_updates
+                    drop_pending_updates=bot._drop_pending_updates,
+                    secret_token=bot._secret_token
                 )
 
             if not status:

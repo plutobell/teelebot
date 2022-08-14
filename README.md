@@ -48,7 +48,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-## 已升级至 Telegram Bot API 5.6（2022/01/09）
+## 已升级至 Telegram Bot API 6.2（2022/08/14）
 
 **Getting updates**
 
@@ -115,12 +115,17 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * getMyCommands
 * setMyCommands
 * deleteMyCommands
+* setChatMenuButton
+* getChatMenuButton
+* setMyDefaultAdministratorRights
+* getMyDefaultAdministratorRights
 * editMessageLiveLocation
 * stopMessageLiveLocation
 
 **Inline mode**
 
 * answerCallbackQuery
+* answerWebAppQuery
 
 **Updating messages**
 
@@ -139,6 +144,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 * sendSticker
 * getStickerSet
+* getCustomEmojiStickers
 * uploadStickerFile
 * createNewStickerSet
 * addStickerToSet
@@ -149,6 +155,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 **Payments**
 
 * sendInvoice
+* createInvoiceLink
 * answerShippingQuery
 * answerPreCheckoutQuery
 

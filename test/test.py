@@ -325,3 +325,33 @@ results = {
 # req = bot.revokeChatInviteLink(chat_id="chat_id",
 #     invite_link=req["invite_link"])
 # print(req)
+
+# menu_button = {
+#     "type": "web_app",
+#     "text": "button text",
+#     "web_app": {
+#         "url": "https://google.com"
+#     }
+# }
+# req = bot.setChatMenuButton(chat_id="chat_id", menu_button=menu_button)
+# print(req)
+# req = bot.getChatMenuButton()
+# print(req)
+
+# rights = {
+#     "is_anonymous": False,
+#     "can_manage_chat": True,
+#     "can_delete_messages": True,
+#     "can_manage_video_chats": True,
+#     "can_restrict_members": True,
+#     "can_promote_members": True,
+#     "can_change_info": False,
+#     "can_invite_users": True,
+#     "can_post_messages": True,
+#     "can_edit_messages": True,
+#     "can_pin_messages": True
+# }
+# req = bot.setMyDefaultAdministratorRights(rights=rights, for_channels=True)
+# print(req)
+# req = bot.getMyDefaultAdministratorRights(for_channels=True)
+# print(req)

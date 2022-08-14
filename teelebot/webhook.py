@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modification: 2021-09-11
+@last modification: 2022-08-14
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 #from socketserver import ThreadingMixIn
@@ -16,7 +16,9 @@ def __MakeRequestHandler(bot):
             super(RequestHandler, self).__init__(*args, **kwargs)
 
         def do_POST(self):
-            if self.command == "POST" and self.path == "/bot" + str(bot._key):
+            if self.command == "POST" and \
+            self.path == "/bot" + str(bot._key) and \
+            str(self.headers['X-Telegram-Bot-Api-Secret-Token']) == bot._secret_token:
                 req_data = self.rfile.read(int(self.headers['content-length']))
                 res = req_data.decode('utf-8')
 

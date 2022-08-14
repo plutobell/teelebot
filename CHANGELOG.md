@@ -1,5 +1,27 @@
 # 更新日志
 
+#### 2022-08-14 ####
+
+* v1.20.0
+
+  * 升级至 Bot API 6.2
+    * 方法 createNewStickerSet 新增参数 sticker_type
+    * 新增方法 getCustomEmojiStickers
+  * 升级至 Bot API 6.1
+    * 新增方法 createInvoiceLink
+    * 方法 setWebhook 新增参数 secret_token 
+  * 升级至 Bot API 6.0
+    * 重命名方法 promoteChatMember 的参数 can_manage_voice_chats 到 can_manage_video_chats
+    *  新增方法 setChatMenuButton
+    * 新增方法 getChatMenuButton
+    * 新增方法 setMyDefaultAdministratorRights
+    * 新增方法 getMyDefaultAdministratorRights
+    * 新增方法 answerWebAppQuery
+  * 升级至 Bot API 5.7
+    * 方法 createNewStickerSet 新增参数 webm_sticker
+    * 方法 addStickerToSet 新增参数  webm_sticker
+  * `webhook` 模式新增 secret_token 校验
+
 #### 2022-01-09 ####
 
 * v1.19.0 : 
