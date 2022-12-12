@@ -1,5 +1,19 @@
 # 更新日志
 
+#### 2022-12-12 ####
+
+* v1.21.0
+  * 升级至 Bot API 6.3
+    * 新增方法 createForumTopic
+    * 新增方法 editForumTopic
+    * 新增方法 closeForumTopic
+    * 新增方法 reopenForumTopic
+    * 新增方法 deleteForumTopic
+    * 新增方法 unpinAllForumTopicMessages
+    * 新增方法 getForumTopicIconStickers
+    * 19个消息发送类方法新增参数 message_thread_id
+    * 方法 promoteChatMember 新增参数 can_manage_topics
+
 #### 2022-08-14 ####
 
 * v1.20.0

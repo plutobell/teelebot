@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2022-08-14
+@last modification: 2022-12-12
 @author: Pluto (github:plutobell)
-@version: 1.20.0
+@version: 1.21.0
 """
 import inspect
 import time
@@ -782,7 +782,7 @@ class Bot(object):
 
     def sendMessage(self, chat_id, text, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, disable_web_page_preview=None, entities=None,
-        allow_sending_without_reply=None, protect_content=None):
+        allow_sending_without_reply=None, protect_content=None, message_thread_id=None):
         """
         发送文本消息
         """
@@ -802,12 +802,14 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
     def sendVoice(self, chat_id, voice, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None,
-        caption_entities=None, protect_content=None):
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
+        protect_content=None, message_thread_id=None):
         """
         发送音频消息 .ogg
         """
@@ -839,6 +841,8 @@ class Bot(object):
             addr += "&caption_entities=" + json.dumps(caption_entities)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
@@ -846,8 +850,8 @@ class Bot(object):
             return self.request.postFile(addr, file_data)
 
     def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None,
-        caption_entities=None, protect_content=None):
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
+        protect_content=None, message_thread_id=None):
         """
         发送动画 gif/mp4
         """
@@ -879,6 +883,8 @@ class Bot(object):
             addr += "&caption_entities=" + json.dumps(caption_entities)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
@@ -886,8 +892,8 @@ class Bot(object):
             self.request.postFile(addr, file_data)
 
     def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None,
-        caption_entities=None, protect_content=None):
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
+        protect_content=None, message_thread_id=None):
         """
         发送音频 mp3
         """
@@ -921,6 +927,8 @@ class Bot(object):
             addr += "&caption_entities=" + json.dumps(caption_entities)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
@@ -928,8 +936,8 @@ class Bot(object):
             return self.request.postFile(addr, file_data)
 
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None,
-        caption_entities=None, protect_content=None):  # 发送图片
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
+        protect_content=None, message_thread_id=None):  # 发送图片
         """
         发送图片
         """
@@ -961,6 +969,8 @@ class Bot(object):
             addr += "&caption_entities=" + json.dumps(caption_entities)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
@@ -968,8 +978,8 @@ class Bot(object):
             return self.request.postFile(addr, file_data)
 
     def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None,
-        caption_entities=None, protect_content=None):
+        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
+        protect_content=None, message_thread_id=None):
         """
         发送视频
         """
@@ -1001,14 +1011,17 @@ class Bot(object):
             addr += "&caption_entities=" + json.dumps(caption_entities)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
         else:
             return self.request.postFile(addr, file_data)
 
-    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None, protect_content=None):
+    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text",
+        reply_to_message_id=None, reply_markup=None,allow_sending_without_reply=None,
+        protect_content=None, message_thread_id=None):
         """
         发送圆形或方形视频？
         """
@@ -1039,14 +1052,17 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
         else:
             return self.request.postFile(addr, file_data)
 
-    def sendMediaGroup(self, chat_id, medias, disable_notification=None, reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None, protect_content=None):  # 暂未弄懂格式。
+    def sendMediaGroup(self, chat_id, medias, disable_notification=None,
+        reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
+        protect_content=None, message_thread_id=None):  # 暂未弄懂格式。
         """
         使用此方法可以将一组照片，视频，文档或音频作为相册发送。
         文档和音频文件只能在具有相同类型消息的相册中分组。
@@ -1095,12 +1111,15 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.postJson(addr, medias)
 
     def sendDocument(self, chat_id, document, caption=None, parse_mode="Text",
         reply_to_message_id=None, reply_markup=None, disable_content_type_detection=None,
-        allow_sending_without_reply=None, caption_entities=None, protect_content=None):
+        allow_sending_without_reply=None, caption_entities=None,
+        protect_content=None, message_thread_id=None):
         """
         发送文件
         """
@@ -1134,6 +1153,8 @@ class Bot(object):
             addr += "&caption_entities=" + json.dumps(caption_entities)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
@@ -1280,8 +1301,8 @@ class Bot(object):
     def promoteChatMember(self, chat_id, user_id, is_anonymous=None,
         can_manage_chat=None, can_change_info=None, can_post_messages=None,
         can_edit_messages=None, can_delete_messages=None, can_manage_video_chats=None,
-        can_invite_users=None, can_restrict_members=None,
-        can_pin_messages=None, can_promote_members=None):
+        can_invite_users=None, can_restrict_members=None, can_pin_messages=None,
+        can_promote_members=None, can_manage_topics=None):
         """
         修改管理员权限(只能修改由机器人任命的管理员的权限,
         范围为机器人权限的子集)
@@ -1296,7 +1317,8 @@ class Bot(object):
         'can_invite_users':False,
         'can_restrict_members':False,
         'can_pin_messages':False,
-        'can_promote_members':False
+        'can_promote_members':False,
+        'can_manage_topics':False
         }
         """
         command = inspect.stack()[0].function
@@ -1325,6 +1347,8 @@ class Bot(object):
             addr += "&can_pin_messages=" + str(can_pin_messages)
         if can_promote_members is not None:
             addr += "&can_promote_members=" + str(can_promote_members)
+        if can_manage_topics is not None:
+            addr += "&can_manage_topics=" + str(can_manage_topics)
 
         return self.request.post(addr)
 
@@ -1364,7 +1388,8 @@ class Bot(object):
         horizontal_accuracy=None, live_period=None,
         heading=None, disable_notification=None,
         reply_to_message_id=None, reply_markup=None,
-        allow_sending_without_reply=None, protect_content=None):
+        allow_sending_without_reply=None, protect_content=None,
+        message_thread_id=None):
         """
         发送地图定位，经纬度
         """
@@ -1387,11 +1412,14 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
-    def sendContact(self, chat_id, phone_number, first_name, last_name=None, reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None, protect_content=None):
+    def sendContact(self, chat_id, phone_number, first_name, last_name=None,
+        reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
+        protect_content=None, message_thread_id=None):
         """
         发送联系人信息
         """
@@ -1408,6 +1436,8 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
@@ -1416,7 +1446,7 @@ class Bot(object):
         explanation=None, explanation_parse_mode=None, explanation_entities=None,
         open_period=None, close_date=None, is_closed=None, disable_notification=None,
         reply_to_message_id=None, allow_sending_without_reply=None, reply_markup=None,
-        protect_content=None):
+        protect_content=None, message_thread_id=None):
         """
         使用此方法发起投票(quiz or regular, defaults to regular)
         options格式:
@@ -1462,12 +1492,14 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
     def sendDice(self, chat_id, emoji=None, disable_notification=None,
         reply_to_message_id=None, allow_sending_without_reply=None,
-        reply_markup=None, protect_content=None):
+        reply_markup=None, protect_content=None, message_thread_id=None):
         """
         使用此方法发送一个动画表情
         emoji参数必须是以下几种：
@@ -1494,6 +1526,8 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
@@ -1502,7 +1536,7 @@ class Bot(object):
         foursquare_id=None, foursquare_type=None,
         google_place_id=None, google_place_type=None,
         disable_notification=None, reply_to_message_id=None,
-        reply_markup=None, protect_content=None):
+        reply_markup=None, protect_content=None, message_thread_id=None):
         """
         使用此方法发送关于地点的信息。
         (发送地点，显示在地图上)
@@ -1528,6 +1562,8 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
@@ -1548,7 +1584,7 @@ class Bot(object):
         return self.request.post(addr)
 
     def forwardMessage(self, chat_id, from_chat_id, message_id,
-        disable_notification=None, protect_content=None):
+        disable_notification=None, protect_content=None, message_thread_id=None):
         """
         转发消息
         """
@@ -1560,6 +1596,8 @@ class Bot(object):
             addr += "&disable_notification=" + str(disable_notification)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
@@ -1567,7 +1605,7 @@ class Bot(object):
         caption=None, parse_mode="Text", caption_entities=None,
         disable_notification=None, reply_to_message_id=None,
         allow_sending_without_reply=None, reply_markup=None,
-        protect_content=None):
+        protect_content=None, message_thread_id=None):
         """
         使用此方法可以复制任何类型的消息。
         该方法类似于forwardMessages方法,
@@ -1591,6 +1629,8 @@ class Bot(object):
             addr += "&reply_markup=" + json.dumps(reply_markup)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if caption_entities is not None:
             return self.request.postJson(addr, caption_entities)
@@ -2232,11 +2272,84 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&message_id=" + str(message_id)
+        
+        return self.request.post(addr)
+
+    def createForumTopic(self, chat_id, name, icon_color=None, icon_custom_emoji_id=None):
+        """
+        使用此方法在论坛超组聊天中创建主题
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&name=" + str(name)
+
+        if icon_color is not None:
+            addr += "&icon_color=" + str(icon_color)
+        if icon_custom_emoji_id is not None:
+            addr += "&icon_custom_emoji_id=" + str(icon_custom_emoji_id)
 
         return self.request.post(addr)
 
-    # Inline mode
+    def editForumTopic(self, chat_id, message_thread_id, name, icon_custom_emoji_id):
+        """
+        使用此方法在论坛超组聊天中编辑主题的名称和图标
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id)
+        addr += "&message_thread_id=" + str(message_thread_id)
+        addr += "&name=" + str(name)
+        addr += "&icon_custom_emoji_id=" + str(icon_custom_emoji_id)
 
+        return self.request.post(addr)
+
+    def closeForumTopic(self, chat_id, message_thread_id):
+        """
+        使用此方法在论坛超组聊天中关闭一个公开主题
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&message_thread_id=" + str(message_thread_id)
+        
+        return self.request.post(addr)
+
+    def reopenForumTopic(self, chat_id, message_thread_id):
+        """
+        使用此方法在论坛超组聊天中重新打开一个封闭的主题
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&message_thread_id=" + str(message_thread_id)
+        
+        return self.request.post(addr)
+
+    def deleteForumTopic(self, chat_id, message_thread_id):
+        """
+        使用此方法在论坛超组聊天中删除论坛主题以及其所有消息
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&message_thread_id=" + str(message_thread_id)
+        
+        return self.request.post(addr)
+
+    def unpinAllForumTopicMessages(self, chat_id, message_thread_id):
+        """
+        使用此方法清除论坛主题中的固定消息列表
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?chat_id=" + str(chat_id) + "&message_thread_id=" + str(message_thread_id)
+        
+        return self.request.post(addr)
+
+    def getForumTopicIconStickers(self,):
+        """
+        使用此方法获取自定义表情符号贴纸
+        任何用户都可以用作论坛主题图标
+        不需要参数。返回一系列贴纸对象
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        return self.request.post(addr)
+
+
+    # Inline mode
     def answerInlineQuery(self, inline_query_id, results, cache_time=None,
         is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
         """
@@ -2353,8 +2466,8 @@ class Bot(object):
 
     # Stickers
     def sendSticker(self, chat_id, sticker, disable_notification=None,
-        reply_to_message_id=None, reply_markup=None,
-        allow_sending_without_reply=None, protect_content=None):
+        reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
+        protect_content=None, message_thread_id=None):
         """
         使用此方法发送静态、webp或动画、tgs贴纸
         """
@@ -2383,6 +2496,8 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         if file_data is None:
             return self.request.post(addr)
@@ -2625,7 +2740,8 @@ class Bot(object):
                     need_shipping_address=None, send_phone_number_to_provider=None,
                     send_email_to_provider=None, is_flexible=None, disable_notification=None,
                     reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
-                    max_tip_amount=None, suggested_tip_amounts=None, protect_content=None):
+                    max_tip_amount=None, suggested_tip_amounts=None, protect_content=None,
+                    message_thread_id=None):
         """
         使用此方法发送发票
         """
@@ -2679,6 +2795,8 @@ class Bot(object):
             addr += "&suggested_tip_amounts=" + str(suggested_tip_amounts)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 
@@ -2778,8 +2896,8 @@ class Bot(object):
     # Games
 
     def sendGame(self, chat_id, game_short_name, disable_notification=None,
-        reply_to_message_id=None, reply_markup=None,
-        allow_sending_without_reply=None, protect_content=None):
+        reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
+        protect_content=None, message_thread_id=None):
         """
         使用此方法发送游戏
         """
@@ -2797,6 +2915,8 @@ class Bot(object):
             addr += "&allow_sending_without_reply=" + str(allow_sending_without_reply)
         if protect_content is not None:
             addr += "&protect_content=" + str(protect_content)
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
 
         return self.request.post(addr)
 

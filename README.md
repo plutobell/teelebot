@@ -48,7 +48,7 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 
 
-## 已升级至 Telegram Bot API 6.2（2022/08/14）
+## 已升级至 Telegram Bot API 6.3（2022/12/12）
 
 **Getting updates**
 
@@ -121,6 +121,13 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 * getMyDefaultAdministratorRights
 * editMessageLiveLocation
 * stopMessageLiveLocation
+* createForumTopic
+* editForumTopic
+* closeForumTopic
+* reopenForumTopic
+* deleteForumTopic
+* unpinAllForumTopicMessages
+* getForumTopicIconStickers
 
 **Inline mode**
 
@@ -212,8 +219,8 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 ## Demo ##
 
-* Telegram群组： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）
-* Bot : [teelebot](http://t.me/teelebot)（t.me/teelebot）
+* ~~Telegram群组： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
+* ~~Bot : [teelebot](http://t.me/teelebot)（t.me/teelebot）~~
 
 
 
@@ -688,7 +695,7 @@ Source: https://github.com/plutobell/teelebot-plugins
 
 * Email：hi#ojoll.com ( # == @ )
 * Blog:    [北及](https://ojoll.com)
-* Telegram群组：[teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）
+* ~~Telegram群组：[teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
 * 其他：本repo 的 Issue
 
 
