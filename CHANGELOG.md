@@ -1,5 +1,23 @@
 # 更新日志
 
+#### 2023-02-14 ####
+
+* v1.22.0
+  * 升级至Bot API 6.5
+    * 方法 restrictChatMember 新增参数 use_independent_chat_permissions
+    * 方法 setChatPermissions 新增参数 use_independent_chat_permissions
+  * 升级至Bot API 6.4
+    * 新增方法 editGeneralForumTopic
+    * 新增方法 closeGeneralForumTopic
+    * 新增方法 reopenGeneralForumTopic
+    * 新增方法 hideGeneralForumTopic
+    * 新增方法 unhideGeneralForumTopic
+    * 方法 sendPhoto 新增参数 has_spoiler
+    * 方法 sendVideo 新增参数 has_spoiler
+    * 方法 sendAnimation 新增参数 has_spoiler
+    * 方法 editForumTopic 参数 name 和 icon_custom_emoji_id 变为可选
+    * 方法 sendChatAction 新增参数 message_thread_id
+
 #### 2022-12-12 ####
 
 * v1.21.0

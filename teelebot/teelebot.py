@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2022-12-12
+@last modification: 2023-02-14
 @author: Pluto (github:plutobell)
-@version: 1.21.0
+@version: 1.22.0
 """
 import inspect
 import time
@@ -851,7 +851,7 @@ class Bot(object):
 
     def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None):
+        protect_content=None, message_thread_id=None, has_spoiler=None):
         """
         发送动画 gif/mp4
         """
@@ -885,6 +885,8 @@ class Bot(object):
             addr += "&protect_content=" + str(protect_content)
         if message_thread_id is not None:
             addr += "&message_thread_id=" + str(message_thread_id)
+        if has_spoiler is not None:
+            addr += "&has_spoiler=" + str(has_spoiler)
 
         if file_data is None:
             return self.request.post(addr)
@@ -937,7 +939,7 @@ class Bot(object):
 
     def sendPhoto(self, chat_id, photo, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None):  # 发送图片
+        protect_content=None, message_thread_id=None, has_spoiler=None):  # 发送图片
         """
         发送图片
         """
@@ -971,6 +973,8 @@ class Bot(object):
             addr += "&protect_content=" + str(protect_content)
         if message_thread_id is not None:
             addr += "&message_thread_id=" + str(message_thread_id)
+        if has_spoiler is not None:
+            addr += "&has_spoiler=" + str(has_spoiler)
 
         if file_data is None:
             return self.request.post(addr)
@@ -979,7 +983,7 @@ class Bot(object):
 
     def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None,
         reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None):
+        protect_content=None, message_thread_id=None, has_spoiler=None):
         """
         发送视频
         """
@@ -1013,6 +1017,8 @@ class Bot(object):
             addr += "&protect_content=" + str(protect_content)
         if message_thread_id is not None:
             addr += "&message_thread_id=" + str(message_thread_id)
+        if has_spoiler is not None:
+            addr += "&has_spoiler=" + str(has_spoiler)
 
         if file_data is None:
             return self.request.post(addr)
@@ -1193,6 +1199,7 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
+
         return self.request.post(addr)
 
     def getUserProfilePhotos(self, user_id, offset=None, limit=None):
@@ -1206,6 +1213,7 @@ class Bot(object):
             addr += "&offset=" + str(offset)
         if limit is not None and limit in list(range(1, 101)):
             addr += "&limit=" + str(limit)
+
         return self.request.post(addr)
 
     def getChatMember(self, chat_id, user_id):
@@ -1214,6 +1222,7 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&user_id=" + str(user_id)
+
         return self.request.post(addr)
 
     def setChatTitle(self, chat_id, title):
@@ -1222,6 +1231,7 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&title=" + quote(str(title))
+
         return self.request.post(addr)
 
     def setChatDescription(self, chat_id, description):
@@ -1251,38 +1261,54 @@ class Bot(object):
         addr = command + "?chat_id=" + str(chat_id)
         return self.request.post(addr)
 
-    def setChatPermissions(self, chat_id, permissions):
+    def setChatPermissions(self, chat_id, permissions,
+    use_independent_chat_permissions=None):
         """
         设置群组默认聊天权限
         permissions = {
             'can_send_messages':False,
-            'can_send_media_messages':False,
+            'can_send_audios':False,
+            'can_send_documents':False,
+            'can_send_photos':False,
+            'can_send_videos':False,
+            'can_send_video_notes':False,
+            'can_send_voice_notes':False,
             'can_send_polls':False,
             'can_send_other_messages':False,
             'can_add_web_page_previews':False,
             'can_change_info':False,
             'can_invite_users':False,
-            'can_pin_messages':False
+            'can_pin_messages':False,
+            'can_manage_topics':False
         }
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
+        if use_independent_chat_permissions is not None:
+            addr += "&use_independent_chat_permissions=" + str(use_independent_chat_permissions)
         permissions = {"permissions": permissions}
 
         return self.request.postJson(addr, permissions)
 
-    def restrictChatMember(self, chat_id, user_id, permissions, until_date=None):
+    def restrictChatMember(self, chat_id, user_id, permissions,
+    until_date=None, use_independent_chat_permissions=None):
         """
         限制群组用户权限
         permissions = {
             'can_send_messages':False,
-            'can_send_media_messages':False,
+            'can_send_audios':False,
+            'can_send_documents':False,
+            'can_send_photos':False,
+            'can_send_videos':False,
+            'can_send_video_notes':False,
+            'can_send_voice_notes':False,
             'can_send_polls':False,
             'can_send_other_messages':False,
             'can_add_web_page_previews':False,
             'can_change_info':False,
             'can_invite_users':False,
-            'can_pin_messages':False
+            'can_pin_messages':False,
+            'can_manage_topics':False
         }
         until_date format:
         timestamp + offset
@@ -1295,6 +1321,8 @@ class Bot(object):
         if until_date is not None:
             until_date = int(time.time()) + int(until_date)
             addr += "&until_date=" + str(until_date)
+        if use_independent_chat_permissions is not None:
+            addr += "&until_date=" + str(use_independent_chat_permissions)
 
         return self.request.postJson(addr, permissions)
 
@@ -1567,7 +1595,7 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def sendChatAction(self, chat_id, action):
+    def sendChatAction(self, chat_id, action, message_thread_id=None):
         """
         发送聊天状态，类似： 正在输入...
             typing :for text messages,
@@ -1581,6 +1609,10 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id) + "&action=" + str(action)
+
+        if message_thread_id is not None:
+            addr += "&message_thread_id=" + str(message_thread_id)
+
         return self.request.post(addr)
 
     def forwardMessage(self, chat_id, from_chat_id, message_id,
@@ -2289,15 +2321,19 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def editForumTopic(self, chat_id, message_thread_id, name, icon_custom_emoji_id):
+    def editForumTopic(self, chat_id, message_thread_id,
+    name=None, icon_custom_emoji_id=None):
         """
         使用此方法在论坛超组聊天中编辑主题的名称和图标
         """
         command = inspect.stack()[0].function
         addr = command + "?chat_id=" + str(chat_id)
         addr += "&message_thread_id=" + str(message_thread_id)
-        addr += "&name=" + str(name)
-        addr += "&icon_custom_emoji_id=" + str(icon_custom_emoji_id)
+
+        if name is not None:
+            addr += "&name=" + str(name)
+        if icon_custom_emoji_id is not None:
+            addr += "&icon_custom_emoji_id=" + str(icon_custom_emoji_id)
 
         return self.request.post(addr)
 
@@ -2337,7 +2373,7 @@ class Bot(object):
         
         return self.request.post(addr)
 
-    def getForumTopicIconStickers(self,):
+    def getForumTopicIconStickers(self):
         """
         使用此方法获取自定义表情符号贴纸
         任何用户都可以用作论坛主题图标
@@ -2345,6 +2381,52 @@ class Bot(object):
         """
         command = inspect.stack()[0].function
         addr = command
+
+        return self.request.post(addr)
+
+    def editGeneralForumTopic(self, chat_id, name):
+        """
+        使用此方法在论坛超组聊天中编辑"General"主题的名称。
+        """
+        command = inspect.stack()[0].function
+        addr += command + "?chat_id=" + str(chat_id)
+        addr += "&name=" + str(name)
+
+        return self.request.post(addr)
+
+    def closeGeneralForumTopic(self, chat_id):
+        """
+        使用此方法在论坛超级聊天中关闭一个开放的"General"主题。
+        """
+        command = inspect.stack()[0].function
+        addr += command + "?chat_id=" + str(chat_id)
+
+        return self.request.post(addr)
+
+    def reopenGeneralForumTopic(self, chat_id):
+        """
+        使用此方法在论坛SuperGroup聊天中重新打开一个封闭的"General"主题。
+        """
+        command = inspect.stack()[0].function
+        addr += command + "?chat_id=" + str(chat_id)
+
+        return self.request.post(addr)
+
+    def hideGeneralForumTopic(selfr, chat_id):
+        """
+        使用此方法在论坛超组聊天中隐藏"General"主题。
+        """
+        command = inspect.stack()[0].function
+        addr += command + "?chat_id=" + str(chat_id)
+
+        return self.request.post(addr)
+
+    def unhideGeneralForumTopic(sel, chat_id):
+        """
+        使用此方法在论坛超级聊天中解开"General"主题。
+        """
+        command = inspect.stack()[0].function
+        addr += command + "?chat_id=" + str(chat_id)
 
         return self.request.post(addr)
 
