@@ -355,3 +355,12 @@ results = {
 # print(req)
 # req = bot.getMyDefaultAdministratorRights(for_channels=True)
 # print(req)
+
+# req = bot.setMyDescription(description="Hi, there.")
+# print(req)
+# req = bot.getMyDescription()
+# print(req)
+# req = bot.setMyShortDescription(short_description="Hi, there.")
+# print(req)
+# req = bot.getMyShortDescription()
+# print(req)

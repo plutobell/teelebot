@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2021-10-03
+@last modification: 2023-04-11
 '''
 import configparser
 import argparse
@@ -98,7 +98,8 @@ def _config():
                 "server_address = " + "\n",
                 "server_port = " + "\n",
                 "local_address = " + "\n",
-                "local_port = "
+                "local_port = " + "\n",
+                "proxy = "
             ])
             print("the configuration file has been created automatically.")
             print("configuration file path: " + str(config_dir))
@@ -343,6 +344,15 @@ def _config():
     else:
         print("The webhook field value in the configuration file is wrong.")
         os._exit(0)
+
+    if "proxy" in config.keys():
+        if str(config["proxy"]).strip() == "" or str(config["proxy"]).strip() == None:
+            config["proxies"] = {"all": None}
+        else:
+            config["proxies"] = {"all": str(config["proxy"]).strip()}
+        config.pop("proxy")
+    else:
+        config["proxies"] = {"all": None}
 
     config["author"] = __author__
     config["version"] = __version__

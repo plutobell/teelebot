@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2022-08-14
+@last modification: 2023-04-11
 """
 import os
 import requests
@@ -34,9 +34,9 @@ def main():
         " \__/\___/\___/_/\___/_.___/\____/\__/   " + "\n"
     )
     print(" * Self-checking...", end="\r")
-    req = requests.post(url=bot._url + "getWebhookInfo", verify=False)
+    req = requests.post(url=bot._url + "getWebhookInfo", verify=False, proxies=bot._proxies)
     if not req.json().get("ok"):
-        if (req.json().get("error_code") == 401 and
+        if (req.json().get("error_code") == 401 and \
             req.json().get("description") == "Unauthorized"):
             print("\nif you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
         else:

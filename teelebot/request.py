@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2021-09-11
+@last modification: 2023-04-11
 '''
 import os
 
@@ -10,14 +10,14 @@ import inspect
 from .logger import _logger
 from traceback import extract_stack
 
-
 class _Request(object):
     """
     接口请求类
     """
-    def __init__(self, thread_pool_size, url, debug=False):
+    def __init__(self, thread_pool_size, url, debug=False, proxies={"all": None}):
         self.__url = url
         self.__debug = debug
+        self.__proxies = proxies
         self.__session = self.__connection_session(
             pool_connections=thread_pool_size,
             pool_maxsize=thread_pool_size * 2
@@ -32,6 +32,9 @@ class _Request(object):
         """
         session = requests.Session()
         session.verify = False
+        session.trust_env = False
+        session.proxies.update(self.__proxies)
+        
 
         adapter = requests.adapters.HTTPAdapter(pool_connections=pool_connections,
                                                 pool_maxsize=pool_maxsize, max_retries=max_retries)

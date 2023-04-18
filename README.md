@@ -226,21 +226,22 @@ plugin_dir=your plugin dir
 [config]
 key=bot key
 plugin_dir=your plugin dir
-pool_size=40 //the thread pool size, default 40, range(1, 101)
-buffer_size=16 //the buffer area size, default 16(MB)
+pool_size=40 # the thread pool size, default 40, range(1, 101)
+buffer_size=16 # the buffer area size, default 16(MB)
 webhook=False
-self_signed=False //Optional while webhook is False
-cert_key=your private cert path //Optional while webhook is False
-cert_pub=your public cert path //Optional while webhook is False
-server_ip=your server ip address //Optional while webhook is False
-server_port=your server port //Optional while webhook is False
-local_address=webhook local address //Optional while webhook is False
-local_port=webhook local port //Optional while webhook is False
+self_signed=False # Optional while webhook is False
+cert_key=your private cert path # Optional while webhook is False
+cert_pub=your public cert path # Optional while webhook is False
+server_ip=your server ip address # Optional while webhook is False
+server_port=your server port # Optional while webhook is False
+local_address=webhook local address # Optional while webhook is False
+local_port=webhook local port # Optional while webhook is False
 root_id=your user id
 debug=False
 drop_pending_updates=False
-local_api_server=local api server address //[Optional]
-updates_chat_member=False //[Optional]
+local_api_server=local api server address # [Optional]
+updates_chat_member=False # [Optional]
+proxy = socks5h://user:pass@host:port # [Optional]
 ```
 
 **在 `1.13.0` 及以上版本，支持自动生成配置文件。（默认为Polling模式）**

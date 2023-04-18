@@ -1,4 +1,4 @@
-## 已升级至 Telegram Bot API 6.5（2023/02/14）
+## 已升级至 Telegram Bot API 6.6（2023/04/18）
 
 **Getting updates**
 
@@ -65,6 +65,10 @@
 * getMyCommands
 * setMyCommands
 * deleteMyCommands
+* setMyDescription
+* getMyDescription
+* setMyShortDescription
+* getMyShortDescription
 * setChatMenuButton
 * getChatMenuButton
 * setMyDefaultAdministratorRights
@@ -112,7 +116,13 @@
 * addStickerToSet
 * setStickerPositionInSet
 * deleteStickerFromSet
-* setStickerSetThumb
+* setStickerSetThumbnail
+* setCustomEmojiStickerSetThumbnail
+* setStickerSetTitle
+* deleteStickerSet
+* setStickerEmojiList
+* setStickerKeywords
+* setStickerMaskPosition
 
 **Payments**
 

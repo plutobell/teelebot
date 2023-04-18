@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-02-14
+@last modification: 2023-04-18
 @author: Pluto (github:plutobell)
-@version: 1.22.0
+@version: 1.23.0
 """
 import inspect
 import time
@@ -38,6 +38,8 @@ class Bot(object):
             self._key = key
         elif key == "":
             self._key = config["key"]
+        
+        self._proxies = config["proxies"]
 
         self._cloud_api_server = config["cloud_api_server"]
         self._local_api_server = config["local_api_server"]
@@ -100,7 +102,7 @@ class Bot(object):
 
         thread_pool_size = round(int(self._pool_size) * 2 / 3)
         schedule_queue_size = int(self._pool_size) - thread_pool_size
-        self.request = _Request(thread_pool_size, self._url, self._debug)
+        self.request = _Request(thread_pool_size, self._url, self._debug, self._proxies)
         self.schedule = _Schedule(schedule_queue_size)
         self.buffer = _Buffer(int(self._buffer_size) * 1024 * 1024,
             self.__plugin_bridge.keys(), self.__plugin_dir)
@@ -849,13 +851,18 @@ class Bot(object):
         else:
             return self.request.postFile(addr, file_data)
 
-    def sendAnimation(self, chat_id, animation, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None, has_spoiler=None):
+
+    def sendAnimation(self, chat_id, animation, message_thread_id=None, duration=None,
+        width=None, height=None, thumbnail=None, caption=None, parse_mode=None,
+        caption_entities=None, has_spoiler=None, disable_notification=None,
+        protect_content=None, reply_to_message_id=None, allow_sending_without_reply=None,
+        reply_markup=None):
         """
-        发送动画 gif/mp4
+        使用此方法发送动画文件（GIF或H.264/MPEG-4 AVC视频，无声音）
+        目前，机器人可以发送大小为50MB的动画文件，这个限制在未来可能会被改变
         """
         command = inspect.stack()[0].function
+        file_data = {}
         if animation[:7] == "http://" or animation[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&animation=" + animation
@@ -869,6 +876,29 @@ class Bot(object):
             file_data = {"animation": open(animation, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
+        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+            addr += "&thumbnail=" + thumbnail
+        elif type(thumbnail) == bytes:
+            if file_data is None:
+                file_data = {"thumbnail": thumbnail}
+            else:
+                file_data["thumbnail"] = thumbnail
+        elif type(thumbnail) == str and '.' not in thumbnail:
+            addr += "&thumbnail=" + thumbnail
+        else:
+            if file_data is None:
+                file_data = {"thumbnail": open(thumbnail, 'rb')}
+            else:
+                file_data["thumbnail"] = open(thumbnail, 'rb')
+
+        if duration is not None:
+            addr += "&duration=" + quote(duration)
+        if width is not None:
+            addr += "&width=" + quote(width)
+        if height is not None:
+            addr += "&height=" + quote(height)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + quote(disable_notification)
         if caption is not None:
             addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
@@ -893,13 +923,15 @@ class Bot(object):
         else:
             self.request.postFile(addr, file_data)
 
-    def sendAudio(self, chat_id, audio, caption=None, parse_mode="Text", title=None, reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None):
+    def sendAudio(self, chat_id, audio, message_thread_id=None, caption=None,
+        parse_mode=None, caption_entities=None, duration=None, performer=None, title=None,
+        thumbnail=None, disable_notification=None, protect_content=None,
+        reply_to_message_id=None, allow_sending_without_reply=None, reply_markup=None):
         """
-        发送音频 mp3
+        使用此方法发送音频文件
         """
         command = inspect.stack()[0].function
+        file_data = {}
         if audio[:7] == "http://" or audio[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&audio=" + audio
@@ -913,6 +945,27 @@ class Bot(object):
             file_data = {"audio": open(audio, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
+        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+            addr += "&thumbnail=" + thumbnail
+        elif type(thumbnail) == bytes:
+            if file_data is None:
+                file_data = {"thumbnail": thumbnail}
+            else:
+                file_data["thumbnail"] = thumbnail
+        elif type(thumbnail) == str and '.' not in thumbnail:
+            addr += "&thumbnail=" + thumbnail
+        else:
+            if file_data is None:
+                file_data = {"thumbnail": open(thumbnail, 'rb')}
+            else:
+                file_data["thumbnail"] = open(thumbnail, 'rb')
+
+        if duration is not None:
+            addr += "&duration=" + quote(duration)
+        if performer is not None:
+            addr += "&performer=" + quote(performer)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + quote(disable_notification)
         if caption is not None:
             addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
@@ -981,13 +1034,16 @@ class Bot(object):
         else:
             return self.request.postFile(addr, file_data)
 
-    def sendVideo(self, chat_id, video, caption=None, parse_mode="Text", reply_to_message_id=None,
-        reply_markup=None, allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None, has_spoiler=None):
+    def sendVideo(self, chat_id, video, message_thread_id=None, duration=None, width=None,
+        height=None, thumbnail=None, caption=None, parse_mode=None, caption_entities=None,
+        has_spoiler=None, supports_streaming=None, disable_notification=None,
+        protect_content=None, reply_to_message_id=None, allow_sending_without_reply=None,
+        reply_markup=None):
         """
         发送视频
         """
         command = inspect.stack()[0].function
+        file_data = {}
         if video[:7] == "http://" or video[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&video=" + video
@@ -1001,6 +1057,31 @@ class Bot(object):
             file_data = {"video": open(video, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
+        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+            addr += "&thumbnail=" + thumbnail
+        elif type(thumbnail) == bytes:
+            if file_data is None:
+                file_data = {"thumbnail": thumbnail}
+            else:
+                file_data["thumbnail"] = thumbnail
+        elif type(thumbnail) == str and '.' not in thumbnail:
+            addr += "&thumbnail=" + thumbnail
+        else:
+            if file_data is None:
+                file_data = {"thumbnail": open(thumbnail, 'rb')}
+            else:
+                file_data["thumbnail"] = open(thumbnail, 'rb')
+
+        if duration is not None:
+            addr += "&duration=" + quote(duration)
+        if width is not None:
+            addr += "&width=" + quote(width)
+        if height is not None:
+            addr += "&height=" + quote(height)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + quote(disable_notification)
+        if supports_streaming is not None:
+            addr += "&supports_streaming=" + quote(supports_streaming)
         if caption is not None:
             addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
@@ -1025,13 +1106,14 @@ class Bot(object):
         else:
             return self.request.postFile(addr, file_data)
 
-    def sendVideoNote(self, chat_id, video_note, caption=None, parse_mode="Text",
-        reply_to_message_id=None, reply_markup=None,allow_sending_without_reply=None,
-        protect_content=None, message_thread_id=None):
+    def sendVideoNote(self, chat_id, video_note, message_thread_id=None, duration=None,
+        length=None, thumbnail=None, disable_notification=None, protect_content=None,
+        reply_to_message_id=None, allow_sending_without_reply=None, reply_markup=None):
         """
         发送圆形或方形视频？
         """
         command = inspect.stack()[0].function
+        file_data = {}
         char_id_str = str(chat_id)
         if video_note[:7] == "http://" or video_note[:7] == "https:/":
             file_data = None
@@ -1046,10 +1128,27 @@ class Bot(object):
             file_data = {"video_note": open(video_note, 'rb')}
             addr = command + "?chat_id=" + char_id_str
 
-        if caption is not None:
-            addr += "&caption=" + quote(caption)
-        if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
-            addr += "&parse_mode=" + parse_mode
+        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+            addr += "&thumbnail=" + thumbnail
+        elif type(thumbnail) == bytes:
+            if file_data is None:
+                file_data = {"thumbnail": thumbnail}
+            else:
+                file_data["thumbnail"] = thumbnail
+        elif type(thumbnail) == str and '.' not in thumbnail:
+            addr += "&thumbnail=" + thumbnail
+        else:
+            if file_data is None:
+                file_data = {"thumbnail": open(thumbnail, 'rb')}
+            else:
+                file_data["thumbnail"] = open(thumbnail, 'rb')
+
+        if duration is not None:
+            addr += "&duration=" + quote(duration)
+        if length is not None:
+            addr += "&length=" + quote(length)
+        if disable_notification is not None:
+            addr += "&disable_notification=" + quote(disable_notification)
         if reply_to_message_id is not None:
             addr += "&reply_to_message_id=" + str(reply_to_message_id)
         if reply_markup is not None:
@@ -1122,14 +1221,16 @@ class Bot(object):
 
         return self.request.postJson(addr, medias)
 
-    def sendDocument(self, chat_id, document, caption=None, parse_mode="Text",
-        reply_to_message_id=None, reply_markup=None, disable_content_type_detection=None,
-        allow_sending_without_reply=None, caption_entities=None,
-        protect_content=None, message_thread_id=None):
+    def sendDocument(self, chat_id, document, message_thread_id=None, thumbnail=None,
+        caption=None, parse_mode=None, caption_entities=None,
+        disable_content_type_detection=None, disable_notification=None,
+        protect_content=None, reply_to_message_id=None, allow_sending_without_reply=None,
+        reply_markup=None):
         """
         发送文件
         """
         command = inspect.stack()[0].function
+        file_data = {}
         if document[:7] == "http://" or document[:7] == "https:/":
             file_data = None
             addr = command + "?chat_id=" + str(chat_id) + "&document=" + document
@@ -1143,6 +1244,23 @@ class Bot(object):
             file_data = {"document": open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
+        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+            addr += "&thumbnail=" + thumbnail
+        elif type(thumbnail) == bytes:
+            if file_data is None:
+                file_data = {"thumbnail": thumbnail}
+            else:
+                file_data["thumbnail"] = thumbnail
+        elif type(thumbnail) == str and '.' not in thumbnail:
+            addr += "&thumbnail=" + thumbnail
+        else:
+            if file_data is None:
+                file_data = {"thumbnail": open(thumbnail, 'rb')}
+            else:
+                file_data["thumbnail"] = open(thumbnail, 'rb')
+
+        if disable_notification is not None:
+            addr += "&disable_notification=" + quote(disable_notification)
         if caption is not None:
             addr += "&caption=" + quote(caption)
         if parse_mode in ("Markdown", "MarkdownV2", "HTML"):
@@ -1844,56 +1962,6 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def addStickerToSet(self, user_id, name, emojis,
-        png_sticker=None, tgs_sticker=None, mask_position=None):
-        """
-        使用此方法在机器人创建的集合中添加一个新贴纸。
-        必须使用png标签或tgs标签中的一个字段。
-        动画贴纸只能添加到动画贴纸组中。
-        动画贴纸组最多可以有50个贴纸。
-        静态贴纸组最多可以有120个贴纸。
-        """
-        command = inspect.stack()[0].function
-        addr = command + "?user_id=" + str(user_id) + "&name=" + str(name) \
-            + "&emoji=" + str(emoji)
-
-        if png_sticker is not None and tgs_sticker is not None:
-            return False
-        elif png_sticker is None and tgs_sticker is None:
-            return False
-        else:
-            if png_sticker is not None:
-                if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
-                    file_data = None
-                    addr = command + "?chat_id=" + str(chat_id) + "&png_sticker=" + png_sticker
-                elif type(png_sticker) == bytes:
-                    file_data = {"png_sticker": png_sticker}
-                    addr = command + "?chat_id=" + str(chat_id)
-                elif type(png_sticker) == str and '.' not in png_sticker:
-                    file_data = None
-                    addr = command + "?chat_id=" + str(chat_id) + "&png_sticker=" + png_sticker
-                else:
-                    file_data = {"png_sticker": open(png_sticker, 'rb')}
-                    addr = command + "?chat_id=" + str(chat_id)
-            elif tgs_sticker is not None:
-                if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
-                    file_data = None
-                    addr = command + "?chat_id=" + str(chat_id) + "&tgs_sticker=" + tgs_sticker
-                elif type(png_sticker) == bytes:
-                    file_data = {"tgs_sticker": tgs_sticker}
-                    addr = command + "?chat_id=" + str(chat_id)
-                elif type(tgs_sticker) == str and '.' not in tgs_sticker:
-                    file_data = None
-                    addr = command + "?chat_id=" + str(chat_id) + "&tgs_sticker=" + tgs_sticker
-                else:
-                    file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
-                    addr = command + "?chat_id=" + str(chat_id)
-
-            if file_data is None:
-                return self.request.post(addr)
-            else:
-                return self.request.postFile(addr, file_data)
-
     def deleteChatStickerSet(self, chat_id):
         """
         删除超级群组的贴纸集
@@ -2031,6 +2099,54 @@ class Bot(object):
             return self.request.postJson(addr, data)
         else:
             return self.request.post(addr)
+
+    def setMyDescription(self, description="", language_code=None):
+        """
+        使用此方法改变机器人的描述
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?description=" + str(description)
+        
+        if language_code is not None:
+            addr += "&language_code=" + str(language_code)
+        
+        return self.request.post(addr)
+
+    def getMyDescription(self, language_code=None):
+        """
+        使用此方法来获得当前的机器人描述
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        if language_code is not None:
+            addr += "?language_code=" + str(language_code)
+        
+        return self.request.post(addr)
+
+    def setMyShortDescription(self, short_description="", language_code=None):
+        """
+        使用这种方法来改变机器人的简短描述
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?short_description=" + str(short_description)
+        
+        if language_code is not None:
+            addr += "&language_code=" + str(language_code)
+        
+        return self.request.post(addr)
+
+    def getMyShortDescription(self, language_code=None):
+        """
+        使用此方法获得当前的机器人简短描述
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        if language_code is not None:
+            addr += "?&language_code=" + str(language_code)
+        
+        return self.request.post(addr)
 
     def setChatMenuButton(self, chat_id=None, menu_button=None):
         """
@@ -2547,7 +2663,7 @@ class Bot(object):
     
 
     # Stickers
-    def sendSticker(self, chat_id, sticker, disable_notification=None,
+    def sendSticker(self, chat_id, sticker, emoji=None, disable_notification=None,
         reply_to_message_id=None, reply_markup=None, allow_sending_without_reply=None,
         protect_content=None, message_thread_id=None):
         """
@@ -2568,6 +2684,8 @@ class Bot(object):
             file_data = {"sticker": open(sticker, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
+        if emoji is not None:
+            addr += "&emoji=" + str(emoji)
         if disable_notification is not None:
             addr += "&disable_notification=" + str(disable_notification)
         if reply_to_message_id is not None:
@@ -2607,167 +2725,48 @@ class Bot(object):
 
         return self.request.postJson(addr, data)
 
-
-    def uploadStickerFile(self, user_id, name, title, emojis,
-        png_sticker=None, tgs_sticker=None, contains_masks=None,
-        mask_position=None):
+    def uploadStickerFile(self, user_id, sticker, sticker_format):
         """
-        使用此方法可以上传带有标签的.PNG文件
-        以供以后在createNewStickerSet和addStickerToSet方法中使用
-        （可以多次使用）
+        使用此方法上传一个带有贴纸的文件
+        以便以后在createNewStickerSet和addStickerToSet方法中使用（该文件可以多次使用）
+        成功时返回上传的文件
         """
         command = inspect.stack()[0].function
+        addr = command + "?user_id=" + str(user_id)
+        addr += "&sticker_format=" + str(sticker_format)
+        
+        return self.request.postFile(addr, sticker)
 
-        user_id_str = str(user_id)
-        if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
-            file_data = None
-            addr = command + "?user_id=" + user_id_str + "&png_sticker=" + png_sticker
-        elif type(png_sticker) == bytes:
-            file_data = {"png_sticker": png_sticker}
-            addr = command + "?user_id=" + user_id_str
-        elif type(png_sticker) == str and '.' not in png_sticker:
-            file_data = None
-            addr = command + "?user_id=" + user_id_str + "&png_sticker=" + png_sticker
-        else:
-            file_data = {"png_sticker": open(png_sticker, 'rb')}
-            addr = command + "?user_id=" + user_id_str
-
-        if file_data is None:
-            return self.request.post(addr)
-        else:
-            return self.request.postFile(addr, file_data)
-
-    def createNewStickerSet(self, user_id, name, title, emojis,
-        png_sticker=None, tgs_sticker=None, webm_sticker=None,
-        contains_masks=None, sticker_type=None, mask_position=None):
+    def createNewStickerSet(self, user_id, name, title, stickers, sticker_format,
+            sticker_type=None, needs_repainting=None):
         """
         使用此方法可以创建用户拥有的新贴纸集
         机器人将能够编辑由此创建的贴纸集
-        png_sticker、webm_sticker和tgs_sticker字段不能同时存在，有且只有一个
-
-        参数contains_masks已从方法createNewStickerSet的文档中删除,
-        为了向后兼容，该参数仍然有效，但新的应用请使用参数sticker_type代替。
         """
         command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
         addr += "&name=" + str(name)
         addr += "&title=" + str(title)
-        addr += "&emojis=" + str(emojis)
+        addr += "&sticker_format=" + str(sticker_format)
 
-        if png_sticker is None and tgs_sticker is None and webm_sticker is None:
-            return False
-        elif png_sticker is not None and tgs_sticker is not None \
-            and webm_sticker is not None:
-            return False
-        else:
-            if png_sticker is not None:
-                if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
-                    file_data = None
-                    addr += "&png_sticker=" + png_sticker
-                elif type(png_sticker) == bytes:
-                    file_data = {"png_sticker": png_sticker}
-                elif type(png_sticker) == str and '.' not in png_sticker:
-                    file_data = None
-                    addr += "&png_sticker=" + png_sticker
-                else:
-                    file_data = {"png_sticker": open(png_sticker, 'rb')}
-            elif tgs_sticker is not None:
-                if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
-                    file_data = None
-                    addr += "&tgs_sticker=" + tgs_sticker
-                elif type(tgs_sticker) == bytes:
-                    file_data = {"tgs_sticker": tgs_sticker}
-                elif type(tgs_sticker) == str and '.' not in tgs_sticker:
-                    file_data = None
-                    addr += "&tgs_sticker=" + tgs_sticker
-                else:
-                    file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
-            elif webm_sticker is not None:
-                if webm_sticker[:7] == "http://" or webm_sticker[:7] == "https:/":
-                    file_data = None
-                    addr += "&webm_sticker=" + webm_sticker
-                elif type(webm_sticker) == bytes:
-                    file_data = {"webm_sticker": webm_sticker}
-                elif type(webm_sticker) == str and '.' not in webm_sticker:
-                    file_data = None
-                    addr += "&webm_sticker=" + webm_sticker
-                else:
-                    file_data = {"webm_sticker": open(webms_sticker, 'rb')}
+        if sticker_type is not None:
+            addr += "&sticker_type=" + str(sticker_type)
+        if needs_repainting is not None:
+            addr += "&needs_repainting=" + str(needs_repainting)
 
-            if (contains_masks is not None) and (sticker_type is None):
-                sticker_type = contains_masks
-            if sticker_type is not None:
-                addr += "&sticker_type=" + str(sticker_type)
-                if mask_position is not None:
-                    addr += "&mask_position=" + json.dumps(mask_position)
-                else:
-                    return False
+        return self.request.postJson(addr, stickers)
 
-            if file_data is None:
-                return self.request.post(addr)
-            else:
-                return self.request.postFile(addr, file_data)
-
-    def addStickerToSet(self, user_id, name, emojis, png_sticker=None,
-        tgs_sticker=None, webm_sticker=None, smask_position=None):
+    def addStickerToSet(self, user_id, name, sticker):
         """
         使用此方法可以将新标签添加到由机器人创建的集合中
-        png_sticker、webm_sticker和tgs_sticker字段不能同时存在，有且只有一个
         可以将动画贴纸添加到动画贴纸集中，并且只能添加到它们
         动画贴纸集最多可以包含50个贴纸。 静态贴纸集最多可包含120个贴纸
         """
         command = inspect.stack()[0].function
         addr = command + "?user_id=" + str(user_id)
         addr += "&name=" + str(name)
-        addr += "&emojis=" + str(emojis)
 
-        if png_sticker is None and tgs_sticker is None and webm_sticker is None:
-            return False
-        elif png_sticker is not None and tgs_sticker is not None \
-            and webm_sticker is not None:
-            return False
-        else:
-            if png_sticker is not None:
-                if png_sticker[:7] == "http://" or png_sticker[:7] == "https:/":
-                    file_data = None
-                    addr += "&png_sticker=" + png_sticker
-                elif type(png_sticker) == bytes:
-                    file_data = {"png_sticker": png_sticker}
-                elif type(png_sticker) == str and '.' not in png_sticker:
-                    file_data = None
-                    addr += "&png_sticker=" + png_sticker
-                else:
-                    file_data = {"png_sticker": open(png_sticker, 'rb')}
-            elif tgs_sticker is not None:
-                if tgs_sticker[:7] == "http://" or tgs_sticker[:7] == "https:/":
-                    file_data = None
-                    addr += "&tgs_sticker=" + tgs_sticker
-                elif type(tgs_sticker) == bytes:
-                    file_data = {"tgs_sticker": tgs_sticker}
-                elif type(tgs_sticker) == str and '.' not in tgs_sticker:
-                    file_data = None
-                    addr += "&tgs_sticker=" + tgs_sticker
-                else:
-                    file_data = {"tgs_sticker": open(tgs_sticker, 'rb')}
-            elif webm_sticker is not None:
-                if webm_sticker[:7] == "http://" or webm_sticker[:7] == "https:/":
-                    file_data = None
-                    addr += "&webm_sticker=" + webm_sticker
-                elif type(webm_sticker) == bytes:
-                    file_data = {"webm_sticker": webm_sticker}
-                elif type(webm_sticker) == str and '.' not in webm_sticker:
-                    file_data = None
-                    addr += "&webm_sticker=" + webm_sticker
-                else:
-                    file_data = {"webm_sticker": open(webms_sticker, 'rb')}
-
-            if mask_position is not None:
-                addr += "&mask_position=" + json.dumps(mask_position)
-
-            if file_data is None:
-                return self.request.post(addr)
-            else:
-                return self.request.postFile(addr, file_data)
+        return self.request.postJson(addr, sticker)
 
     def setStickerPositionInSet(self, sticker, position):
         """
@@ -2788,7 +2787,7 @@ class Bot(object):
 
         return self.request.post(addr)
 
-    def setStickerSetThumb(self, name, user_id, thumb=None):
+    def setStickerSetThumbnail(self, name, user_id, thumbnail=None):
         """
         使用此方法设置贴纸集的缩略图
         只能为动画贴纸集设置动画缩略图
@@ -2797,22 +2796,87 @@ class Bot(object):
         addr = command + "?name=" + str(name)
         addr += "&user_id=" + str(user_id)
 
-        if thumb is not None:
-            if thumb[:7] == "http://" or thumb[:7] == "https:/":
+        if thumbnail is not None:
+            if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
                 file_data = None
-                addr += "&thumb=" + thumb
-            elif type(thumb) == bytes:
-                file_data = {"thumb": thumb}
-            elif type(thumb) == str and '.' not in thumb:
+                addr += "&thumbnail=" + thumbnail
+            elif type(thumbnail) == bytes:
+                file_data = {"thumbnail": thumbnail}
+            elif type(thumbnail) == str and '.' not in thumbnail:
                 file_data = None
-                addr += "&thumb=" + thumb
+                addr += "&thumbnail=" + thumbnail
             else:
-                file_data = {"thumb": open(thumb, 'rb')}
+                file_data = {"thumbnail": open(thumbnail, 'rb')}
 
         if file_data is None:
             return self.request.post(addr)
         else:
             return self.request.postFile(addr, file_data)
+        
+    def setCustomEmojiStickerSetThumbnail(self, name, custom_emoji_id=""):
+        """
+        使用此方法来设置自定义表情贴纸集的缩略图
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?name=" + str(name)
+        addr += "&custom_emoji_id=" + str(custom_emoji_id)
+
+        return self.request.post(addr)
+    
+    def setStickerSetTitle(self, name, title):
+        """
+        使用此方法来设置已创建的贴纸集的标题
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?name=" + str(name)
+        addr += "&custom_emoji_id=" + str(title)
+
+        return self.request.post(addr)
+    
+    def deleteStickerSet(self, name):
+        """
+        使用此方法删除一个由机器人创建的贴纸集
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?name=" + str(name)
+
+        return self.request.post(addr)
+    
+    def setStickerEmojiList(self, sticker, emoji_list):
+        """
+        使用这个方法来改变分配给普通或自定义表情贴纸的表情符号列表
+        该贴纸必须属于由机器人创建的贴纸集
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?sticker=" + str(sticker)
+
+        return self.request.postJson(addr, emoji_list)
+    
+    def setStickerKeywords(self, sticker, keywords=None):
+        """
+        使用这种方法来改变分配给普通或自定义表情符号贴纸的搜索关键词
+        该贴纸必须属于由机器人创建的贴纸集
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?sticker=" + str(sticker)
+
+        if keywords is not None:
+            return self.request.postJson(addr, keywords)
+        else:
+            return self.request.post(addr)
+        
+    def setStickerMaskPosition(self, sticker, mask_position=None):
+        """
+        使用这个方法来改变一个面具贴纸的面具位置
+        该贴纸必须属于一个由机器人创建的贴纸集
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?sticker=" + str(sticker)
+
+        if mask_position is not None:
+            return self.request.postJson(addr, mask_position)
+        else:
+            return self.request.post(addr)
 
     # Payments
     def sendInvoice(self, chat_id, title, description, payload, provider_token,

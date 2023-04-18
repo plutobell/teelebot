@@ -1,5 +1,33 @@
 # 更新日志
 
+#### 2023-04-18
+
+* v1.23.0
+  * 升级至Bot API 6.6
+    * 新增方法 setMyDescription
+    * 新增方法 getMyDescription
+    * 新增方法 setMyShortDescription
+    * 新增方法 getMyShortDescription
+    * 新增方法 setCustomEmojiStickerSetThumbnail
+    * 新增方法 setStickerSetTitle
+    * 新增方法 deleteStickerSet
+    * 新增方法 setStickerEmojiList
+    * 新增方法 setStickerKeywords
+    * 新增方法 setStickerMaskPosition
+    * 方法 sendSticker 新增参数 emoji
+    * 重命名方法 setStickerSetThumb 为 setStickerSetThumbnail
+    * 重命名方法 setStickerSetThumbnail 的参数 thumb 为 thumbnail
+    * 适配以下方法到 API 6.6
+      * 方法 createNewStickerSet
+      * 方法 addStickerToSet
+      * 方法 uploadStickerFile
+      * 方法 sendAnimation
+      * 方法 sendAudio
+      * 方法 sendDocument
+      * 方法 sendVideo
+      * 方法 sendVideoNote
+  * 配置文件新增参数 proxy
+
 #### 2023-02-14 ####
 
 * v1.22.0
