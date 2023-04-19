@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-04-11
+@last modification: 2023-04-19
 '''
 import configparser
 import argparse
@@ -215,6 +215,7 @@ def _config():
                         "    # response_times = bot.response_times\n" + \
                         "    # response_chats = bot.response_chats\n" + \
                         "    # response_users = bot.response_users\n" + \
+                        "    # proxies = bot.proxies\n" + \
                         "\n" + \
                         '    chat_id = message["chat"]["id"]\n' + \
                         '    user_id = message["from"]["id"]\n' + \

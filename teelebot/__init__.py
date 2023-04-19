@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2023-04-11
+@last modification: 2023-04-19
 """
 import os
 import requests
@@ -34,7 +34,7 @@ def main():
         " \__/\___/\___/_/\___/_.___/\____/\__/   " + "\n"
     )
     print(" * Self-checking...", end="\r")
-    req = requests.post(url=bot._url + "getWebhookInfo", verify=False, proxies=bot._proxies)
+    req = requests.post(url=bot._url + "getWebhookInfo", verify=False, proxies=bot.proxies)
     if not req.json().get("ok"):
         if (req.json().get("error_code") == 401 and \
             req.json().get("description") == "Unauthorized"):

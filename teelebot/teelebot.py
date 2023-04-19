@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-04-18
+@last modification: 2023-04-19
 @author: Pluto (github:plutobell)
-@version: 1.23.0
+@version: 1.23.1
 """
 import inspect
 import time
@@ -39,7 +39,7 @@ class Bot(object):
         elif key == "":
             self._key = config["key"]
         
-        self._proxies = config["proxies"]
+        self.__proxies = config["proxies"]
 
         self._cloud_api_server = config["cloud_api_server"]
         self._local_api_server = config["local_api_server"]
@@ -102,7 +102,7 @@ class Bot(object):
 
         thread_pool_size = round(int(self._pool_size) * 2 / 3)
         schedule_queue_size = int(self._pool_size) - thread_pool_size
-        self.request = _Request(thread_pool_size, self._url, self._debug, self._proxies)
+        self.request = _Request(thread_pool_size, self._url, self._debug, self.__proxies)
         self.schedule = _Schedule(schedule_queue_size)
         self.buffer = _Buffer(int(self._buffer_size) * 1024 * 1024,
             self.__plugin_bridge.keys(), self.__plugin_dir)
@@ -626,6 +626,13 @@ class Bot(object):
         获取框架启动后响应的所有用户ID
         """
         return self.__response_users
+    
+    @property
+    def proxies(self):
+        """
+        获取代理信息
+        """
+        return self.__proxies
 
     def getChatCreator(self, chat_id):
         """
