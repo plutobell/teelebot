@@ -1,5 +1,11 @@
-# teelebot
-Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件支持**热更新**和**热装载**。
+<h1 align="center">
+  <br>
+  <a href="#" alt="logo" ><img src="./LOGO.png" width="150"/></a>
+  <br>
+  teelebot
+  <br>
+</h1>
+<h4 align="center">Python实现的Telegram Bot机器人框架，具有插件系统，插件支持热更新和热装载。</h4>
 
 ```bash
     __            __     __          __
