@@ -54,7 +54,9 @@ Python实现的Telegram Bot**机器人框架**，具有**插件系统**，插件
 
 ## Demo ##
 
-* ~~Telegram群组： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
+* **Telegram Group：[teelebot official](https://t.me/teelebot_official)（t.me/teelebot_official）**
+* **Bot : [teelebotBot](https://t.me/teelebotBot)（t.me/teelebotBot）**
+* ~~Telegram Group： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
 * ~~Bot : [teelebot](http://t.me/teelebot)（t.me/teelebot）~~
 
 
@@ -531,7 +533,8 @@ Source: https://github.com/plutobell/teelebot-plugins
 
 * Email：hi#ojoll.com ( # == @ )
 * Blog:    [北及](https://ojoll.com)
-* ~~Telegram群组：[teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
+* Telegram Group：[teelebot official](https://t.me/teelebot_official)（t.me/teelebot_official）
+* ~~Telegram Group：[teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
 * 其他：本repo 的 Issue
 
 

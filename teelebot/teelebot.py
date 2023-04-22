@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-04-19
+@last modification: 2023-04-22
 @author: Pluto (github:plutobell)
-@version: 1.23.1
+@version: 1.24.0
 """
 import inspect
 import time
@@ -2031,6 +2031,30 @@ class Bot(object):
 
         return self.request.post(addr)
 
+    def setMyName(self, name="", language_code=None):
+        """
+        使用此方法来改变机器人的名字
+        """
+        command = inspect.stack()[0].function
+        addr = command + "?name=" + str(name)
+
+        if language_code is not None:
+            addr += "&language_code=" + str(language_code)
+
+        return self.request.post(addr)
+    
+    def getMyName(self, language_code=None):
+        """
+        使用此方法来获取给定用户语言的当前机器人名称
+        """
+        command = inspect.stack()[0].function
+        addr = command
+
+        if language_code is not None:
+            addr += "?language_code=" + str(language_code)
+
+        return self.request.post(addr)
+
     def setMyCommands(self, commands, scope=None, language_code=None):
         """
         使用此方法更改机器人的命令列表
@@ -2556,7 +2580,7 @@ class Bot(object):
 
     # Inline mode
     def answerInlineQuery(self, inline_query_id, results, cache_time=None,
-        is_personal=None, next_offset=None, switch_pm_text=None, switch_pm_parameter=None):
+        is_personal=None, next_offset=None, button=None):
         """
         使用此方法发送Inline mode的应答
         results format:
@@ -2591,11 +2615,9 @@ class Bot(object):
             addr += "&is_personal=" + str(is_personal)
         if next_offset is not None:
             addr += "&next_offset=" + str(next_offset)
-        if switch_pm_text is not None:
-            addr += "&switch_pm_text=" + str(switch_pm_text)
-        if switch_pm_parameter is not None:
-            addr += "&switch_pm_parameter=" + str(switch_pm_parameter)
-
+        if button is not None:
+            addr += "&button=" + json.dumps(button)
+        
         return self.request.post(addr)
 
     def answerCallbackQuery(self, callback_query_id, text=None, show_alert=False, url=None, cache_time=0):

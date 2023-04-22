@@ -1,4 +1,4 @@
-## 已升级至 Telegram Bot API 6.6（2023/04/18）
+## 已升级至 Telegram Bot API 6.7（2023/04/22）
 
 **Getting updates**
 
@@ -62,6 +62,8 @@
 * setChatStickerSet
 * deleteChatStickerSet
 * sendMediaGroup
+* setMyName
+* getMyName
 * getMyCommands
 * setMyCommands
 * deleteMyCommands

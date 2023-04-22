@@ -1,5 +1,13 @@
 # 更新日志
 
+#### 2023-04-22
+
+* v1.24.0
+  * 升级至Bot API 6.7
+    * 替换方法 answerInlineQuery 的参数 switch_pm_text 和 switch_pm_parameter 为 button
+    * 新增方法 setMyName
+    * 新增方法 getMyName
+
 #### 2023-04-19
 
 * v1.23.1
