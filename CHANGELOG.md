@@ -1,5 +1,15 @@
 # 更新日志
 
+#### 2023-04-28
+
+* v1.24.1
+  * 修复以下方法 thumbnail 参数的 bug
+    * sendAnimation
+    * sendAudio
+    * sendVideo
+    * sendVideoNote
+    * sendDocument
+
 #### 2023-04-22
 
 * v1.24.0

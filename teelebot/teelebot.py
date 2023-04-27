@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-04-22
+@last modification: 2023-04-28
 @author: Pluto (github:plutobell)
-@version: 1.24.0
+@version: 1.24.1
 """
 import inspect
 import time
@@ -883,20 +883,21 @@ class Bot(object):
             file_data = {"animation": open(animation, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
-        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
-            addr += "&thumbnail=" + thumbnail
-        elif type(thumbnail) == bytes:
-            if file_data is None:
-                file_data = {"thumbnail": thumbnail}
+        if thumbnail is not None:
+            if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+                addr += "&thumbnail=" + thumbnail
+            elif type(thumbnail) == bytes:
+                if file_data is None:
+                    file_data = {"thumbnail": thumbnail}
+                else:
+                    file_data["thumbnail"] = thumbnail
+            elif type(thumbnail) == str and '.' not in thumbnail:
+                addr += "&thumbnail=" + thumbnail
             else:
-                file_data["thumbnail"] = thumbnail
-        elif type(thumbnail) == str and '.' not in thumbnail:
-            addr += "&thumbnail=" + thumbnail
-        else:
-            if file_data is None:
-                file_data = {"thumbnail": open(thumbnail, 'rb')}
-            else:
-                file_data["thumbnail"] = open(thumbnail, 'rb')
+                if file_data is None:
+                    file_data = {"thumbnail": open(thumbnail, 'rb')}
+                else:
+                    file_data["thumbnail"] = open(thumbnail, 'rb')
 
         if duration is not None:
             addr += "&duration=" + quote(duration)
@@ -952,20 +953,21 @@ class Bot(object):
             file_data = {"audio": open(audio, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
-        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
-            addr += "&thumbnail=" + thumbnail
-        elif type(thumbnail) == bytes:
-            if file_data is None:
-                file_data = {"thumbnail": thumbnail}
+        if thumbnail is not None:
+            if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+                addr += "&thumbnail=" + thumbnail
+            elif type(thumbnail) == bytes:
+                if file_data is None:
+                    file_data = {"thumbnail": thumbnail}
+                else:
+                    file_data["thumbnail"] = thumbnail
+            elif type(thumbnail) == str and '.' not in thumbnail:
+                addr += "&thumbnail=" + thumbnail
             else:
-                file_data["thumbnail"] = thumbnail
-        elif type(thumbnail) == str and '.' not in thumbnail:
-            addr += "&thumbnail=" + thumbnail
-        else:
-            if file_data is None:
-                file_data = {"thumbnail": open(thumbnail, 'rb')}
-            else:
-                file_data["thumbnail"] = open(thumbnail, 'rb')
+                if file_data is None:
+                    file_data = {"thumbnail": open(thumbnail, 'rb')}
+                else:
+                    file_data["thumbnail"] = open(thumbnail, 'rb')
 
         if duration is not None:
             addr += "&duration=" + quote(duration)
@@ -1064,20 +1066,21 @@ class Bot(object):
             file_data = {"video": open(video, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
-        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
-            addr += "&thumbnail=" + thumbnail
-        elif type(thumbnail) == bytes:
-            if file_data is None:
-                file_data = {"thumbnail": thumbnail}
+        if thumbnail is not None:
+            if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+                addr += "&thumbnail=" + thumbnail
+            elif type(thumbnail) == bytes:
+                if file_data is None:
+                    file_data = {"thumbnail": thumbnail}
+                else:
+                    file_data["thumbnail"] = thumbnail
+            elif type(thumbnail) == str and '.' not in thumbnail:
+                addr += "&thumbnail=" + thumbnail
             else:
-                file_data["thumbnail"] = thumbnail
-        elif type(thumbnail) == str and '.' not in thumbnail:
-            addr += "&thumbnail=" + thumbnail
-        else:
-            if file_data is None:
-                file_data = {"thumbnail": open(thumbnail, 'rb')}
-            else:
-                file_data["thumbnail"] = open(thumbnail, 'rb')
+                if file_data is None:
+                    file_data = {"thumbnail": open(thumbnail, 'rb')}
+                else:
+                    file_data["thumbnail"] = open(thumbnail, 'rb')
 
         if duration is not None:
             addr += "&duration=" + quote(duration)
@@ -1135,20 +1138,21 @@ class Bot(object):
             file_data = {"video_note": open(video_note, 'rb')}
             addr = command + "?chat_id=" + char_id_str
 
-        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
-            addr += "&thumbnail=" + thumbnail
-        elif type(thumbnail) == bytes:
-            if file_data is None:
-                file_data = {"thumbnail": thumbnail}
+        if thumbnail is not None:
+            if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+                addr += "&thumbnail=" + thumbnail
+            elif type(thumbnail) == bytes:
+                if file_data is None:
+                    file_data = {"thumbnail": thumbnail}
+                else:
+                    file_data["thumbnail"] = thumbnail
+            elif type(thumbnail) == str and '.' not in thumbnail:
+                addr += "&thumbnail=" + thumbnail
             else:
-                file_data["thumbnail"] = thumbnail
-        elif type(thumbnail) == str and '.' not in thumbnail:
-            addr += "&thumbnail=" + thumbnail
-        else:
-            if file_data is None:
-                file_data = {"thumbnail": open(thumbnail, 'rb')}
-            else:
-                file_data["thumbnail"] = open(thumbnail, 'rb')
+                if file_data is None:
+                    file_data = {"thumbnail": open(thumbnail, 'rb')}
+                else:
+                    file_data["thumbnail"] = open(thumbnail, 'rb')
 
         if duration is not None:
             addr += "&duration=" + quote(duration)
@@ -1251,20 +1255,21 @@ class Bot(object):
             file_data = {"document": open(document, 'rb')}
             addr = command + "?chat_id=" + str(chat_id)
 
-        if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
-            addr += "&thumbnail=" + thumbnail
-        elif type(thumbnail) == bytes:
-            if file_data is None:
-                file_data = {"thumbnail": thumbnail}
+        if thumbnail is not None:
+            if thumbnail[:7] == "http://" or thumbnail[:7] == "https:/":
+                addr += "&thumbnail=" + thumbnail
+            elif type(thumbnail) == bytes:
+                if file_data is None:
+                    file_data = {"thumbnail": thumbnail}
+                else:
+                    file_data["thumbnail"] = thumbnail
+            elif type(thumbnail) == str and '.' not in thumbnail:
+                addr += "&thumbnail=" + thumbnail
             else:
-                file_data["thumbnail"] = thumbnail
-        elif type(thumbnail) == str and '.' not in thumbnail:
-            addr += "&thumbnail=" + thumbnail
-        else:
-            if file_data is None:
-                file_data = {"thumbnail": open(thumbnail, 'rb')}
-            else:
-                file_data["thumbnail"] = open(thumbnail, 'rb')
+                if file_data is None:
+                    file_data = {"thumbnail": open(thumbnail, 'rb')}
+                else:
+                    file_data["thumbnail"] = open(thumbnail, 'rb')
 
         if disable_notification is not None:
             addr += "&disable_notification=" + quote(disable_notification)

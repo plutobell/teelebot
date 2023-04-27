@@ -2,12 +2,12 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-11-15
-@last modification: 2023-04-22
+@last modification: 2023-04-28
 @author: Pluto (github:plutobell)
-@version: 1.24.0
+@version: 1.24.1
 """
 
-__version__ = "1.24.0"
+__version__ = "1.24.1"
 __author__ = "Pluto"
 __email__ = "hi@ojoll.com"
 __blog__ = "https://ojoll.com"
