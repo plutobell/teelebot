@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2023-04-19
+@last modification: 2023-05-03
 """
 import os
 import requests
@@ -9,9 +9,10 @@ import urllib3
 
 from .polling import _runUpdates
 from .webhook import _runWebhook
-from .teelebot import Bot
+from .bot import Bot
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 name = "teelebot"
 __all__ = ['Bot']
@@ -34,7 +35,7 @@ def main():
         " \__/\___/\___/_/\___/_.___/\____/\__/   " + "\n"
     )
     print(" * Self-checking...", end="\r")
-    req = requests.post(url=bot._url + "getWebhookInfo", verify=False, proxies=bot.proxies)
+    req = requests.post(url=f'{bot._url}getWebhookInfo', verify=False, proxies=bot.proxies)
     if not req.json().get("ok"):
         if (req.json().get("error_code") == 401 and \
             req.json().get("description") == "Unauthorized"):
@@ -101,6 +102,13 @@ def main():
               "\n *  Server : " + api_server + "\n")
         if bot._drop_pending_updates == True and \
             pending_update_count != 0:
-            results = bot.getUpdates(allowed_updates=bot._allowed_updates)
+            results = bot.getUpdates(
+                offset=bot._offset,
+                limit=100,
+                timeout=bot._timeout,
+                allowed_updates=bot._allowed_updates
+            )
             messages = bot._washUpdates(results)
         _runUpdates(bot=bot)
+
+

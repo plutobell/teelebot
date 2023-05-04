@@ -77,7 +77,7 @@
 
 teelebot 只支持 Python3.x，不支持Python2.x。
 
-本项目在 Python 3.5 及以上版本测试通过。
+本项目在 Python 3.6 及以上版本测试通过。
 
 
 

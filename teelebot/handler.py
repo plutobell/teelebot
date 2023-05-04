@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-04-19
+@last modification: 2023-05-03
 '''
 import configparser
 import argparse
@@ -429,7 +429,7 @@ if args.close and args.logout:
 
 elif args.logout and not args.close:
     config = _config()
-    logout_url = cloud_api_server + "bot" + config["key"] + "/logOut"
+    logout_url = f'{cloud_api_server}bot{config["key"]}/logOut'
     try:
         req = requests.post(url=logout_url, verify=False)
     except:
@@ -450,7 +450,7 @@ elif args.close and not args.logout:
         print("close can only be used when local_api_server is configured.")
         os._exit(0)
 
-    close_url = config["local_api_server"] + "bot" + config["key"] + "/close"
+    close_url = f'{config["local_api_server"]}bot{config["key"]}/close'
     try:
         req = requests.post(url=close_url, verify=False)
     except:

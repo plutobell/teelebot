@@ -1,167 +1,37 @@
-## 已升级至 Telegram Bot API 6.7（2023/04/22）
+## Function (teelebot version >= v2.0.0)
 
-**Getting updates**
+**bot API methods**
 
-* getUpdates
-* setWebhook
-* deleteWebhook
-* getWebhookInfo
+可用方法名及参数同Telegram官方文档保持一致：[**Telegram Bot API**](https://core.telegram.org/bots/api)
 
-**Available methods**
 
-* getMe
-* getFile
-* logOut
-* close
-* sendMessage
-* sendPhoto
-* sendDocument
-* banChatMember
-* unbanChatMember
-* leaveChat
-* getChat
-* getChatAdministrators
-* getChatMemberCount
-* getChatMember
-* setChatPermissions
-* restrictChatMember
-* promoteChatMember
-* pinChatMessage
-* unpinChatMessage
-* unpinAllChatMessages
-* sendVoice
-* sendAnimation
-* sendAudio
-* sendVideo
-* sendPoll
-* sendDice
-* sendVideoNote
-* getUserProfilePhotos
-* setChatTitle
-* setChatDescription
-* setChatPhoto
-* deleteChatPhoto
-* sendLocation
-* sendContact
-* sendVenue
-* sendChatAction
-* forwardMessage
-* copyMessage
-* banChatMember
-* unbanChatMember
-* banChatSenderChat
-* unbanChatSenderChat
-* restrictChatMember
-* setChatAdministratorCustomTitle
-* exportChatInviteLink
-* createChatInviteLink
-* editChatInviteLink
-* approveChatJoinRequest
-* declineChatJoinRequest
-* revokeChatInviteLink
-* setChatStickerSet
-* deleteChatStickerSet
-* sendMediaGroup
-* setMyName
-* getMyName
-* getMyCommands
-* setMyCommands
-* deleteMyCommands
-* setMyDescription
-* getMyDescription
-* setMyShortDescription
-* getMyShortDescription
-* setChatMenuButton
-* getChatMenuButton
-* setMyDefaultAdministratorRights
-* getMyDefaultAdministratorRights
-* editMessageLiveLocation
-* stopMessageLiveLocation
-* createForumTopic
-* editForumTopic
-* closeForumTopic
-* reopenForumTopic
-* deleteForumTopic
-* unpinAllForumTopicMessages
-* getForumTopicIconStickers
-* editGeneralForumTopic
-* closeGeneralForumTopic
-* reopenGeneralForumTopic
-* hideGeneralForumTopic
-* unhideGeneralForumTopic
 
-**Inline mode**
+*特殊情况：*
 
-* answerCallbackQuery
-* answerWebAppQuery
+* *sendMediaGroup*
+* *editMessageMedia*
 
-**Updating messages**
-
-* editMessageText
-* editMessageCaption
-* editMessageMedia
-* editMessageReplyMarkup
-* stopPoll
-* deleteMessage
-
-**Inline mode**
-
-* answerInlineQuery
-
-**Stickers**
-
-* sendSticker
-* getStickerSet
-* getCustomEmojiStickers
-* uploadStickerFile
-* createNewStickerSet
-* addStickerToSet
-* setStickerPositionInSet
-* deleteStickerFromSet
-* setStickerSetThumbnail
-* setCustomEmojiStickerSetThumbnail
-* setStickerSetTitle
-* deleteStickerSet
-* setStickerEmojiList
-* setStickerKeywords
-* setStickerMaskPosition
-
-**Payments**
-
-* sendInvoice
-* createInvoiceLink
-* answerShippingQuery
-* answerPreCheckoutQuery
-
-**Telegram Passport**
-
-* setPassportDataErrors
-
-**Games**
-
-* sendGame
-* setGameScore
-* getGameHighScores
+*使用以上两个方法上传本地文件时，请使用参数 `files` ，格式请参考 [inputmedia](https://core.telegram.org/bots/api#inputmedia)*
 
 
 
 **teelebot methods**
 
-*  getFileDownloadPath
-*  getChatMemberStatus
-*  getChatCreator
-*  message_deletor
-*  path_converter
-*  schedule.add
-*  schedule.delete
-*  schedule.find
-*  schedule.clear
-*  schedule.status
-*  buffer.status
-*  buffer.sizeof
-*  buffer.read
-*  buffer.write
-*  timer
+*  getFileDownloadPath(*file_id*)
+*  getChatMemberStatus(*chat_id*, *user_id*)
+*  getChatCreator(*chat_id*)
+*  message_deletor(*time_gap*, *chat_id*, *message_id*)
+*  path_converter(*path*)
+*  timer(*time_gap*, *func*, *args*)
+*  schedule.add(*gap*, *func*, *args*)
+*  schedule.delete(*uid*)
+*  schedule.find(*uid*)
+*  schedule.clear()
+*  schedule.status()
+*  buffer.status()
+*  buffer.sizeof(*plugin_name*=None)
+*  buffer.read(*plugin_name*=None)
+*  buffer.write(*buffer*, *plugin_name*=None)
 
 
 

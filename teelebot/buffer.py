@@ -1,11 +1,12 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2021-09-11
+@last modification: 2023-05-03
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
+from pathlib import Path
 try:
     from reprlib import repr
 except ImportError:
@@ -15,7 +16,6 @@ import threading
 import inspect
 import os
 import copy
-from pathlib import Path
 
 
 class _Buffer(object):
@@ -207,3 +207,6 @@ class _Buffer(object):
             return s
 
         return sizeof(o)
+    
+
+    

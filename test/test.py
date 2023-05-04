@@ -23,25 +23,39 @@ root = bot.root_id
 
 #bot.unbanChatMember(chat_id=chat_id, user_id=user_id)
 
-medias ={
-    'caption': 'test',
-    'media': [
-        {
-            'type': 'photo',
-            'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg'
-        },
-        {
-            'type': 'photo',
-            'media': 'http://pic1.win4000.com/pic/d/6a/7c6a73b5bd.jpg'
-        },
-        {
-            'type': 'photo',
-            'media': 'AgACAgQAAx0ETbyLwwADeF5s6QosSI_IW3rKir3PrMUXdMFMAALeqjEbhENsU84zcAUOKKcVdpWgGwAEAQADAgADeAADwKIIAAEYBA'
-        }
-    ]
-}
-#req = bot.sendMediaGroup(chat_id=chat_id, medias=medias)
-#print(req)
+
+# photo = None
+# with open(bot.path_converter(bot.plugin_dir + "Hello/helloworld.png"), "rb") as p:
+#     photo = p.read()
+# files = {"hello": photo}
+# medias = [
+#     {
+#         'type': 'photo',
+#         'media': 'http://pic1.win4000.com/pic/d/6a/25a2c0e959.jpg',
+#         'caption': 'test0',
+#         'has_spoiler': True
+#     },
+#     {
+#         'type': 'photo',
+#         'media': 'http://pic1.win4000.com/pic/d/6a/7c6a73b5bd.jpg',
+#         'caption': 'test1',
+#         'has_spoiler': True
+#     },
+#     {
+#         'type': 'photo',
+#         'media': 'AgACAgQAAx0ETbyLwwADeF5s6QosSI_IW3rKir3PrMUXdMFMAALeqjEbhENsU84zcAUOKKcVdpWgGwAEAQADAgADeAADwKIIAAEYBA',
+#         'caption': 'test2',
+#         'has_spoiler': True
+#     },
+#     {
+#         'type': 'photo',
+#         'media': 'attach://hello',
+#         'caption': '<b>test3</b>',
+#         'parse_mode': 'HTML'
+#     }
+# ]
+# req = bot.sendMediaGroup(chat_id=root, media=medias, files=files)
+# print(req)
 
 
 #r = bot.deleteMessage(chat_id=chat_id, message_id=190)
@@ -364,3 +378,5 @@ results = {
 # print(req)
 # req = bot.getMyShortDescription()
 # print(req)
+
+

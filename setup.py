@@ -45,7 +45,7 @@ setup(
             'plugins/About/icon.png'
 		],
     },
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     install_requires=['requests'],
     entry_points={
         'console_scripts': [

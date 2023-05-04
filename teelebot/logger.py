@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2021-09-11
+@last modification: 2023-05-03
 '''
 import logging
 
@@ -46,7 +46,7 @@ class ColoredLogger(logging.Logger):
     FORMAT = "[$BOLD%(asctime)s][$RESET%(levelname)s] %(message)s"
     COLOR_FORMAT = formatter_message(FORMAT, True)
     def __init__(self, name):
-        logging.Logger.__init__(self, name, logging.DEBUG)
+        logging.Logger.__init__(self, name, logging.INFO)
 
         color_formatter = ColoredFormatter(self.COLOR_FORMAT)
 
