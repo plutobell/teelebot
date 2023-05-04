@@ -90,7 +90,7 @@ class _Request(object):
 
         # print(data, "\n", files)
         try:
-            with requests.post(url=f'{self.__url}{method_name}', data=data, files=files) as req:
+            with self.__session.post(url=f'{self.__url}{method_name}', data=data, files=files) as req:
                 self.__debug_info(method_name, req.json())
                 if req.json().get("ok", False):
                     return req.json().get("result")
