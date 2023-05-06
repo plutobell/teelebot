@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-03
+@last modification: 2023-05-06
 '''
 import configparser
 import argparse
@@ -61,12 +61,12 @@ def _config():
     (path, filename) = os.path.split(config_dir)
     (filename_, extension) = os.path.splitext(filename)
     if extension != ".cfg":
-        print("only support configuration files with .cfg suffix.")
+        print("Only support configuration files with .cfg suffix.")
         os._exit(0)
     if not os.path.exists(str(Path(path))):
         os.makedirs(str(Path(path)))
     if not os.path.exists(str(Path(config_dir))):
-        print("the configuration file does not exist.")
+        print("The configuration file does not exist.")
         plugin_dir = ""
         if args.plugin:
             plugin_dir = args.plugin
@@ -101,10 +101,10 @@ def _config():
                 "local_port = " + "\n",
                 "proxy = "
             ])
-            print("the configuration file has been created automatically.")
-            print("configuration file path: " + str(config_dir))
+            print("The configuration file has been created automatically.")
+            print("Configuration file path: " + str(config_dir))
         if not args.key or not args.root:
-            print("please modify the relevant parameters and restart the teelebot.")
+            print("Please modify the relevant parameters and restart the teelebot.")
             os._exit(0)
         # else:
         #     print("\n")
@@ -131,7 +131,7 @@ def _config():
         default_args = ["plugin_dir", "key", "webhook", "root_id"]
     for default_arg in default_args:
         if default_arg not in options:
-            print("the configuration file is missing necessary parameters.",
+            print("The configuration file is missing necessary parameters.",
                 "\nnecessary parameters:", default_args)
             os._exit(0)
 
@@ -143,12 +143,12 @@ def _config():
         if config[default_arg] == "" or\
             config[default_arg] == None:
             none_count += 1
-            print("field " + default_arg + " is not set in configuration file.")
+            print("Field " + default_arg + " is not set in configuration file.")
     if none_count != 0:
         os._exit(0)
 
     if any(["version" in config.keys(), "author" in config.keys()]):
-        print("error in configuration file.")
+        print("Error in configuration file.")
         os._exit(0)
 
     if config["webhook"] == "True":
@@ -158,20 +158,20 @@ def _config():
                         "cert_pub", "cert_key"]
         for w in webhook_args:
             if w not in config.keys():
-                print("please check if the following fields exist in the configuration file: \n" +
+                print("Please check if the following fields exist in the configuration file: \n" +
                     "cert_pub cert_key self_signed server_address server_port local_address local_port")
                 os._exit(0)
 
     plugin_dir_in_config = False
     if "plugin_dir" in config.keys():
         if config["plugin_dir"] == "" or config["plugin_dir"] == None:
-            print("field plugin_dir is not set in configuration file.")
+            print("Field plugin_dir is not set in configuration file.")
             os._exit(0)
         else:
             plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
             plugin_dir_in_config = True
     else:
-        print("field plugin_dir does not exist in configuration file.")
+        print("Field plugin_dir does not exist in configuration file.")
         os._exit(0)
 
     if os.path.exists(str(Path(os.path.dirname(
@@ -201,7 +201,7 @@ def _config():
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py")), "w", encoding="utf-8") as enter:
                     enter.writelines([
-                        "# -*- coding:utf-8 -*-\n",
+                        "# -*- coding: utf-8 -*-\n",
                         "\n",
                         "def " + plugin_name + "(bot, message):\n",
                         "\n" + \
@@ -252,24 +252,24 @@ def _config():
                         "Source: "
                     ])
 
-            print("plugin " + plugin_name + " was created successfully.")
+            print("Plugin " + plugin_name + " was created successfully.")
         else:
-            print("plugin " + plugin_name + " already exists.")
+            print("Plugin " + plugin_name + " already exists.")
         os._exit(0)
     elif args.make_plugin and not plugin_dir_in_config:
-        print("the plugin_dir is not set in the configuration file.")
+        print("The plugin_dir is not set in the configuration file.")
         os._exit(0)
 
     if "pool_size" in config.keys():
         if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
-            print("thread pool size is out of range (1-100).")
+            print("Thread pool size is out of range (1-100).")
             os._exit(0)
     else:
         config["pool_size"] = "40"
 
     if "buffer_size" in config.keys():
         if int(config["buffer_size"]) <= 0:
-            print("data buffer_size is out of range (> 0 MiB).")
+            print("Data buffer_size is out of range (> 0 MiB).")
             os._exit(0)
     else:
         config["buffer_size"] = "16"
@@ -283,13 +283,13 @@ def _config():
             config["local_api_server"] = "False"
         else:
             if "https://" in local_api_server:
-                print("local api server address not support https.")
+                print("Local api server address not support https.")
                 os._exit(0)
             if "http://" not in local_api_server:
-                print("local api server address incorrect.")
+                print("Local api server address incorrect.")
                 os._exit(0)
             if "telegram.org" in local_api_server:
-                print("local api server address incorrect.")
+                print("Local api server address incorrect.")
                 os._exit(0)
             if local_api_server[len(local_api_server)-1] != "/":
                 local_api_server += "/"
@@ -389,7 +389,7 @@ def _bridge(plugin_dir):
                 plugin_list.append(plugi)
             else:
                 os.system("")
-                print("\033[1;31m" + plugi + " plugin is corrupted." + "\033[0m")
+                print("\033[1;31mThe " + plugi + " plugin is corrupted." + "\033[0m")
                 corrupted_plugin_list.append(plugi)
 
     for plugin in plugin_list:
@@ -424,7 +424,7 @@ def _plugin_info(plugin_list, plugin_dir):
 
 
 if args.close and args.logout:
-    print("only one of logout and close can be used at the same time.")
+    print("Only one of logout and close can be used at the same time.")
     os._exit(0)
 
 elif args.logout and not args.close:
@@ -433,35 +433,35 @@ elif args.logout and not args.close:
     try:
         req = requests.post(url=logout_url, verify=False)
     except:
-        print("error request the cloud Bot API server.")
+        print("Error request the cloud Bot API server.")
         os._exit(0)
     if req.json().get("ok"):
-        print("successfully logout from the cloud Bot API server.")
+        print("Successfully logout from the cloud Bot API server.")
     elif not req.json().get("ok"):
-        print("error logout from the cloud Bot API server.")
+        print("Error logout from the cloud Bot API server.")
         if (req.json().get("error_code") == 401 and
             req.json().get("description") == "Unauthorized"):
-            print("if you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
+            print("If you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
     os._exit(0)
 
 elif args.close and not args.logout:
     config = _config()
     if config["local_api_server"] == "False":
-        print("close can only be used when local_api_server is configured.")
+        print("The close can only be used when local_api_server is configured.")
         os._exit(0)
 
     close_url = f'{config["local_api_server"]}bot{config["key"]}/close'
     try:
         req = requests.post(url=close_url, verify=False)
     except:
-        print("error request the the local API server.")
+        print("Error request the the local API server.")
         os._exit(0)
     if req.json().get("ok"):
-        print("successfully close from the local API server.")
+        print("Successfully close from the local API server.")
     elif not req.json().get("ok"):
-        print("error close from the local API server.")
+        print("Error close from the local API server.")
         if req.json().get("error_code") == 429:
-            print("too many requests, please retry after " + str(req.json().get("parameters")["retry_after"]) + " seconds.")
+            print("Too many requests, please retry after " + str(req.json().get("parameters")["retry_after"]) + " seconds.")
     os._exit(0)
 
 

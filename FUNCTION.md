@@ -1,6 +1,6 @@
-## Function (teelebot version >= v2.0.0)
+# Function (teelebot version >= v2.0.0)
 
-**bot API methods**
+#### bot API methods
 
 可用方法名及参数同Telegram官方文档保持一致：[**Telegram Bot API**](https://core.telegram.org/bots/api)
 
@@ -15,7 +15,7 @@
 
 
 
-**teelebot methods**
+#### teelebot methods
 
 *  getFileDownloadPath(*file_id*)
 *  getChatMemberStatus(*chat_id*, *user_id*)
@@ -35,7 +35,7 @@
 
 
 
-**teelebot properties**
+#### teelebot properties
 
 *  root_id
 *  bot_id

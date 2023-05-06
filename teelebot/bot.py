@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-05-03
+@last modification: 2023-05-06
 @author: Pluto (github:plutobell)
-@version: 2.0.1
+@version: 2.0.2
 """
 import time
 import sys
@@ -141,7 +141,6 @@ class Bot(object):
         线程池异常回调
         """
         if fur.exception() is not None:
-            os.system("")
             _logger.debug("EXCEPTION" + " - " + str(fur.result()))
 
     def __import_module(self, plugin_name):
@@ -173,7 +172,6 @@ class Bot(object):
             plugin_info[plugin_name] = now_mtime
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
-            os.system("")
             _logger.info("The plugin " + plugin_name + " has been updated")
 
     def __load_plugin(self, now_plugin_info, as_plugin=True,
@@ -184,18 +182,17 @@ class Bot(object):
         if as_plugin:
             for plugin in list(now_plugin_bridge.keys()): # 动态装载插件
                 if plugin not in list(self.__plugin_bridge.keys()):
-                    os.system("")
                     _logger.info("The plugin " + plugin + " has been installed")
                     self.__plugin_info[plugin] = now_plugin_info[plugin]
             for plugin in list(self.__plugin_bridge.keys()):
                 if plugin not in list(now_plugin_bridge.keys()):
-                    os.system("")
                     _logger.info("The plugin " + plugin + " has been uninstalled")
                     self.__plugin_info.pop(plugin)
 
                     if (self.__plugin_dir + plugin) in sys.path:
-                        sys.modules.pop(self.__plugin_dir + plugin)
                         sys.path.remove(self.__plugin_dir + plugin)
+                    if (self.__plugin_dir + plugin) in sys.modules:
+                        sys.modules.pop(self.__plugin_dir + plugin)
 
             self.__plugin_bridge = now_plugin_bridge
 
@@ -204,7 +201,6 @@ class Bot(object):
         else:
             for plugin in list(now_non_plugin_list): # 动态装载非插件包
                 if plugin not in list(self.__non_plugin_list):
-                    os.system("")
                     _logger.info("The plugin " + plugin + " has been installed")
                     self.__non_plugin_info[plugin] = now_plugin_info[plugin]
 
@@ -213,7 +209,6 @@ class Bot(object):
 
             for plugin in list(self.__non_plugin_list):
                 if plugin not in list(now_non_plugin_list):
-                    os.system("")
                     _logger.info("The plugin " + plugin + " has been uninstalled")
                     self.__non_plugin_info.pop(plugin)
 
@@ -364,14 +359,12 @@ class Bot(object):
                     user_name += message["from"]["last_name"]
 
         if message["message_type"] == "unknown":
-            os.system("")
             _logger.info(
-            "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
-            "User:" + user_name + "(" + str(from_id) + ") - " + \
-            "Plugin: " + "" + " - " + \
-            "Type:" + message["message_type"])
+                "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
+                "User:" + user_name + "(" + str(from_id) + ") - " + \
+                "Plugin: " + "" + " - " + \
+                "Type:" + message["message_type"])
         else:
-            os.system("")
             _logger.info(
                 "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
                 "User:" + user_name + "(" + str(from_id) + ") - " + \
@@ -421,7 +414,7 @@ class Bot(object):
         ok, buffer_status = self.buffer.status() # 数据暂存区容量监测
         if ok and buffer_status["used"] >= buffer_status["size"]:
             os.system("")
-            _logger.warn("\033[1;31m The data buffer area is full \033[0m")
+            _logger.warn("\033[1;31mThe data buffer area is full \033[0m")
 
         plugin_bridge = self.__control_plugin( # pluginctl控制
             self.__plugin_bridge, message["chat"]["type"], message["chat"]["id"])

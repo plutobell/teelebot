@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-03
+@last modification: 2023-05-06
 '''
 import threading
 from uuid import uuid4
@@ -29,7 +29,7 @@ class _Schedule(object):
             t.setDaemon(True)
             return True, t
         except Exception as e:
-            print(e)
+            print("Error:", str(e))
             return False, str(e)
 
     def add(self, gap, func, args):

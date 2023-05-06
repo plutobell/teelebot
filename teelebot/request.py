@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-04
+@last modification: 2023-05-06
 '''
 import json
 import requests
@@ -97,7 +97,7 @@ class _Request(object):
                 else:
                     return req.json().get("ok")
         except Exception as e:
-            print("error: " + str(e))
+            print("Error:", str(e))
             return False
 
 
