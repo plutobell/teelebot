@@ -170,6 +170,8 @@ teelebot -c/--config <config file path> -p/--plugin <plugin path> -k/--key <bot 
 
 `teelebot` 支持以 `Webhook` 模式和 `Polling` 模式运行。生产环境推荐使用 `Webhook` 模式，而 `Polling` 则仅用于开发环境。
 
+
+
 ##### 1、Webhook 模式
 
 要以 `Webhook` 模式运行，请将配置文件字段 `webhook` 设置为 `True` ，此模式涉及的配置文件字段如下：
@@ -188,7 +190,7 @@ local_port=webhook local port
 
 `self_signed` 用于设置是否使用自签名证书，而 `cert_key` 和 `cert_pub` 则是你的证书路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口。
 
-推荐搭配 `nginx` 使用，自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
+自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
 
 
 
@@ -199,9 +201,9 @@ local_port=webhook local port
 ```
 [config]
 key=bot key
+root_id=your user id
 pool_size=40
 webhook=False
-root_id=your user id
 debug=False
 plugin_dir=your plugin dir
 ```
@@ -226,8 +228,6 @@ plugin_dir=your plugin dir
 
 
 
-可配合`supervisor`使用。
-
 
 
 
@@ -239,6 +239,7 @@ plugin_dir=your plugin dir
 ```python
 [config]
 key=bot key
+root_id=your user id
 plugin_dir=your plugin dir
 pool_size=40 # the thread pool size, default 40, range(1, 101)
 buffer_size=16 # the buffer area size, default 16(MB)
@@ -250,12 +251,11 @@ server_ip=your server ip address # Optional while webhook is False
 server_port=your server port # Optional while webhook is False
 local_address=webhook local address # Optional while webhook is False
 local_port=webhook local port # Optional while webhook is False
-root_id=your user id
 debug=False
 drop_pending_updates=False
 local_api_server=local api server address # [Optional]
 updates_chat_member=False # [Optional]
-proxy = socks5h://user:pass@host:port # [Optional]
+proxy=socks5h://user:pass@host:port # [Optional]
 ```
 
 **在 `1.13.0` 及以上版本，支持自动生成配置文件。（默认为Polling模式）**
@@ -274,17 +274,7 @@ Linux 和 Windows 都可在命令行通过参数手动指定配置文件路径�
 teelebot -c/--config <configure file path>
 ```
 
-路径必须为绝对路径，此情况下也会在指定路径上不存在配置文件时自动生成配置文件 ，配置文件命名由指定的路径决定。
-
-**Tip: 自动生成的配置文件未设置这几个字段值：`key`、`root_id`、`plugin_dir`，key 和 root_id 为必须，但我们仍然可以通过命令行设置他们：**
-
-```
-teelebot -c/--config <config file path> -k/--key <bot key> -r/--root <your user id>
-```
-
-**使用以上命令会以Polling模式运行框架，而无需困扰于处理配置文件。**
-
-**之后请手动设置 ``plugin_dir``** 。
+路径必须为绝对路径，并且配置文件名也应当包含在路径内，此情况下会在指定的配置文件不存在时自动生成配置文件 。
 
 
 
