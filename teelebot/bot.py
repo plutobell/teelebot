@@ -2,7 +2,7 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-05-06
+@last modification: 2023-05-07
 @author: Pluto (github:plutobell)
 @version: 2.0.2
 """
@@ -213,8 +213,9 @@ class Bot(object):
                     self.__non_plugin_info.pop(plugin)
 
                     if (self.__plugin_dir + plugin) in sys.path:
-                        sys.modules.pop(self.__plugin_dir + plugin)
                         sys.path.remove(self.__plugin_dir + plugin)
+                    if (self.__plugin_dir + plugin) in sys.modules:
+                        sys.modules.pop(self.__plugin_dir + plugin)
 
             self.__non_plugin_list = now_non_plugin_list
 
