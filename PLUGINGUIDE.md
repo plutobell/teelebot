@@ -22,7 +22,7 @@ Hello/
 在构建teelebot插件中应当遵守的规则是：每个插件目录下应当存在一个与插件同名的`.py` 文件，比如插件 `Hello ` 中的 `Hello.py` 文件，并且此文件中必须存在作为插件入口的同名函数，以插件 `Hello` 为例：
 
 ```python
-#file Hello/Hello.py
+file Hello/Hello.py
 
 # -*- coding:utf-8 -*-
 
@@ -55,7 +55,7 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 修改插件目录下的 `__init__.py` 文件设置触发指令：
 
 ```python
-#file Hello/__init__.py
+file Hello/__init__.py
 
 #/helloworld
 #Hello World插件例子
@@ -70,7 +70,7 @@ bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载为插件，请将触发指令设置为 `~~`  。以 `tools` 共用包为例， `__init__.py` 文件内容如下：
 
 ```python
-#fille tools/__init__.py
+fille tools/__init__.py
 
 #~~
 #tools 包的简介
@@ -101,7 +101,7 @@ import tools
 以插件 `InlineModeDemo` 为例，`__init__.py` 文件内容如下：
 
 ```python
-#file InlineModeDemo/__init__.py
+file InlineModeDemo/__init__.py
 
 #?:search:
 #InlineModeDemo InlineMode插件例子
@@ -118,7 +118,7 @@ import tools
 另外，也可以去掉触发指令 `search:` ，只保留前缀，插件 `InlineModeDemo` 将响应所有`inline_query` 消息：
 
 ```python
-#file InlineModeDemo/__init__.py
+file InlineModeDemo/__init__.py
 
 #?:
 #InlineModeDemo InlineMode插件例子
@@ -207,7 +207,7 @@ ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
 可通过每个插件的 `__init__.py` 文件**控制其他插件对本插件暂存区的访问权限** ，格式如下 **(读:写)**：
 
 ```python
-#file Hello/__init__.py
+file Hello/__init__.py
 
 #/helloworld
 #Hello World插件例子

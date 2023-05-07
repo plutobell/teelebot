@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-06
+@last modification: 2023-05-08
 '''
 import configparser
 import argparse
@@ -21,23 +21,23 @@ parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
                     help="specify the configuration file")
 parser.add_argument("-k", "--key", type=str,
-                    help="specify the bot key")
+                    help="specify the bot api token")
 parser.add_argument("-r", "--root", type=str,
-                    help="specify the root user id")
+                    help="specify the telegram user user_id of bot admin")
 parser.add_argument("-p", "--plugin", type=str,
                     help="specify the plugin path")
 parser.add_argument("-mp", "--make_plugin", type=str,
                     help="create a plugin template")
 parser.add_argument("-L", "--logout",
-                    help="use it to log out from the cloud Bot API server before launching the bot locally.",
+                    help="use it to log out from the cloud Bot API server before launching the bot locally",
                     action="store_true")
 parser.add_argument("-C", "--close",
-                    help="use it to close the bot instance before moving it from one local server to another.",
+                    help="use it to close the bot instance before moving it from one local server to another",
                     action="store_true")
 parser.add_argument(
     "-d", "--debug", help="run teelebot in debug mode", action="store_true")
 parser.add_argument(
-    "-v", "--version", help="view the current version of teelebot", action="store_true")
+    "-v", "--version", help="show the current version of teelebot", action="store_true")
 args = parser.parse_args()
 
 if len(sys.argv) == 2 and args.version:

@@ -224,7 +224,35 @@ plugin_dir=your plugin dir
 
 - 对于命令行手动指定配置文件路径的：
 
-  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。**(更多指令请通过 `-h/--help` 查看)**
+  输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
+  
+  **更多指令请通过 `-h/--help` 查看：**
+  
+  ```bash
+  usage: -m [-h] [-c CONFIG] [-k KEY] [-r ROOT] [-p PLUGIN] [-mp MAKE_PLUGIN]
+            [-L] [-C] [-d] [-v]
+  
+  teelebot console command list
+  
+  options:
+    -h, --help            show this help message and exit
+    -c CONFIG, --config CONFIG
+                          specify the configuration file
+    -k KEY, --key KEY     specify the bot api token
+    -r ROOT, --root ROOT  specify the telegram user user_id of bot admin
+    -p PLUGIN, --plugin PLUGIN
+                          specify the plugin path
+    -mp MAKE_PLUGIN, --make_plugin MAKE_PLUGIN
+                          create a plugin template
+    -L, --logout          use it to log out from the cloud Bot API server before
+                          launching the bot locally
+    -C, --close           use it to close the bot instance before moving it from
+                          one local server to another
+    -d, --debug           run teelebot in debug mode
+    -v, --version         show the current version of teelebot
+  ```
+  
+  
 
 
 
