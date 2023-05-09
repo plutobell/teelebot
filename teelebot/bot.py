@@ -2,9 +2,9 @@
 """
 @description:基于Telegram Bot Api 的机器人框架
 @creation date: 2019-08-13
-@last modification: 2023-05-08
+@last modification: 2023-05-09
 @author: Pluto (github:plutobell)
-@version: 2.0.3
+@version: 2.1.0
 """
 import time
 import sys
@@ -13,9 +13,11 @@ import types
 import string
 import random
 import shutil
+import inspect
 import importlib
 
 from pathlib import Path
+from typing import Union, Callable
 from concurrent.futures import ThreadPoolExecutor
 
 from .handler import _config, _bridge, _plugin_info
@@ -132,7 +134,7 @@ class Bot(object):
     def __method_function(self, *args, **kwargs):
         # command = inspect.stack()[0].function
         if self._debug and len(args) != 1:
-            _logger.error("Method '" + self.__method_name + "' does not accept positional arguments")
+            _logger.error(f"Method '{self.__method_name}' does not accept positional arguments")
 
         return self.request.postEverything(self.__method_name, **kwargs)
 
@@ -141,7 +143,7 @@ class Bot(object):
         线程池异常回调
         """
         if fur.exception() is not None:
-            _logger.debug("EXCEPTION" + " - " + str(fur.result()))
+            _logger.debug(f"EXCEPTION - {str(fur.result())}")
 
     def __import_module(self, plugin_name):
         """
@@ -172,7 +174,7 @@ class Bot(object):
             plugin_info[plugin_name] = now_mtime
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
-            _logger.info("The plugin " + plugin_name + " has been updated")
+            _logger.info(f"The plugin {plugin_name} has been updated")
 
     def __load_plugin(self, now_plugin_info, as_plugin=True,
         now_plugin_bridge={}, now_non_plugin_list=[]):
@@ -182,11 +184,11 @@ class Bot(object):
         if as_plugin:
             for plugin in list(now_plugin_bridge.keys()): # 动态装载插件
                 if plugin not in list(self.__plugin_bridge.keys()):
-                    _logger.info("The plugin " + plugin + " has been installed")
+                    _logger.info(f"The plugin {plugin} has been installed")
                     self.__plugin_info[plugin] = now_plugin_info[plugin]
             for plugin in list(self.__plugin_bridge.keys()):
                 if plugin not in list(now_plugin_bridge.keys()):
-                    _logger.info("The plugin " + plugin + " has been uninstalled")
+                    _logger.info(f"The plugin {plugin} has been uninstalled")
                     self.__plugin_info.pop(plugin)
 
                     if (self.__plugin_dir + plugin) in sys.path:
@@ -201,7 +203,7 @@ class Bot(object):
         else:
             for plugin in list(now_non_plugin_list): # 动态装载非插件包
                 if plugin not in list(self.__non_plugin_list):
-                    _logger.info("The plugin " + plugin + " has been installed")
+                    _logger.info(f"The plugin {plugin} has been installed")
                     self.__non_plugin_info[plugin] = now_plugin_info[plugin]
 
                     if (self.__plugin_dir + plugin) not in sys.path:
@@ -209,7 +211,7 @@ class Bot(object):
 
             for plugin in list(self.__non_plugin_list):
                 if plugin not in list(now_non_plugin_list):
-                    _logger.info("The plugin " + plugin + " has been uninstalled")
+                    _logger.info(f"The plugin {plugin} has been uninstalled")
                     self.__non_plugin_info.pop(plugin)
 
                     if (self.__plugin_dir + plugin) in sys.path:
@@ -433,10 +435,13 @@ class Bot(object):
                     continue
 
             if message.get(message_type)[:len(command)] == command:
-                module = self.__import_module(plugin)
-                pluginFunc = getattr(module, plugin)
-                fur = self.__thread_pool.submit(pluginFunc, bot, message)
-                fur.add_done_callback(self.__threadpool_exception)
+                try:
+                    module = self.__import_module(plugin)
+                    pluginFunc = getattr(module, plugin)
+                    fur = self.__thread_pool.submit(pluginFunc, bot, message)
+                    fur.add_done_callback(self.__threadpool_exception)
+                except Exception as e:
+                    _logger.error(f"Run plugin {plugin} error: {str(e)}")
 
                 self.__response_times += 1
 
@@ -524,7 +529,7 @@ class Bot(object):
             return None
     
     # teelebot method
-    def message_deletor(self, time_gap, chat_id, message_id):
+    def message_deletor(self, time_gap: int, chat_id: str, message_id: str) -> str:
         """
         定时删除一条消息，时间范围：[0, 900],单位秒
         """
@@ -544,7 +549,7 @@ class Bot(object):
 
             return "ok"
 
-    def timer(self, time_gap, func, args):
+    def timer(self, time_gap: int, func: Callable[..., None], args: tuple) -> str:
         """
         单次定时器，时间范围：[0, 900],单位秒
         """
@@ -566,7 +571,7 @@ class Bot(object):
 
             return "ok"
 
-    def path_converter(self, path):
+    def path_converter(self, path: str) -> str:
         """
         根据操作系统转换URI
         """
@@ -575,12 +580,83 @@ class Bot(object):
 
         return path
     
-    def getChatCreator(self, chat_id):
+    def join_plugin_path(self, path: str, plugin_name: str = None) -> str:
+        """
+        根据提供的路径自动拼接为插件目录的URI
+        """
+        if plugin_name in [None, "", " "]:
+            plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
+        
+        return self.path_converter(f"{self.plugin_dir}{plugin_name}{os.sep}{path}")
+    
+    def get_plugin_info(self, plugin_name: str = None) -> dict:
+        """
+        获取指定插件的信息
+        """
+        if plugin_name in [None, "", " "]:
+            plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
+        
+        if plugin_name not in list(self.plugin_bridge.keys()):
+            info  = {
+                "status": False,
+                "error": "PluginNotFound"
+            }
+            return info
+
+        command = ""
+        description = ""
+        buffer_permissions = "Error"
+        with open(self.path_converter(f"{self.plugin_dir}{plugin_name}{os.sep}__init__.py"), "r", encoding="utf-8") as init:
+            lines = init.readlines()
+            
+            buffer_permissions_str = "False:False"
+            if len(lines) >= 1:
+                command = lines[0][1:].strip()
+            if len(lines) >= 2:
+                description = lines[1][1:].strip()
+            if len(lines) >= 3:
+                buffer_permissions_str = lines[2][1:].strip()
+
+            buffer_permissions_list = buffer_permissions_str.split(":", 1)
+            if buffer_permissions_str in [None, "", " "]:
+                buffer_permissions = tuple(False, False)
+            elif len(buffer_permissions_list) == 2:
+                bool_true = ["True", "true"]
+                bool_false = ["False", "false"]
+                read = buffer_permissions_list[0]
+                write = buffer_permissions_list[1]
+
+                if read in bool_true:
+                    read = True
+                elif read in bool_false:
+                    read = False
+                else:
+                    read = False
+                
+                if write in bool_true:
+                    write = True
+                elif write in bool_false:
+                    write = False
+                else:
+                    read = False
+
+                buffer_permissions = tuple((read, write))
+        
+        info  = {
+            "status": True,
+            "command": command,
+            "description": description,
+            "buffer_permissions": buffer_permissions
+        }
+
+        return info
+
+    def getChatCreator(self, chat_id: str) -> Union[bool, dict]:
         """
         获取群组创建者信息
         """
         if str(chat_id)[0] == "-":
-            req = self.getChatAdministrators(str(chat_id))
+            req = self.getChatAdministrators(chat_id=str(chat_id))
             if req:
                 creator = []
                 for i, user in enumerate(req):
@@ -593,7 +669,7 @@ class Bot(object):
         else:
             return False
 
-    def getChatMemberStatus(self, chat_id, user_id):
+    def getChatMemberStatus(self, chat_id: str, user_id: str) -> Union[bool, str]:
         """
         获取群组用户状态
         "creator",
@@ -611,7 +687,7 @@ class Bot(object):
         else:
             return False
 
-    def getFileDownloadPath(self, file_id):
+    def getFileDownloadPath(self, file_id: str) -> Union[bool, str]:
         """
         生成文件下载链接
         注意：下载链接包含Bot Key
@@ -627,6 +703,34 @@ class Bot(object):
                 return file_download_path
         else:
             return False
+
+    def getChatAdminsUseridList(self, chat_id, skip_bot: bool = True,
+                                privilege_users: list = None) -> Union[bool, list]:
+        """
+        获取聊天中的管理员user_id列表
+        """
+        admins = []
+        results = self.getChatAdministrators(chat_id=chat_id)
+        if results != False:
+            for result in results:
+                if skip_bot:
+                    if str(result["user"]["is_bot"]) == "True":
+                        continue
+                admins.append(str(result["user"]["id"]))
+            
+            if privilege_users is not None:
+                if isinstance(privilege_users, list):
+                    privilege_str_users = []
+                    for pu in privilege_users:
+                        privilege_str_users.append(str(pu))
+                    admins = list(set(admins + privilege_str_users))
+                else:
+                    return False
+
+        else:
+            return False
+
+        return admins
 
     @property
     def plugin_bridge(self):

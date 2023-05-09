@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-06
+@last modification: 2023-05-09
 '''
 import threading
 from uuid import uuid4
+from typing import Tuple, Callable
 
 class _Schedule(object):
     """
@@ -32,7 +33,7 @@ class _Schedule(object):
             print("Error:", str(e))
             return False, str(e)
 
-    def add(self, gap, func, args):
+    def add(self, gap: int, func: Callable[..., None], args: tuple) -> Tuple[bool, str]:
         """
         添加周期性任务
         """
@@ -65,7 +66,7 @@ class _Schedule(object):
         else:
             return False, t
 
-    def status(self):
+    def status(self) -> Tuple[bool, dict]:
         """
         获取周期性任务池的使用情况
         """
@@ -84,7 +85,7 @@ class _Schedule(object):
         except Exception as e:
             return False, {"exception": e}
 
-    def find(self, uid):
+    def find(self, uid: str) -> Tuple[bool, str]:
         """
         查找周期性任务
         """
@@ -97,7 +98,7 @@ class _Schedule(object):
             else:
                 return False, "NotFound"
 
-    def delete(self, uid):
+    def delete(self, uid: str) -> Tuple[bool, str]:
         """
         移除周期性任务
         """
@@ -113,7 +114,7 @@ class _Schedule(object):
         else:
             return False, "NotFound"
 
-    def clear(self):
+    def clear(self) -> Tuple[bool, str]:
         """
         移除所有周期性任务
         """

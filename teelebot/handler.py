@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-08
+@last modification: 2023-05-09
 '''
 import configparser
 import argparse
@@ -207,10 +207,13 @@ def _config():
                         "\n" + \
                         "    # root_id = bot.root_id\n" + \
                         "    # bot_id = bot.bot_id\n" + \
+                        "\n" + \
                         "    # author = bot.author\n" + \
                         "    # version = bot.version\n" + \
+                        "\n" + \
                         "    # plugin_dir = bot.plugin_dir\n" + \
                         "    # plugin_bridge = bot.plugin_bridge\n" + \
+                        "\n" + \
                         "    # uptime = bot.uptime\n" + \
                         "    # response_times = bot.response_times\n" + \
                         "    # response_chats = bot.response_chats\n" + \
@@ -224,9 +227,10 @@ def _config():
                         '    message_type = message["message_type"]\n' + \
                         '    chat_type = message["chat"]["type"]\n' + \
                         "\n" + \
-                        '    prefix = ""\n' + \
-                        '    with open(bot.path_converter(bot.plugin_dir + "' + plugin_name + '/__init__.py"), "r", encoding="utf-8") as init:\n' + \
-                        '        prefix = init.readline()[1:].strip()\n' + \
+                        '    plugin_info = bot.get_plugin_info()\n' + \
+                        '    command = ""\n' + \
+                        '    if plugin_info.get("status", False):\n' + \
+                        '        command = plugin_info.get("command", "")\n' + \
                         "\n\n" + \
                         "    # Write your plugin code below"
                     ])
@@ -382,15 +386,58 @@ def _bridge(plugin_dir):
     plugin_lis = os.listdir(plugin_dir)
     for plugi in plugin_lis:
         if os.path.isdir(str(Path(plugin_dir + plugi))) and plugi != "__pycache__" and plugi[0] != '.':
+            entrance_exist = False
+            entrance_count = 0
+            try:
+                with open(str(Path(f"{plugin_dir}{plugi}{os.sep}{plugi}.py")), "r", encoding="utf-8") as e:
+                    content = e.read()
+                    if f"def {plugi}(bot, message):" in content or \
+                        f"def {plugi}(message, bot):" in content or \
+                        f"def {plugi}(bot,message):" in content or \
+                        f"def {plugi}(message,bot):" in content:
+                        entrance_exist = True
+
+                    if entrance_exist:
+                        entrance_count += content.count(f"def {plugi}(bot, message):")
+                        entrance_count += content.count(f"def {plugi}(message, bot):")
+                        entrance_count += content.count(f"def {plugi}(bot,message):")
+                        entrance_count += content.count(f"def {plugi}(message,bot):")
+            except Exception as e:
+                os.system("")
+                print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
+
             package_file_list = os.listdir(str(Path(plugin_dir + plugi)))
             if plugi + ".py" in package_file_list and \
                 "__init__.py" in package_file_list and \
-                "METADATA" in package_file_list:
+                "METADATA" in package_file_list and \
+                entrance_exist and entrance_count == 1:
                 plugin_list.append(plugi)
             else:
-                os.system("")
-                print("\033[1;31mThe " + plugi + " plugin is corrupted." + "\033[0m")
                 corrupted_plugin_list.append(plugi)
+
+                missing_files_count = 0
+                error = f"plugin missing "
+                if f"{plugi}.py" not in package_file_list:
+                    error += f"'{plugi}.py' "
+                    missing_files_count += 1
+                if "__init__.py" not in package_file_list:
+                    error += "'__init__.py' "
+                    missing_files_count += 1
+                if "METADATA" not in package_file_list:
+                    error += "'METADATA' "
+                    missing_files_count += 1
+                if missing_files_count != 0:
+                    os.system("")
+                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+                
+                if not entrance_exist:
+                    error = f"plugin not found entrance function '{plugi}'"
+                    os.system("")
+                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+                elif entrance_exist and entrance_count != 1:
+                    error = f"multiple entrance functions exist in plugin"
+                    os.system("")
+                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
 
     for plugin in plugin_list:
         with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
@@ -400,8 +447,9 @@ def _bridge(plugin_dir):
             else:
                 if plugin in corrupted_plugin_list:
                     if (plugin_dir + plugin) in sys.path:
-                        sys.modules.pop(plugin_dir + plugin)
                         sys.path.remove(plugin_dir + plugin)
+                    if (plugin_dir + plugin) in sys.modules:
+                        sys.modules.pop(plugin_dir + plugin)
                 else:
                     non_plugin_list.append(plugin)
                     if (plugin_dir + plugin) not in sys.path:

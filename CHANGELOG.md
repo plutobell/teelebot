@@ -1,5 +1,15 @@
 # Changelog
 
+#### 2023-05-09
+
+* v2.1.0
+  * 新增方法 join_plugin_path
+  * 新增方法 get_plugin_info
+  * 新增方法 getChatAdminsUseridList
+  * 增强插件完整性检测
+  * 修复bug
+  * 细节调整
+
 #### 2023-05-08
 
 * v2.0.3

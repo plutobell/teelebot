@@ -1,4 +1,4 @@
-# 插件开发指南 (以 Hello 插件为例) v1.1
+# 插件开发指南 (以 Hello 插件为例) v1.2
 
 #### 一、插件结构
 
@@ -36,13 +36,32 @@ def Hello(bot, message):
 
 ##### 资源路径
 
-若要打开某个插件目录下的文件资源，需要使用的路径应当遵循以下的格式：
+1.若要打开某个插件目录下的文件资源，可以使用方法 `path_converter` ，此方法会根据操作系统转换路径格式：
 
 ```python
 bot.path_converter(bot.plugin_dir + "<plugin dir name>/<resource address>")
 ```
 
-方法 `path_converter` 根据操作系统转换路径格式。
+2.**在 `v2.1.0` 及以上版本，引入了方法 `join_plugin_path` ,此方法会根据提供的路径自动拼接为插件目录的URI：**
+
+```python
+bot.join_plugin_path("<resource address>")
+```
+
+以获取 `Hello` 插件目录下的 `Hello_screenshot.png` 文件的路径为例：
+
+```python
+# 两种方式效果相同
+
+bot.path_converter(bot.plugin_dir + "Hello/Hello_screenshot.png")
+
+bot.join_plugin_path("Hello_screenshot.png")
+
+```
+
+
+
+
 
 
 

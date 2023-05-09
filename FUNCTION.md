@@ -8,8 +8,8 @@
 
 *特殊情况：*
 
-* *sendMediaGroup*
-* *editMessageMedia*
+* *bot.sendMediaGroup*()
+* *bot.editMessageMedia*()
 
 *使用以上两个方法上传本地文件时，请使用参数 `files` ，格式请参考 [inputmedia](https://core.telegram.org/bots/api#inputmedia)*
 
@@ -17,37 +17,40 @@
 
 #### teelebot methods
 
-*  getFileDownloadPath(*file_id*)
-*  getChatMemberStatus(*chat_id*, *user_id*)
-*  getChatCreator(*chat_id*)
-*  message_deletor(*time_gap*, *chat_id*, *message_id*)
-*  path_converter(*path*)
-*  timer(*time_gap*, *func*, *args*)
-*  schedule.add(*gap*, *func*, *args*)
-*  schedule.delete(*uid*)
-*  schedule.find(*uid*)
-*  schedule.clear()
-*  schedule.status()
-*  buffer.status()
-*  buffer.sizeof(*plugin_name*=None)
-*  buffer.read(*plugin_name*=None)
-*  buffer.write(*buffer*, *plugin_name*=None)
+*  bot.message_deletor(*time_gap*: int, *chat_id*: str, *message_id*: str) -> str
+*  bot.timer(*time_gap*: int, *func*: Callable[..., None], *args*: tuple) -> str
+*  bot.path_converter(*path*: str) -> str
+*  bot.join_plugin_path(*path*: str, *plugin_name*: str = None) -> str
+*  bot.get_plugin_info(*plugin_name*: str = None) -> dict
+*  bot.getChatCreator(*chat_id*: str) -> Union[bool, dict]
+*  bot.getChatMemberStatus(*chat_id*: str, *user_id*: str) -> Union[bool, str]
+*  bot.getFileDownloadPath(*file_id*: str) -> Union[bool, str]
+*  bot.getChatAdminsUseridList(*chat_id*, *skip_bot*: bool = True, *privilege_users*: list = None) -> Union[bool, list]
+*  bot.schedule.add(*gap*: int, *func*: Callable[..., None], *args*: tuple) -> Tuple[bool, str]
+*  bot.schedule.status() -> Tuple[bool, dict]
+*  bot.schedule.find(*uid*: str) -> Tuple[bool, str]
+*  bot.schedule.delete(*uid*: str) -> Tuple[bool, str]
+*  bot.schedule.clear() -> Tuple[bool, str]
+*  bot.buffer.status() -> Tuple[bool, dict]
+*  bot.buffer.sizeof(*plugin_name*: str = None) -> Tuple[bool, Union[str, int]]
+*  bot.buffer.read(*plugin_name*: str = None) -> Tuple[bool, Union[str, tuple, any]]
+*  bot.buffer.write(*buffer*: any, *plugin_name*: str = None) -> Tuple[bool, Union[str, tuple]]
 
 
 
 #### teelebot properties
 
-*  root_id
-*  bot_id
-*  author
-*  version
-*  plugin_dir
-*  plugin_bridge
-*  uptime
-*  response_times
-*  response_chats 
-*  response_users
-*  proxies
+*  bot.root_id
+*  bot.bot_id
+*  bot.author
+*  bot.version
+*  bot.plugin_dir
+*  bot.plugin_bridge
+*  bot.uptime
+*  bot.response_times
+*  bot.response_chats
+*  bot.response_users
+*  bot.proxies
 
 
 

@@ -1,12 +1,13 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2023-05-03
+@last modification: 2023-05-09
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
 from pathlib import Path
+from typing import Tuple, Union
 try:
     from reprlib import repr
 except ImportError:
@@ -35,7 +36,7 @@ class _Buffer(object):
     def __del__(self):
         del self.__buffer
 
-    def status(self):
+    def status(self) -> Tuple[bool, dict]:
         """
         获取数据暂存区的使用情况
         单位为字节
@@ -55,13 +56,13 @@ class _Buffer(object):
         except Exception as e:
             return False, {"exception": e}
 
-    def sizeof(self, plugin_name=None):
+    def sizeof(self, plugin_name: str = None) -> Tuple[bool, Union[str, int]]:
         """
         获取单个插件数据暂存区占用内存大小
         单位为字节
         """
-        if plugin_name is None:
-            plugin_name = str(inspect.stack()[1][3])
+        if plugin_name in [None, "", " "]:
+            plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
         if plugin_name in self.__buffer.keys():
             with self.__buffer_mutex:
@@ -69,14 +70,14 @@ class _Buffer(object):
         else:
             return False, "NoPlugin"
 
-    def read(self, plugin_name=None):
+    def read(self, plugin_name: str = None) -> Tuple[bool, Union[str, tuple, any]]:
         """
         从暂存区读取数据
         """
         isSelf = False
-        if plugin_name is None:
+        if plugin_name in [None, "", " "]:
             isSelf = True
-            plugin_name = str(inspect.stack()[1][3])
+            plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
         if plugin_name in self.__buffer.keys():
             ok, permission = self.__permission_check(plugin_name)
@@ -93,14 +94,14 @@ class _Buffer(object):
         else:
             return False, "NoPlugin"
 
-    def write(self, buffer, plugin_name=None):
+    def write(self, buffer: any, plugin_name: str = None) -> Tuple[bool, Union[str, tuple]]:
         """
         写入数据到暂存区
         """
         isSelf = False
-        if plugin_name is None:
+        if plugin_name in [None, "", " "]:
             isSelf = True
-            plugin_name = str(inspect.stack()[1][3])
+            plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
         if plugin_name in self.__buffer.keys():
             ok, permission = self.__permission_check(plugin_name)
@@ -143,14 +144,15 @@ class _Buffer(object):
 
     def __permission_check(self, plugin_name):
         if plugin_name in self.__buffer.keys():
-            if plugin_name != str(inspect.stack()[1][3]): # 读写权限检查
+            if plugin_name != os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]: # 读写权限检查
                 with open(Path(self.__plugin_dir + plugin_name + os.sep + "__init__.py"), "r", encoding="utf-8") as init:
                     lines = init.readlines()
 
                 for i, _ in enumerate(lines):
-                    lines[i].strip("\n")
-                    lines[i].strip("\r")
-                    lines[i].strip("")
+                    lines[i] = lines[i].strip("\n")
+                    lines[i] = lines[i].strip("\r")
+                    lines[i] = lines[i].strip("")
+                    lines[i] = lines[i].strip()
 
                 if len(lines) > 2:
                     permission = lines[2][1:]
