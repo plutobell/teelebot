@@ -306,6 +306,26 @@ teelebot -c/--config <configure file path>
 
 
 
+#### 四、导入使用
+
+```python
+# 导入Bot类
+from teelebot import Bot
+
+# 实例化Bot类
+# 不传参数时会使用teelebot默认配置文件路径下的配置文件实例化Bot类
+# 在v2.2.0及以上版本，可传递参数覆盖配置文件的设定，可用参数:
+#     Bot(key: str = None, debug: bool = False, proxies: dict = None)
+bot = Bot()
+
+# 使用Bot类
+bot.sendMessage(chat_id="chat_id", text="Hello World!")
+```
+
+**Tip: 导入使用时需要确保默认配置文件路径中存在配置文件,并且必须的字段已经填写**
+
+
+
 
 
 ## 联系我

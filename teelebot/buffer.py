@@ -1,6 +1,6 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2023-05-09
+@last modification: 2023-05-11
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
@@ -80,14 +80,14 @@ class _Buffer(object):
             plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
         if plugin_name in self.__buffer.keys():
-            ok, permission = self.__permission_check(plugin_name)
+            ok, permissions = self.__permissions_check(plugin_name)
             if ok:
-                permission_read = permission[0]
-                # permission_write = permission[1]
-                if not permission_read and not isSelf:
+                permissions_read = permissions[0]
+                # permissions_write = permissions[1]
+                if not permissions_read and not isSelf:
                     return False, "NoPermissionToRead"
             else:
-                return False, permission
+                return False, permissions
 
             with self.__buffer_mutex:
                 return True, copy.deepcopy(self.__buffer.get(plugin_name, {}))
@@ -104,14 +104,14 @@ class _Buffer(object):
             plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
         if plugin_name in self.__buffer.keys():
-            ok, permission = self.__permission_check(plugin_name)
+            ok, permissions = self.__permissions_check(plugin_name)
             if ok:
-                # permission_read = permission[0]
-                permission_write = permission[1]
-                if not permission_write and not isSelf:
+                # permissions_read = permissions[0]
+                permissions_write = permissions[1]
+                if not permissions_write and not isSelf:
                     return False, "NoPermissionToWrite"
             else:
-                return False, permission
+                return False, permissions
 
             with self.__buffer_mutex:
                 old_total_used = self.__total_size(self.__buffer)
@@ -142,7 +142,7 @@ class _Buffer(object):
         else:
             return False
 
-    def __permission_check(self, plugin_name):
+    def __permissions_check(self, plugin_name):
         if plugin_name in self.__buffer.keys():
             if plugin_name != os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]: # 读写权限检查
                 with open(Path(self.__plugin_dir + plugin_name + os.sep + "__init__.py"), "r", encoding="utf-8") as init:
@@ -155,26 +155,26 @@ class _Buffer(object):
                     lines[i] = lines[i].strip()
 
                 if len(lines) > 2:
-                    permission = lines[2][1:]
+                    permissions = lines[2][1:]
                     if lines[2] == "#":
-                        permission = "False:False"
+                        permissions = "False:False"
                 else:
-                    permission = "False:False" # 格式 读:写
+                    permissions = "False:False" # 格式 读:写
 
-                if len(permission.split(":")) == 2:
-                    permission_read = permission.split(":")[0]
-                    permission_write = permission.split(":")[1]
-                    if permission_read in ["True", "False", "true", "false"] and \
-                        permission_write in ["True", "False", "true", "false"]:
+                if len(permissions.split(":")) == 2:
+                    permissions_read = permissions.split(":")[0]
+                    permissions_write = permissions.split(":")[1]
+                    if permissions_read in ["True", "False", "true", "false"] and \
+                        permissions_write in ["True", "False", "true", "false"]:
                         bool_dict = {
                             "True": True,
                             "true": True,
                             "False": False,
                             "false": False
                         }
-                        permission_read = bool_dict[permission_read]
-                        permission_write = bool_dict[permission_write]
-                        return True, tuple((permission_read, permission_write))
+                        permissions_read = bool_dict[permissions_read]
+                        permissions_write = bool_dict[permissions_write]
+                        return True, tuple((permissions_read, permissions_write))
                     else:
                         return False, "PermissionFormatError"
                 else:

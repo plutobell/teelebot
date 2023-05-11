@@ -241,7 +241,7 @@ file Hello/__init__.py
 
 #### 七、METADATA文件内容 （Metadata-version: 1.0）
 
-在 `v1.17.0` 及以上版本，插件包引入了文件 `METADATA` ，以存储插件信息。
+在 `v1.17.0` 及以上版本，插件包引入了文件 `METADATA` ，以存储插件信息， 此文件在使用插件模板创建工具创建插件时会自动生成。
 
 以`Hello` 插件为例， `METADATA`文件内容如下：
 
@@ -262,7 +262,7 @@ Source: https://github.com/plutobell/teelebot-plugins
 
 其中，`Requires-dist:` 为插件包的依赖（例如：requests），各个依赖间请使用英文字符 **","** 进行分隔。
 
-**Tip: 此文件在使用插件模板创建工具创建插件时会自动生成**
+**另外，在 `v2.1.0 ~ v2.2.0 ` 版本，新增了方法 `get_plugin_info` 和 `set_plugin_info` ，用于获取和修改插件信息，包括 `METADATA` 数据。**
 
 
 

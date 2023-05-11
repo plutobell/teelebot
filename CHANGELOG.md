@@ -1,5 +1,16 @@
 # Changelog
 
+#### 2023-05-11
+
+* v2.2.0
+  * 新增方法 set_plugin_info
+  * 新增属性 metadata_template
+  * 新增插件版本检测
+  * 完善方法 get_plugin_info
+  * 完善插件完整性检测
+  * 修复bug
+  * 细节调整
+
 #### 2023-05-09
 
 * v2.1.0

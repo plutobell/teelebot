@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-09
+@last modification: 2023-05-10
 '''
 import configparser
 import argparse
 import os
 import sys
+import copy
 import shutil
 import requests
 
@@ -16,6 +17,20 @@ from .version import __author__, __github__, __version__
 cloud_api_server = "https://api.telegram.org/"
 common_pkg_prefix = "~~"
 inline_mode_prefix = "?:"
+metadata_template = { # METADATA v1.0
+    "Metadata-version": "1.0",
+    "Plugin-name": "",
+    "Version": "",
+    "Summary": "",
+    "Home-page": "",
+    "Author": "",
+    "Author-email": "",
+    "License": "",
+    "Keywords": "",
+    "Requires-teelebot": "",
+    "Requires-dist": "",
+    "Source": ""
+}
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
@@ -101,8 +116,9 @@ def _config():
                 "local_port = " + "\n",
                 "proxy = "
             ])
+            os.system("")
             print("The configuration file has been created automatically.")
-            print("Configuration file path: " + str(config_dir))
+            print("Configuration file path: \033[1;32m" + str(config_dir) + "\033[0m") # Green
         if not args.key or not args.root:
             print("Please modify the relevant parameters and restart the teelebot.")
             os._exit(0)
@@ -196,7 +212,8 @@ def _config():
                 with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w", encoding="utf-8") as init:
                     init.writelines([
                         "#/" + plugin_name.lower() + "\n",
-                        "#" + plugin_name + " Plugin\n"
+                        "#" + plugin_name + " Plugin\n",
+                        "#"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py")), "w", encoding="utf-8") as enter:
@@ -218,7 +235,9 @@ def _config():
                         "    # response_times = bot.response_times\n" + \
                         "    # response_chats = bot.response_chats\n" + \
                         "    # response_users = bot.response_users\n" + \
+                        "\n" + \
                         "    # proxies = bot.proxies\n" + \
+                        "    # metadata_template = bot.metadata_template\n" + \
                         "\n" + \
                         '    chat_id = message["chat"]["id"]\n' + \
                         '    user_id = message["from"]["id"]\n' + \
@@ -237,24 +256,23 @@ def _config():
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "README.md"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + "README.md")), "w", encoding='utf-8') as readme:
                     readme.writelines([
-                        "# " + plugin_name + " #\n"
+                        "# " + plugin_name + "\n"
                     ])
             if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "METADATA"))):
                 with open(str(Path(plugin_dir + plugin_name + os.sep + "METADATA")), "w", encoding='utf-8') as metadata:
-                    metadata.writelines([
-                        "Metadata-version: 1.0\n",
-                        "Plugin-name: " + plugin_name + "\n",
-                        "Version: 0.1.0\n",
-                        "Summary: \n",
-                        "Home-page: \n",
-                        "Author: \n",
-                        "Author-email: \n",
-                        "License: \n",
-                        "Keywords: \n",
-                        "Requires-teelebot: >=" + __version__ + "\n",
-                        "Requires-dist: \n",
-                        "Source: "
-                    ])
+                    metadata_data = copy.deepcopy(metadata_template)
+                    metadata_data["Plugin-name"] = plugin_name
+                    metadata_data["Version"] = "0.1.0"
+                    metadata_data["Requires-teelebot"] = f">={__version__}"
+
+                    metadata_list = []
+                    for key, value in metadata_data.items():
+                        metadata_list.append(f"{key}: {value}\n")
+                    metadata_list[-1] = metadata_list[-1].strip()
+                    if metadata_list[-1].split(":")[1].strip() in [None, ""]:
+                            metadata_list[-1] += " "
+
+                    metadata.writelines(metadata_list)
 
             print("Plugin " + plugin_name + " was created successfully.")
         else:
@@ -370,6 +388,7 @@ def _config():
     config["cloud_api_server"] = cloud_api_server
     config["common_pkg_prefix"] = common_pkg_prefix
     config["inline_mode_prefix"] = inline_mode_prefix
+    config["metadata_template"] = metadata_template
 
     # print(config)
     return config
@@ -406,11 +425,32 @@ def _bridge(plugin_dir):
                 os.system("")
                 print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
 
+            metadata_ok = False
+            try:
+                with open(str(Path(f"{plugin_dir}{plugi}{os.sep}METADATA")), "r", encoding="utf-8") as meta:
+                    lines = meta.readlines()
+                    metadata_data = {}
+                    for line in lines:
+                        line = line.strip("\n").strip(" ")
+                        if line in [None, "", " "]:
+                            continue
+                        line_list = line.split(":", 1)
+                        if len(line_list) == 2:
+                            metadata_data[line_list[0].replace(" ", "")] = line_list[1].strip(" ")
+                        elif len(line_list) == 1:
+                            metadata_data[line_list[0].replace(" ", "")] = ""
+
+                    if list(metadata_data.keys()) == list(metadata_template.keys()):
+                        metadata_ok = True
+            except Exception as e:
+                os.system("")
+                print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
+
             package_file_list = os.listdir(str(Path(plugin_dir + plugi)))
             if plugi + ".py" in package_file_list and \
                 "__init__.py" in package_file_list and \
                 "METADATA" in package_file_list and \
-                entrance_exist and entrance_count == 1:
+                entrance_exist and entrance_count == 1 and metadata_ok:
                 plugin_list.append(plugi)
             else:
                 corrupted_plugin_list.append(plugi)
@@ -436,6 +476,11 @@ def _bridge(plugin_dir):
                     print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
                 elif entrance_exist and entrance_count != 1:
                     error = f"multiple entrance functions exist in plugin"
+                    os.system("")
+                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+
+                if not metadata_ok:
+                    error = f"metadata format error"
                     os.system("")
                     print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
 
