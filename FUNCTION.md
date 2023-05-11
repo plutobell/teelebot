@@ -27,13 +27,7 @@
 
 * bot.get_plugin_info(*plugin_name*: str = None) -> dict
 
-* bot.set_plugin_info(*plugin_name*: str = None,
-
-  ​            *command*: str = None, *description*: str = None,
-
-  ​            *buffer_permissions*: Tuple[bool, bool] = None,
-
-  ​            *metadata*: dict = None) -> dict
+* bot.set_plugin_info(*plugin_name*: str = None, *command*: str = None, *description*: str = None, *buffer_permissions*: Tuple[bool, bool] = None, *metadata*: dict = None) -> dict
 
 * bot.getChatCreator(*chat_id*: str) -> Union[bool, dict]
 
@@ -41,9 +35,7 @@
 
 * bot.getFileDownloadPath(*file_id*: str) -> Union[bool, str]
 
-* bot.getChatAdminsUseridList(*chat_id*, *skip_bot*: bool = True,
-
-  ​			*privilege_users*: list = None) -> Union[bool, list]
+* bot.getChatAdminsUseridList(*chat_id*, *skip_bot*: bool = True, *privilege_users*: list = None) -> Union[bool, list]
 
 * bot.schedule.add(*gap*: int, *func*: Callable[..., None], *args*: tuple) -> Tuple[bool, str]
 
