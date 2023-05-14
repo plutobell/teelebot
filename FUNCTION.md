@@ -1,4 +1,4 @@
-# Function (teelebot version >= v2.3.0)
+# Function (teelebot version >= v2.3.1)
 
 #### bot API methods
 
@@ -34,8 +34,8 @@
 * bot.buffer.sizeof(*plugin_name*: str = None) -> Tuple[bool, Union[str, int]]
 * bot.buffer.read(*plugin_name*: str = None) -> Tuple[bool, Union[str, tuple, any]]
 * bot.buffer.write(*buffer*: any, *plugin_name*: str = None) -> Tuple[bool, Union[str, tuple]]
-* bot.metadata.read(*plugin_name*: str = None) -> Tuple[bool, Union[dict, str]]
-* bot.metadata.write(*metadata*: dict, *plugin_name*: str = None) -> Tuple[bool, Union[dict, str]]
+* bot.metadata.read(*plugin_name*: str = None, *plugin_dir*: str = None) -> Tuple[bool, Union[dict, str]]
+* bot.metadata.write(*metadata*: dict, *plugin_name*: str = None, *plugin_dir*: str = None) -> Tuple[bool, Union[dict, str]]
 * bot.metadata.template(*version*: str = None) -> Tuple[bool, Union[dict, str]]
 
 

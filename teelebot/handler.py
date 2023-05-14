@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-14
+@last modification: 2023-05-15
 '''
 import configparser
 import argparse
@@ -177,7 +177,7 @@ def _config():
             print("Field plugin_dir is not set in configuration file.")
             os._exit(0)
         else:
-            plugin_dir = str(Path(os.path.abspath(config["plugin_dir"]))) + os.sep
+            plugin_dir = f'{str(Path(os.path.abspath(config["plugin_dir"])))}{os.sep}'
             plugin_dir_in_config = True
     else:
         print("Field plugin_dir does not exist in configuration file.")

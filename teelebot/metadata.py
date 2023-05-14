@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-12
-@last modification: 2023-05-14
+@last modification: 2023-05-15
 '''
 import os
 import copy
@@ -25,21 +25,31 @@ class _Metadata(object):
         del self.__metadata_mutex
         del self.__metadata_template
 
-    def read(self, plugin_name: str = None) -> Tuple[bool, Union[dict, str]]:
+    def read(self, plugin_name: str = None,
+            plugin_dir: str = None) -> Tuple[bool, Union[dict, str]]:
         """
         Read the METADATA data
         """
         if plugin_name in [None, "", " "]:
             plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
-        if not os.path.isdir(str(Path(f"{self.__plugin_dir}{plugin_name}"))) or \
-            not os.path.exists(Path(f"{self.__plugin_dir}{plugin_name}")):
+        if plugin_dir in [None, "", " "]:
+            plugin_dir = self.__plugin_dir
+        else:
+            plugin_dir = f'{Path(plugin_dir)}{os.sep}'
+
+        if not os.path.isdir(str(Path(plugin_dir))) or \
+            not os.path.exists(Path(plugin_dir)):
+            return False, "PluginDirNotFound"
+
+        if not os.path.isdir(str(Path(f"{plugin_dir}{plugin_name}"))) or \
+            not os.path.exists(Path(f"{plugin_dir}{plugin_name}")):
             return False, "PluginNotFound"
         
         metadata = {}
         try:
             with self.__metadata_mutex:
-                with open(Path(f"{self.__plugin_dir}{plugin_name}{os.sep}METADATA"), "r", encoding="utf-8") as meta:
+                with open(Path(f"{plugin_dir}{plugin_name}{os.sep}METADATA"), "r", encoding="utf-8") as meta:
                     lines = meta.readlines()
                     for line in lines:
                         line = line.strip("\n").strip(" ")
@@ -75,15 +85,25 @@ class _Metadata(object):
             print(f"\033[1;31mError to read metadata of {plugin_name} plugin:\033[0m {str(e)}")
             return False, "ReadMetadataError"
                 
-    def write(self, metadata: dict, plugin_name: str = None) -> Tuple[bool, Union[dict, str]]:
+    def write(self, metadata: dict,
+            plugin_name: str = None, plugin_dir: str = None) -> Tuple[bool, Union[dict, str]]:
         """
         Write the METADATA data
         """
         if plugin_name in [None, "", " "]:
             plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
 
-        if not os.path.isdir(str(Path(f"{self.__plugin_dir}{plugin_name}"))) or \
-            not os.path.exists(Path(f"{self.__plugin_dir}{plugin_name}")):
+        if plugin_dir in [None, "", " "]:
+            plugin_dir = self.__plugin_dir
+        else:
+            plugin_dir = f'{Path(plugin_dir)}{os.sep}'
+
+        if not os.path.isdir(str(Path(plugin_dir))) or \
+            not os.path.exists(Path(plugin_dir)):
+            return False, "PluginDirNotFound"
+
+        if not os.path.isdir(str(Path(f"{plugin_dir}{plugin_name}"))) or \
+            not os.path.exists(Path(f"{plugin_dir}{plugin_name}")):
             return False, "PluginNotFound"
         
         if not isinstance(metadata, dict):
@@ -122,7 +142,7 @@ class _Metadata(object):
         
         try:
             with self.__metadata_mutex:
-                with open(Path(f"{self.__plugin_dir}{plugin_name}{os.sep}METADATA"), "w", encoding="utf-8") as meta:
+                with open(Path(f"{plugin_dir}{plugin_name}{os.sep}METADATA"), "w", encoding="utf-8") as meta:
                     meta.writelines(metadata_list)
             return True, ""
         except Exception as e:
