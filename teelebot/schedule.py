@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-09
+@last modification: 2023-05-14
 '''
 import threading
 from uuid import uuid4
@@ -9,7 +9,7 @@ from typing import Tuple, Callable
 
 class _Schedule(object):
     """
-    周期性任务类
+    Schedule Class
     """
     def __init__(self, queue_size):
         self.__queue_size = queue_size
@@ -35,7 +35,7 @@ class _Schedule(object):
 
     def add(self, gap: int, func: Callable[..., None], args: tuple) -> Tuple[bool, str]:
         """
-        添加周期性任务
+        Add schedule task
         """
         def __short_uuid():
             uuidChars = ("a", "b", "c", "d", "e", "f",
@@ -68,7 +68,7 @@ class _Schedule(object):
 
     def status(self) -> Tuple[bool, dict]:
         """
-        获取周期性任务池的使用情况
+        Retrieve usage statistics of the Schedule task pool
         """
         try:
             with self.__queue_mutex:
@@ -87,7 +87,7 @@ class _Schedule(object):
 
     def find(self, uid: str) -> Tuple[bool, str]:
         """
-        查找周期性任务
+        Find schedule tasks
         """
         with self.__queue_mutex:
             if len(self.__queue) <= 0:
@@ -100,7 +100,7 @@ class _Schedule(object):
 
     def delete(self, uid: str) -> Tuple[bool, str]:
         """
-        移除周期性任务
+        Remove schedule tasks
         """
         if len(self.__queue) <= 0:
             return False, "Empty"
@@ -116,7 +116,7 @@ class _Schedule(object):
 
     def clear(self) -> Tuple[bool, str]:
         """
-        移除所有周期性任务
+        Remove all schedule tasks
         """
         if len(self.__queue) == 0:
             return False, "Empty"

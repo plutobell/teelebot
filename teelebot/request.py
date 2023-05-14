@@ -1,17 +1,18 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-06
+@last modification: 2023-05-14
 '''
 import json
 import requests
+
 from .logger import _logger
 from traceback import extract_stack
 
 
 class _Request(object):
     """
-    接口请求类
+    Request Class
     """
     def __init__(self, thread_pool_size, url, debug=False, proxies={"all": None}):
         self.__url = url
@@ -27,11 +28,11 @@ class _Request(object):
 
     def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
         """
-        连接池
+        Connection Pool
         """
         session = requests.Session()
         session.verify = False
-        session.trust_env = False
+        # session.trust_env = False
         session.proxies.update(self.__proxies)
         
 
@@ -44,11 +45,11 @@ class _Request(object):
 
     def __debug_info(self, method_name, result):
         """
-        debug模式
+        Debug mode
         """
         if self.__debug and not result.get("ok"):
             stack_info = extract_stack()
-            if len(stack_info) > 8:  # 插件内
+            if len(stack_info) > 8:  # Plugin internal call
                 _logger.error(
                     "Request failed" + " - " + \
                     "From:" + stack_info[-3][2] + " - " + \
@@ -56,7 +57,7 @@ class _Request(object):
                     "Line:" + str(stack_info[5][1]) + " - " + \
                     "Method:" + method_name + " - " + \
                     "Result:" + str(result)) # function name: stack_info[6][2]
-            elif len(stack_info) > 3:  # 外部调用
+            elif len(stack_info) > 3:  # External call
                 _logger.error(
                     "Request failed" + " - " + \
                     "From:" + stack_info[0][0] + " - " + \

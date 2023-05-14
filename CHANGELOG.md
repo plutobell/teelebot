@@ -1,5 +1,17 @@
 # Changelog
 
+#### 2023-05-14
+
+* v2.3.0
+  * BREAKING CHANGE: 移除Bot类方法 get_plugin_info
+  * BREAKING CHANGE: 移除Bot类方法 set_plugin_info
+  * BREAKING CHANGE: 移除Bot类属性 metadata_template
+  * BREAKING CHANGE: 移动插件的 “命令、描述、Buffer权限” 到 METADATA
+  * BREAKING CHANGE: 升级 METADATA 版本至 1.1
+  * 新增 Metadata 类
+  * 增强鲁棒性
+  * 细节调整
+
 #### 2023-05-11
 
 * v2.2.0

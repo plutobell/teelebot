@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2023-05-06
+@last modification: 2023-05-14
 """
 import os
 import requests
@@ -52,8 +52,7 @@ def main():
         protocol = "https://"
         if bot._local_api_server != "False":
             protocol = "http://"
-        url = protocol + str(bot._server_address + ":" + str(
-            bot._server_port) + "/bot" + str(bot._key))
+        url = f'{protocol}{str(bot._server_address)}:{str(bot._server_port)}/bot{str(bot._key)}'
         if (bot._drop_pending_updates == True and pending_update_count != 0) \
             or (status["url"] != url) or (status["has_custom_certificate"] != bot._self_signed) \
             or status["max_connections"] != int(bot._pool_size) \
@@ -108,7 +107,7 @@ def main():
                 timeout=bot._timeout,
                 allowed_updates=bot._allowed_updates
             )
-            messages = bot._washUpdates(results)
+            bot._washUpdates(results)
         _runUpdates(bot=bot)
 
 

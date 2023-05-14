@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-10
+@last modification: 2023-05-14
 '''
 import configparser
 import argparse
@@ -12,25 +12,22 @@ import shutil
 import requests
 
 from pathlib import Path
+from .metadata import _Metadata
 from .version import __author__, __github__, __version__
+from .common import (
+    __metadata_templates__,
+    __metadata_version_in_use__,
+    __cloud_api_server__,
+    __common_pkg_prefix__,
+    __inline_mode_prefix__,
+    __config_template__
+)
 
-cloud_api_server = "https://api.telegram.org/"
-common_pkg_prefix = "~~"
-inline_mode_prefix = "?:"
-metadata_template = { # METADATA v1.0
-    "Metadata-version": "1.0",
-    "Plugin-name": "",
-    "Version": "",
-    "Summary": "",
-    "Home-page": "",
-    "Author": "",
-    "Author-email": "",
-    "License": "",
-    "Keywords": "",
-    "Requires-teelebot": "",
-    "Requires-dist": "",
-    "Source": ""
-}
+cloud_api_server = __cloud_api_server__
+common_pkg_prefix = __common_pkg_prefix__
+inline_mode_prefix = __inline_mode_prefix__
+metadata_template = __metadata_templates__[__metadata_version_in_use__]
+
 
 parser = argparse.ArgumentParser(description="teelebot console command list")
 parser.add_argument("-c", "--config", type=str,
@@ -64,15 +61,15 @@ if len(sys.argv) == 2 and args.version:
 
 def _config():
     '''
-    获取bot配置信息及初始化
+    Get the bot configuration information and initialize
     '''
     config = {}
 
     if args.config:
         config_dir = os.path.abspath(str(Path(args.config)))
     else:
-        config_dir = str(Path(os.path.abspath(
-                os.path.expanduser('~')) + "/.teelebot/config.cfg"))
+        config_dir = str(Path(
+            f"{os.path.abspath(os.path.expanduser('~'))}/.teelebot/config.cfg"))
     (path, filename) = os.path.split(config_dir)
     (filename_, extension) = os.path.splitext(filename)
     if extension != ".cfg":
@@ -95,30 +92,26 @@ def _config():
         if args.debug:
             debug = "True"
         with open(config_dir, "w", encoding="utf-8") as conf_file:
-            conf_file.writelines([
-                "[config]" + "\n",
-                "key = " + str(key) + "\n",
-                "root_id = " + str(root) + "\n",
-                "plugin_dir = " + str(plugin_dir) + "\n",
-                "pool_size = 40" + "\n",
-                "buffer_size = 16" + "\n",
-                "debug = " + str(debug) + "\n",
-                "local_api_server = False" + "\n",
-                "drop_pending_updates = False" + "\n",
-                "updates_chat_member = False" + "\n",
-                "webhook = False" + "\n",
-                "self_signed = False" + "\n",
-                "cert_key = " + "\n",
-                "cert_pub = " + "\n",
-                "server_address = " + "\n",
-                "server_port = " + "\n",
-                "local_address = " + "\n",
-                "local_port = " + "\n",
-                "proxy = "
-            ])
+            config_data = copy.deepcopy(__config_template__)
+            config_data["key"] = str(key)
+            config_data["root_id"] = str(root)
+            config_data["plugin_dir"] = str(plugin_dir)
+            config_data["debug"] = str(debug)
+
+            config_list = []
+            for key, value in config_data.items():
+                if key == "[config]":
+                    config_list.append(f"{key}\n")
+                else:
+                    config_list.append(f"{key} = {value}\n")
+            config_list[-1] = config_list[-1].strip()
+            if config_list[-1].split("=")[1].strip() in [None, ""]:
+                    config_list[-1] += " "
+
+            conf_file.writelines(config_list)
             os.system("")
             print("The configuration file has been created automatically.")
-            print("Configuration file path: \033[1;32m" + str(config_dir) + "\033[0m") # Green
+            print(f"Configuration file path: \033[1;32m{str(config_dir)}\033[0m") # Green
         if not args.key or not args.root:
             print("Please modify the relevant parameters and restart the teelebot.")
             os._exit(0)
@@ -159,7 +152,7 @@ def _config():
         if config[default_arg] == "" or\
             config[default_arg] == None:
             none_count += 1
-            print("Field " + default_arg + " is not set in configuration file.")
+            print(f"Field {default_arg} is not set in configuration file.")
     if none_count != 0:
         os._exit(0)
 
@@ -190,33 +183,28 @@ def _config():
         print("Field plugin_dir does not exist in configuration file.")
         os._exit(0)
 
-    if os.path.exists(str(Path(os.path.dirname(
-        os.path.abspath(__file__)) + r"/__pycache__"))):
-        shutil.rmtree(str(Path(os.path.dirname(
-            os.path.abspath(__file__)) + r"/__pycache__")))
+    pycache_path = f'{os.path.dirname(os.path.abspath(__file__))}/__pycache__'
+    if os.path.exists(str(Path(pycache_path))):
+        shutil.rmtree(str(Path(pycache_path)))
 
-    if not os.path.isdir(plugin_dir):  # 插件目录检测
+    if not os.path.isdir(plugin_dir):  # Plugin directory detection
         os.makedirs(plugin_dir)
         # os.mkdir(plugin_dir)
-        with open(str(Path(plugin_dir + "__init__.py")), "w", encoding="utf-8") as f:
+        with open(str(Path(f'{plugin_dir}__init__.py')), "w", encoding="utf-8") as f:
             pass
-    elif not os.path.exists(str(Path(plugin_dir + "__init__.py"))):
-        with open(str(Path(plugin_dir + "__init__.py")), "w", encoding="utf-8") as f:
+    elif not os.path.exists(str(Path(f'{plugin_dir}__init__.py'))):
+        with open(str(Path(f'{plugin_dir}__init__.py')), "w", encoding="utf-8") as f:
             pass
 
-    if args.make_plugin and plugin_dir_in_config: #插件模板创建
+    if args.make_plugin and plugin_dir_in_config: # Plugin template creation
         plugin_name = args.make_plugin
         if not os.path.exists(str(Path(plugin_dir + plugin_name))):
             os.mkdir(str(Path(plugin_dir + plugin_name)))
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "__init__.py")), "w", encoding="utf-8") as init:
-                    init.writelines([
-                        "#/" + plugin_name.lower() + "\n",
-                        "#" + plugin_name + " Plugin\n",
-                        "#"
-                    ])
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + plugin_name + ".py")), "w", encoding="utf-8") as enter:
+            if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}__init__.py'))):
+                with open(str(Path(f'{plugin_dir}{plugin_name}{os.sep}__init__.py')), "w", encoding="utf-8") as init:
+                    pass
+            if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}{plugin_name}.py'))):
+                with open(str(Path(f'{plugin_dir}{plugin_name}{os.sep}{plugin_name}.py')), "w", encoding="utf-8") as enter:
                     enter.writelines([
                         "# -*- coding: utf-8 -*-\n",
                         "\n",
@@ -237,7 +225,6 @@ def _config():
                         "    # response_users = bot.response_users\n" + \
                         "\n" + \
                         "    # proxies = bot.proxies\n" + \
-                        "    # metadata_template = bot.metadata_template\n" + \
                         "\n" + \
                         '    chat_id = message["chat"]["id"]\n' + \
                         '    user_id = message["from"]["id"]\n' + \
@@ -246,23 +233,26 @@ def _config():
                         '    message_type = message["message_type"]\n' + \
                         '    chat_type = message["chat"]["type"]\n' + \
                         "\n" + \
-                        '    plugin_info = bot.get_plugin_info()\n' + \
                         '    command = ""\n' + \
-                        '    if plugin_info.get("status", False):\n' + \
-                        '        command = plugin_info.get("command", "")\n' + \
+                        '    ok, metadata = bot.metadata.read()\n' + \
+                        '    if ok:\n' + \
+                        '        command = metadata.get("Command", "")\n' + \
                         "\n\n" + \
                         "    # Write your plugin code below"
                     ])
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "README.md"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "README.md")), "w", encoding='utf-8') as readme:
+            if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}README.md'))):
+                with open(str(Path(f'{plugin_dir}{plugin_name}{os.sep}README.md')), "w", encoding='utf-8') as readme:
                     readme.writelines([
-                        "# " + plugin_name + "\n"
+                        f"# {plugin_name}\n"
                     ])
-            if not os.path.exists(str(Path(plugin_dir + plugin_name + os.sep + "METADATA"))):
-                with open(str(Path(plugin_dir + plugin_name + os.sep + "METADATA")), "w", encoding='utf-8') as metadata:
+            if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}METADATA'))):
+                with open(str(Path(f'{plugin_dir}{plugin_name}{os.sep}METADATA')), "w", encoding='utf-8') as meta:
                     metadata_data = copy.deepcopy(metadata_template)
                     metadata_data["Plugin-name"] = plugin_name
+                    metadata_data["Command"] = f"/{plugin_name.lower()}"
+                    metadata_data["Buffer-permissions"] = "False:False"
                     metadata_data["Version"] = "0.1.0"
+                    metadata_data["Summary"] = f"{plugin_name} Plugin"
                     metadata_data["Requires-teelebot"] = f">={__version__}"
 
                     metadata_list = []
@@ -272,11 +262,11 @@ def _config():
                     if metadata_list[-1].split(":")[1].strip() in [None, ""]:
                             metadata_list[-1] += " "
 
-                    metadata.writelines(metadata_list)
+                    meta.writelines(metadata_list)
 
-            print("Plugin " + plugin_name + " was created successfully.")
+            print(f"Plugin {plugin_name} was created successfully.")
         else:
-            print("Plugin " + plugin_name + " already exists.")
+            print(f"Plugin {plugin_name} already exists.")
         os._exit(0)
     elif args.make_plugin and not plugin_dir_in_config:
         print("The plugin_dir is not set in the configuration file.")
@@ -388,14 +378,13 @@ def _config():
     config["cloud_api_server"] = cloud_api_server
     config["common_pkg_prefix"] = common_pkg_prefix
     config["inline_mode_prefix"] = inline_mode_prefix
-    config["metadata_template"] = metadata_template
 
     # print(config)
     return config
 
 def _bridge(plugin_dir):
     '''
-    获取插件和指令的映射
+    Get the mapping between plugins and commands
     '''
     plugin_bridge = {}
     non_plugin_list = []
@@ -404,7 +393,10 @@ def _bridge(plugin_dir):
 
     plugin_lis = os.listdir(plugin_dir)
     for plugi in plugin_lis:
-        if os.path.isdir(str(Path(plugin_dir + plugi))) and plugi != "__pycache__" and plugi[0] != '.':
+        if os.path.isdir(str(Path(f'{plugin_dir}{plugi}'))) and plugi != "__pycache__" and plugi[0] != '.':
+            if not os.path.exists(Path(f"{plugin_dir}{plugi}{os.sep}__init__.py")):
+                with open(Path(f"{plugin_dir}{plugi}{os.sep}__init__.py"), "w", encoding="utf-8") as init: pass
+            
             entrance_exist = False
             entrance_count = 0
             try:
@@ -426,27 +418,16 @@ def _bridge(plugin_dir):
                 print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
 
             metadata_ok = False
-            try:
-                with open(str(Path(f"{plugin_dir}{plugi}{os.sep}METADATA")), "r", encoding="utf-8") as meta:
-                    lines = meta.readlines()
-                    metadata_data = {}
-                    for line in lines:
-                        line = line.strip("\n").strip(" ")
-                        if line in [None, "", " "]:
-                            continue
-                        line_list = line.split(":", 1)
-                        if len(line_list) == 2:
-                            metadata_data[line_list[0].replace(" ", "")] = line_list[1].strip(" ")
-                        elif len(line_list) == 1:
-                            metadata_data[line_list[0].replace(" ", "")] = ""
-
-                    if list(metadata_data.keys()) == list(metadata_template.keys()):
-                        metadata_ok = True
-            except Exception as e:
+            metadata = _Metadata(plugin_dir=plugin_dir)
+            ok, metadata_data = metadata.read(plugin_name=plugi)
+            if ok:
+                if list(metadata_data.keys()) == list(metadata_template.keys()):
+                    metadata_ok = True
+            else:
                 os.system("")
-                print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
+                print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{str(metadata_data)}")
 
-            package_file_list = os.listdir(str(Path(plugin_dir + plugi)))
+            package_file_list = os.listdir(str(Path(f'{plugin_dir}{plugi}')))
             if plugi + ".py" in package_file_list and \
                 "__init__.py" in package_file_list and \
                 "METADATA" in package_file_list and \
@@ -468,37 +449,46 @@ def _bridge(plugin_dir):
                     missing_files_count += 1
                 if missing_files_count != 0:
                     os.system("")
-                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
                 
                 if not entrance_exist:
                     error = f"plugin not found entrance function '{plugi}'"
                     os.system("")
-                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
                 elif entrance_exist and entrance_count != 1:
                     error = f"multiple entrance functions exist in plugin"
                     os.system("")
-                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
 
                 if not metadata_ok:
                     error = f"metadata format error"
                     os.system("")
-                    print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + error)
+                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
 
     for plugin in plugin_list:
-        with open(str(Path(plugin_dir + plugin + r"/__init__.py")), encoding="utf-8") as f:
-            row_one = f.readline().strip()[1:]
-            if row_one != common_pkg_prefix:  # Hidden plugin
-                plugin_bridge[plugin] = row_one
+        metadata_data = {}
+        metadata = _Metadata(plugin_dir=plugin_dir)
+        ok, data = metadata.read(plugin_name=plugin)
+        if ok:
+            if list(data.keys()) == list(metadata_template.keys()):
+                metadata_data = data
+        else:
+            os.system("")
+            print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{data}")
+            continue
+        
+        if metadata_data["Command"] != common_pkg_prefix:  # Hidden plugin
+            plugin_bridge[plugin] = metadata_data["Command"]
+        else:
+            if plugin in corrupted_plugin_list:
+                if (f'{plugin_dir}{plugin}') in sys.path:
+                    sys.path.remove(f'{plugin_dir}{plugin}')
+                if (f'{plugin_dir}{plugin}') in sys.modules:
+                    sys.modules.pop(f'{plugin_dir}{plugin}')
             else:
-                if plugin in corrupted_plugin_list:
-                    if (plugin_dir + plugin) in sys.path:
-                        sys.path.remove(plugin_dir + plugin)
-                    if (plugin_dir + plugin) in sys.modules:
-                        sys.modules.pop(plugin_dir + plugin)
-                else:
-                    non_plugin_list.append(plugin)
-                    if (plugin_dir + plugin) not in sys.path:
-                        sys.path.append(plugin_dir + plugin)
+                non_plugin_list.append(plugin)
+                if (f'{plugin_dir}{plugin}') not in sys.path:
+                    sys.path.append(f'{plugin_dir}{plugin}')
 
     # print(sys.path)
     # print(plugin_bridge, non_plugin_list)
@@ -506,11 +496,11 @@ def _bridge(plugin_dir):
 
 def _plugin_info(plugin_list, plugin_dir):
     '''
-    获取插件修改状态
+    Get the status of the plugin modification
     '''
     plugin_info = {}
     for plugin in plugin_list:
-        mtime = os.stat(str(Path(plugin_dir + plugin + "/" + plugin + ".py"))).st_mtime
+        mtime = os.stat(str(Path(f"{plugin_dir}{plugin}{os.sep}{plugin}.py"))).st_mtime
         plugin_info[plugin] = mtime
 
     return plugin_info
@@ -554,7 +544,7 @@ elif args.close and not args.logout:
     elif not req.json().get("ok"):
         print("Error close from the local API server.")
         if req.json().get("error_code") == 429:
-            print("Too many requests, please retry after " + str(req.json().get("parameters")["retry_after"]) + " seconds.")
+            print(f'Too many requests, please retry after {str(req.json().get("parameters")["retry_after"])} seconds.')
     os._exit(0)
 
 

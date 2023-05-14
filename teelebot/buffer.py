@@ -1,6 +1,6 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2023-05-11
+@last modification: 2023-05-14
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
@@ -18,10 +18,11 @@ import inspect
 import os
 import copy
 
+from .metadata import _Metadata
 
 class _Buffer(object):
     """
-    数据暂存器类
+    Buffer Class
     """
     def __init__(self, buffer_size, plugin_names, plugin_dir):
         self.__buffer_size = buffer_size
@@ -29,17 +30,19 @@ class _Buffer(object):
         self.__plugin_dir = plugin_dir
         self.__buffer_mutex = threading.Lock()
         self.__buffer = {}
+        self.__metadata = _Metadata(self.__plugin_dir)
 
         for plugin_name in self.__plugin_names:
             self.__buffer[plugin_name] = {}
 
     def __del__(self):
         del self.__buffer
+        del self.__buffer_mutex
 
     def status(self) -> Tuple[bool, dict]:
         """
-        获取数据暂存区的使用情况
-        单位为字节
+        Get the usage information of the buffer area,
+        measured in bytes
         """
         try:
             with self.__buffer_mutex:
@@ -58,8 +61,8 @@ class _Buffer(object):
 
     def sizeof(self, plugin_name: str = None) -> Tuple[bool, Union[str, int]]:
         """
-        获取单个插件数据暂存区占用内存大小
-        单位为字节
+        Get the memory size occupied by the buffer area of a single plugin,
+        measured in bytes
         """
         if plugin_name in [None, "", " "]:
             plugin_name = os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]
@@ -68,11 +71,11 @@ class _Buffer(object):
             with self.__buffer_mutex:
                 return True, self.__total_size(self.__buffer.get(plugin_name))
         else:
-            return False, "NoPlugin"
+            return False, "PluginNotFound"
 
     def read(self, plugin_name: str = None) -> Tuple[bool, Union[str, tuple, any]]:
         """
-        从暂存区读取数据
+        Read data from buffer area
         """
         isSelf = False
         if plugin_name in [None, "", " "]:
@@ -92,11 +95,11 @@ class _Buffer(object):
             with self.__buffer_mutex:
                 return True, copy.deepcopy(self.__buffer.get(plugin_name, {}))
         else:
-            return False, "NoPlugin"
+            return False, "PluginNotFound"
 
     def write(self, buffer: any, plugin_name: str = None) -> Tuple[bool, Union[str, tuple]]:
         """
-        写入数据到暂存区
+        Write data into the buffer area
         """
         isSelf = False
         if plugin_name in [None, "", " "]:
@@ -125,17 +128,17 @@ class _Buffer(object):
                     changed_size = self.__total_size(buffer)
                     return True, str(changed_size)
         else:
-            return False, "NoPlugin"
+            return False, "PluginNotFound"
 
     def _update(self, plugin_names):
         if str(inspect.stack()[1][3]) == "__load_plugin":
             with self.__buffer_mutex:
-                for plugin_name in list(self.__buffer.keys()): # 清理已卸载插件
+                for plugin_name in list(self.__buffer.keys()): # Clean up uninstalled plugins
                     if plugin_name not in plugin_names:
                         self.__buffer.pop(plugin_name)
 
                 for plugin_name in list(plugin_names):
-                    if plugin_name not in self.__buffer.keys(): # 添加新插件
+                    if plugin_name not in self.__buffer.keys(): # Add new plugins
                         self.__buffer[plugin_name] = {}
 
             return True
@@ -144,41 +147,24 @@ class _Buffer(object):
 
     def __permissions_check(self, plugin_name):
         if plugin_name in self.__buffer.keys():
-            if plugin_name != os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]: # 读写权限检查
-                with open(Path(self.__plugin_dir + plugin_name + os.sep + "__init__.py"), "r", encoding="utf-8") as init:
-                    lines = init.readlines()
+            if plugin_name != os.path.splitext(os.path.basename(inspect.stack()[1][1]))[0]: # Read/write access check
+                permissions = "False:False"
+                ok, data = self.__metadata.read(plugin_name=plugin_name)
+                if ok:
+                    if data["Buffer-permissions"] not in [None, "", " "]:
+                        permissions = data["Buffer-permissions"]
+                    bool_dict = {
+                        "True": True,
+                        "true": True,
+                        "False": False,
+                        "false": False
+                    }
+                    permissions_read = bool_dict[permissions.split(":")[0]]
+                    permissions_write = bool_dict[permissions.split(":")[1]]
 
-                for i, _ in enumerate(lines):
-                    lines[i] = lines[i].strip("\n")
-                    lines[i] = lines[i].strip("\r")
-                    lines[i] = lines[i].strip("")
-                    lines[i] = lines[i].strip()
-
-                if len(lines) > 2:
-                    permissions = lines[2][1:]
-                    if lines[2] == "#":
-                        permissions = "False:False"
+                    return True, tuple((permissions_read, permissions_write))
                 else:
-                    permissions = "False:False" # 格式 读:写
-
-                if len(permissions.split(":")) == 2:
-                    permissions_read = permissions.split(":")[0]
-                    permissions_write = permissions.split(":")[1]
-                    if permissions_read in ["True", "False", "true", "false"] and \
-                        permissions_write in ["True", "False", "true", "false"]:
-                        bool_dict = {
-                            "True": True,
-                            "true": True,
-                            "False": False,
-                            "false": False
-                        }
-                        permissions_read = bool_dict[permissions_read]
-                        permissions_write = bool_dict[permissions_write]
-                        return True, tuple((permissions_read, permissions_write))
-                    else:
-                        return False, "PermissionFormatError"
-                else:
-                    return False, "PermissionFormatError"
+                    return False, data
 
     def __total_size(self, o, handlers={}, verbose=False):
         dict_handler = lambda d: chain.from_iterable(d.items())

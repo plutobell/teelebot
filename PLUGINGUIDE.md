@@ -1,19 +1,19 @@
-# 插件开发指南 (以 Hello 插件为例) v1.2
+# 插件开发指南 (以 Hello 插件为例) v1.3
 
 #### 一、插件结构
 
-一个完整的 `teelebot` 插件应当呈现为一个文件夹，即一个Python包，以 `Hello` 插件为例，最基本的目录结构如下：
+一个完整的 `teelebot` 插件应当呈现为一个文件夹，即一个Python包，以 `Hello` 插件为例，目录结构如下：
 
 ```Python
 Hello/
   ./__init__.py
   ./Hello.py
-  ./Hello_screenshot.png
-  ./README.md
   ./METADATA
+  ./README.md
+  ./Hello_screenshot.png
 ```
 
-
+**Tip：可通过命令行指令创建插件模板**
 
 #### 二、规则
 
@@ -71,28 +71,32 @@ bot.join_plugin_path("Hello_screenshot.png")
 
 插件的触发指令可不同于插件名，允许自定义。以插件 `Hello` 为例，触发指令为 `/helloworld` 而不是 `Hello`。
 
-修改插件目录下的 `__init__.py` 文件设置触发指令：
+修改插件目录下的 `METADATA` 文件的 `Command` 字段设置触发指令：
 
-```python
-file Hello/__init__.py
+```yaml
+file Hello/METADATA
 
-#/helloworld
-#Hello World插件例子
+Metadata-version: 1.1
+Plugin-name: Hello
+Command: /helloworld
+Summary: Hello World插件例子
+...
 ```
-
-第一行为触发指令，默认以 `/`  作为前缀；第二行为插件简介。
 
 
 
 ##### 不用作插件的特殊情况
 
-通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载为插件，请将触发指令设置为 `~~`  。以 `tools` 共用包为例， `__init__.py` 文件内容如下：
+通常情况下，位于 `plugins` 目录下的所有包都将被识别为插件并自动加载到 `teelebot` 中。但在某些情况下，存在并不用作插件而只是多个插件共用包的情况，若想该包不被 `teelebot` 加载为插件，请确保该包路径下存在 `METADATA` 文件，并将触发指令设置为 `~~`  。以 `tools` 共用包为例， `METADATA` 文件内容如下：
 
-```python
-fille tools/__init__.py
+```yaml
+fille tools/METADATA
 
-#~~
-#tools 包的简介
+Metadata-version: 1.1
+Plugin-name: tools
+Command: ~~
+Summary: tools包简介
+...
 ```
 
 插件共用包应当直接通过import导入：
@@ -101,7 +105,7 @@ fille tools/__init__.py
 import tools
 ```
 
-建议用作插件的包名遵守 `Pascal命名法`，即每个单词的首字母大写；而不用做插件的包名使用全小写的包名，每个单词之间以`_`  分隔。以区分 `插件包` 和 `非插件包` ：
+建议用作插件的包名遵守 `Pascal命名法`，即每个单词的首字母大写；而不用做插件的包名使用全小写的包名，每个单词之间以 `_` 分隔。以区分 `插件包` 和 `非插件包` ：
 
 ```python
 - plugins
@@ -117,16 +121,19 @@ import tools
 
 若要编写 **`Inline Mode`** 类型插件，请将**触发指令前缀**更改为 **`?:`** 。
 
-以插件 `InlineModeDemo` 为例，`__init__.py` 文件内容如下：
+以插件 `InlineModeDemo` 为例，`METADATA` 文件内容如下：
 
-```python
-file InlineModeDemo/__init__.py
+```yaml
+file InlineModeDemo/METADATA
 
-#?:search:
-#InlineModeDemo InlineMode插件例子
+Metadata-version: 1.1
+Plugin-name: InlineModeDemo
+Command: ?:search:
+Summary: InlineMode插件例子
+...
 ```
 
-根据`__init__.py` 文件的触发指令，在Telegram客户端使用插件 `InlineModeDemo` 应遵循以下格式:
+根据`METADATA` 文件的触发指令，在Telegram客户端使用插件 `InlineModeDemo` 应遵循以下格式:
 
 ```bash
 @bot_username search:<search content>
@@ -136,11 +143,14 @@ file InlineModeDemo/__init__.py
 
 另外，也可以去掉触发指令 `search:` ，只保留前缀，插件 `InlineModeDemo` 将响应所有`inline_query` 消息：
 
-```python
-file InlineModeDemo/__init__.py
+```yaml
+file InlineModeDemo/METADATA
 
-#?:
-#InlineModeDemo InlineMode插件例子
+Metadata-version: 1.1
+Plugin-name: InlineModeDemo
+Command: ?:
+Summary: InlineMode插件例子
+...
 ```
 
 此时，在Telegram客户端使用插件 `InlineModeDemo` 应遵循以下格式:
@@ -239,30 +249,48 @@ file Hello/__init__.py
 
 
 
-#### 七、METADATA文件内容 （Metadata-version: 1.0）
+#### 七、METADATA文件 （Metadata-version: 1.1）
 
-在 `v1.17.0` 及以上版本，插件包引入了文件 `METADATA` ，以存储插件信息， 此文件在使用插件模板创建工具创建插件时会自动生成。
+在 `v1.17.0` 及以上版本，插件包引入了文件 `METADATA` ，以存储插件信息， **此文件在使用插件模板创建工具创建插件时会自动生成**。
 
 以`Hello` 插件为例， `METADATA`文件内容如下：
 
 ```python
-Metadata-version: 1.0
+Metadata-version: 1.1
 Plugin-name: Hello
-Version: 1.0.0
+Command: /helloworld
+Buffer-permissions: False:False
+Version: 1.2.0
 Summary: Hello World插件例子
 Home-page: https://github.com/plutobell/teelebot
 Author: Pluto (github.com/plutobell)
 Author-email: hi#ojoll.com (#==@)
 License: GPLv3
 Keywords: Hello World
-Requires-teelebot: >=1.17.0
+Requires-teelebot: >=2.3.0
 Requires-dist: 
 Source: https://github.com/plutobell/teelebot-plugins
 ```
 
 其中，`Requires-dist:` 为插件包的依赖（例如：requests），各个依赖间请使用英文字符 **","** 进行分隔。
 
-**另外，在 `v2.1.0 ~ v2.2.0 ` 版本，新增了方法 `get_plugin_info` 和 `set_plugin_info` ，用于获取和修改插件信息，包括 `METADATA` 数据。**
+**另外，在v2.3.0及以上版本，新增了获取和修改插件信息的方法。**
+
+可获得的方法:
+
+* **metadata.read** : 读取插件METADATA信息
+* **metadata.write** : 写入插件METADATA信息
+* **metadata.template** : 获取METADATA数据模板
+
+例：
+
+```python
+ok, data = bot.metadata.read(plugin_name="")
+ok, data = bot.metadata.write(metadata=data, plugin_name="")
+ok, data = bot.metadata.template(version="")
+```
+
+
 
 
 

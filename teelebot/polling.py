@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-06-23
-@last modification: 2023-05-03
+@last modification: 2023-05-14
 '''
 import os
 import signal
@@ -16,11 +16,11 @@ def _runUpdates(bot):
             limit=100,
             timeout=bot._timeout,
             allowed_updates=bot._allowed_updates
-        ) # 获取消息队列messages
+        ) # Get the message queue 'messages'
         messages = bot._washUpdates(results)
         if messages is None or not messages:
             continue
-        for message in messages:  # 获取单条消息message
+        for message in messages:  # Retrieve a single message 'message'
             bot._pluginRun(bot, message)
 
 
