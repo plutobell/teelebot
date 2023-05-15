@@ -2,7 +2,7 @@
 """
 @description: A bot framework based on the Telegram Bot API
 @creation date: 2019-08-13
-@last modification: 2023-05-14
+@last modification: 2023-05-15
 @author: Pluto (github:plutobell)
 """
 import time
@@ -66,7 +66,13 @@ class Bot(object):
             self._server_port = config["server_port"]
             self._local_address = config["local_address"]
             self._local_port = config["local_port"]
-            self._secret_token = self.__make_token()
+            if "secret_token" in list(config.keys()):
+                if config["secret_token"] not in [None, "", " "]:
+                    self._secret_token = config["secret_token"]
+                else:
+                    self._secret_token = self.__make_token()
+            else:
+                self._secret_token = self.__make_token()
         self._offset = 0
         self._timeout = 60
         self._pool_size = config["pool_size"]
@@ -396,7 +402,7 @@ class Bot(object):
         if len > 64:
             return "Specified length is too long."
         else:
-            token = ''.join(random.sample(f'{string.ascii_letters}{string.digits}-_', 64))
+            token = ''.join(random.sample(f'{string.ascii_letters}{string.digits}-_', len))
             return token
 
     def _pluginRun(self, bot, message):

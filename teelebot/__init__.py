@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2023-05-14
+@last modification: 2023-05-15
 """
 import os
 import requests
@@ -58,14 +58,16 @@ def main():
             or status["max_connections"] != int(bot._pool_size) \
             or allowed_updates != bot._allowed_updates:
             if bot._self_signed:
-                status = bot.setWebhook(
-                    url=url,
-                    certificate=bot._cert_pub,
-                    max_connections=bot._pool_size,
-                    allowed_updates=bot._allowed_updates,
-                    drop_pending_updates=bot._drop_pending_updates,
-                    secret_token=bot._secret_token
-                )
+                with open(bot._cert_pub, 'rb') as cert_pub:
+                    cert_pub_bytes = cert_pub.read()
+                    status = bot.setWebhook(
+                        url=url,
+                        certificate=cert_pub_bytes,
+                        max_connections=bot._pool_size,
+                        allowed_updates=bot._allowed_updates,
+                        drop_pending_updates=bot._drop_pending_updates,
+                        secret_token=bot._secret_token
+                    )
             else:
                 status = bot.setWebhook(
                     url=url,

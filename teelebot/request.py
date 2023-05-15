@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-14
+@last modification: 2023-05-15
 '''
+import io
 import json
 import requests
 
@@ -76,6 +77,9 @@ class _Request(object):
 
         data, files = {}, {}
         for key, value in kwargs.items():
+            if isinstance(value, io.BufferedReader):
+                value = value.read()
+
             if not is_inputmedia and key == inputmedia_param_name:
                 pass
             elif is_inputmedia and key == inputmedia_param_name:

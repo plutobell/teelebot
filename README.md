@@ -186,6 +186,7 @@ server_address=your server ip address or domain
 server_port=your server port
 local_address=webhook local address
 local_port=webhook local port
+secret_token=webhook secret token
 ```
 
 `self_signed` 用于设置是否使用自签名证书，而 `cert_key` 和 `cert_pub` 则是你的证书路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口。
@@ -279,6 +280,7 @@ server_ip=your server ip address # Optional while webhook is False
 server_port=your server port # Optional while webhook is False
 local_address=webhook local address # Optional while webhook is False
 local_port=webhook local port # Optional while webhook is False
+secret_token=webhook secret token
 debug=False
 drop_pending_updates=False
 local_api_server=local api server address # [Optional]

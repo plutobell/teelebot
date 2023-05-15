@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-13
-@last modification: 2023-05-14
+@last modification: 2023-05-15
 '''
 
 __cloud_api_server__ = "https://api.telegram.org/"
@@ -49,6 +49,7 @@ __config_template__ = {
     "pool_size": "40",
     "buffer_size": "16",
     "debug": "False",
+    "proxy": "",
     "local_api_server": "False",
     "drop_pending_updates": "False",
     "updates_chat_member": "False",
@@ -60,7 +61,7 @@ __config_template__ = {
     "server_port": "",
     "local_address": "",
     "local_port": "",
-    "proxy": ""
+    "secret_token": ""
 }
 
 

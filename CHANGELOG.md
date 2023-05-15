@@ -2,6 +2,10 @@
 
 #### 2023-05-15
 
+* v2.3.2
+  * 配置文件新增参数 secret_token
+  * 修复 webhook 的 bug
+
 * v2.3.1
   * 完善 Metadata 类
 

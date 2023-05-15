@@ -6,7 +6,7 @@
 @author: Pluto (github:plutobell)
 """
 
-__version__ = "2.3.1"
+__version__ = "2.3.2"
 
 __author__ = "Pluto"
 __email__ = "hi@ojoll.com"

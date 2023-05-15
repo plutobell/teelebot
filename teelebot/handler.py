@@ -5,6 +5,7 @@
 '''
 import configparser
 import argparse
+import re
 import os
 import sys
 import copy
@@ -164,12 +165,19 @@ def _config():
         webhook_args = ["self_signed",
                         "server_address", "server_port",
                         "local_address", "local_port",
-                        "cert_pub", "cert_key"]
+                        "cert_pub", "cert_key"] # Optional: secret_token
         for w in webhook_args:
             if w not in config.keys():
                 print("Please check if the following fields exist in the configuration file: \n" +
                     "cert_pub cert_key self_signed server_address server_port local_address local_port")
                 os._exit(0)
+        if "secret_token" in config.keys():
+            if config["secret_token"] not in [None, "", " "]:
+                pattern = r"^[A-Za-z0-9_-]{1,256}$"
+                if not re.match(pattern, config["secret_token"]):
+                    print("The format of secret_token is wrong (1-256 characters, only characters A-Z, a-z, 0-9, _ and - are allowed).")
+                    os._exit(0)
+            
 
     plugin_dir_in_config = False
     if "plugin_dir" in config.keys():
