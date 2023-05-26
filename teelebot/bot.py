@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 """
-@description: A bot framework based on the Telegram Bot API
+@description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-05-15
+@last modification: 2023-05-27
 @author: Pluto (github:plutobell)
 """
 import time

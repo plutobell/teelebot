@@ -235,7 +235,7 @@ ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
 
 可通过每个插件的 `METADATA` 文件的`Buffer-permissions` 字段**控制其他插件对本插件暂存区的访问权限** ，格式如下 **(读:写)**：
 
-```python
+```yaml
 file Hello/METADATA
 
 Metadata-version: 1.1
