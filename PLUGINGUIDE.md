@@ -233,14 +233,16 @@ ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
 
 
 
-可通过每个插件的 `__init__.py` 文件**控制其他插件对本插件暂存区的访问权限** ，格式如下 **(读:写)**：
+可通过每个插件的 `METADATA` 文件的`Buffer-permissions` 字段**控制其他插件对本插件暂存区的访问权限** ，格式如下 **(读:写)**：
 
 ```python
-file Hello/__init__.py
+file Hello/METADATA
 
-#/helloworld
-#Hello World插件例子
-#True:False
+Metadata-version: 1.1
+Plugin-name: Hello
+Command: /helloworld
+Buffer-permissions: True:False
+...
 ```
 
 **在上面的配置下，其他插件可以读取 `Hello` 插件的暂存区，但是不能修改其暂存区。**
