@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-05-27
+@last modification: 2023-05-29
 @author: Pluto (github:plutobell)
 """
 import time
@@ -170,8 +170,11 @@ class Bot(object):
         """
         Dynamic import module
         """
-        sys.path.append(self.path_converter(f'{self.__plugin_dir}{plugin_name}{os.sep}'))
-        Module = importlib.import_module(plugin_name)  # Module Detection
+        if self.__plugin_dir not in sys.path:
+            sys.path.append(self.__plugin_dir)
+        # print(sys.path)
+
+        Module = importlib.import_module(f'{plugin_name}.{plugin_name}')  # Module Detection
 
         return Module
 
@@ -458,27 +461,31 @@ class Bot(object):
 
         for plugin, command in plugin_bridge.items():
             try:
-                plugin_requires_version = ""
-                ok, data = self.metadata.read(plugin_name=plugin)
-                # plugin_info = self.get_plugin_info(plugin_name=plugin)
-                if ok:
-                    plugin_requires_version = data.get("Requires-teelebot", {})
-                    plugin_requires_version = plugin_requires_version.replace(">", "").replace("<", "").replace("=", "")
-                    if plugin_requires_version in [None, "", " "]:
-                        _logger.warn(f"Skip run {plugin} plugin: failed to get the version of the plugin")
-                        continue
-                else:
-                    _logger.warn(f"Skip run {plugin} plugin: failed to get information about the plugin (error: {data})")
-                    continue
-                if plugin_requires_version > self.version:
-                    _logger.warn(f"Skip run {plugin} plugin: the plugin requires teelebot version >= {plugin_requires_version}")
-                    continue
-
                 if message_type == "query":
                     if command in ["", " ", None]:
                         continue
 
                 if message.get(message_type)[:len(command)] == command:
+                    plugin_requires_version = ""
+                    ok, data = self.metadata.read(plugin_name=plugin)
+                    if ok:
+                        plugin_requires_version = data.get("Requires-teelebot", {})
+                        plugin_requires_version = plugin_requires_version.replace(">", "").replace("<", "").replace("=", "")
+                        if plugin_requires_version in [None, "", " "]:
+                            _logger.warn(f"Skip run {plugin} plugin: failed to get the version of the plugin")
+                            continue
+                    else:
+                        _logger.warn(f"Skip run {plugin} plugin: failed to get information about the plugin (error: {data})")
+                        continue
+                    if plugin_requires_version > self.version:
+                        _logger.warn(f"Skip run {plugin} plugin: the plugin requires teelebot version >= {plugin_requires_version}")
+                        continue
+
+                    no_plugin_path = f'{self.__plugin_dir}{plugin}.py'
+                    if os.path.exists(no_plugin_path):
+                        _logger.warn(f"Skip run {plugin} plugin: there is a module named '{plugin}.py' under the plugin dir with the same name as plugin {plugin} ({no_plugin_path})")
+                        continue
+
                     try:
                         module = self.__import_module(plugin)
                         pluginFunc = getattr(module, plugin)

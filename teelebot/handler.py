@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-15
+@last modification: 2023-05-29
 '''
 import configparser
 import argparse
@@ -197,20 +197,13 @@ def _config():
 
     if not os.path.isdir(plugin_dir):  # Plugin directory detection
         os.makedirs(plugin_dir)
-        # os.mkdir(plugin_dir)
-        with open(str(Path(f'{plugin_dir}__init__.py')), "w", encoding="utf-8") as f:
-            pass
-    elif not os.path.exists(str(Path(f'{plugin_dir}__init__.py'))):
-        with open(str(Path(f'{plugin_dir}__init__.py')), "w", encoding="utf-8") as f:
-            pass
+    sys.path.append(plugin_dir)
 
     if args.make_plugin and plugin_dir_in_config: # Plugin template creation
         plugin_name = args.make_plugin
         if not os.path.exists(str(Path(plugin_dir + plugin_name))):
             os.mkdir(str(Path(plugin_dir + plugin_name)))
-            if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}__init__.py'))):
-                with open(str(Path(f'{plugin_dir}{plugin_name}{os.sep}__init__.py')), "w", encoding="utf-8") as init:
-                    pass
+
             if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}{plugin_name}.py'))):
                 with open(str(Path(f'{plugin_dir}{plugin_name}{os.sep}{plugin_name}.py')), "w", encoding="utf-8") as enter:
                     enter.writelines([
@@ -402,8 +395,6 @@ def _bridge(plugin_dir):
     plugin_lis = os.listdir(plugin_dir)
     for plugi in plugin_lis:
         if os.path.isdir(str(Path(f'{plugin_dir}{plugi}'))) and plugi != "__pycache__" and plugi[0] != '.':
-            if not os.path.exists(Path(f"{plugin_dir}{plugi}{os.sep}__init__.py")):
-                with open(Path(f"{plugin_dir}{plugi}{os.sep}__init__.py"), "w", encoding="utf-8") as init: pass
             
             entrance_exist = False
             entrance_count = 0
@@ -431,13 +422,15 @@ def _bridge(plugin_dir):
             if ok:
                 if list(metadata_data.keys()) == list(metadata_template.keys()):
                     metadata_ok = True
+
+                    if metadata_data["Command"] == common_pkg_prefix: # Skip plugin integrity checks
+                        continue
             else:
                 os.system("")
                 print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{str(metadata_data)}")
 
             package_file_list = os.listdir(str(Path(f'{plugin_dir}{plugi}')))
             if plugi + ".py" in package_file_list and \
-                "__init__.py" in package_file_list and \
                 "METADATA" in package_file_list and \
                 entrance_exist and entrance_count == 1 and metadata_ok:
                 plugin_list.append(plugi)
@@ -448,9 +441,6 @@ def _bridge(plugin_dir):
                 error = f"plugin missing "
                 if f"{plugi}.py" not in package_file_list:
                     error += f"'{plugi}.py' "
-                    missing_files_count += 1
-                if "__init__.py" not in package_file_list:
-                    error += "'__init__.py' "
                     missing_files_count += 1
                 if "METADATA" not in package_file_list:
                     error += "'METADATA' "
