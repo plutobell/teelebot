@@ -1,11 +1,15 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-14
+@last modification: 2023-07-12
 '''
 import threading
+import traceback
+
 from uuid import uuid4
 from typing import Tuple, Callable
+
+from .logger import _logger
 
 class _Schedule(object):
     """
@@ -30,7 +34,8 @@ class _Schedule(object):
             t.setDaemon(True)
             return True, t
         except Exception as e:
-            print("Error:", str(e))
+            _logger.error(str(e))
+            traceback.print_exc()
             return False, str(e)
 
     def add(self, gap: int, func: Callable[..., None], args: tuple) -> Tuple[bool, str]:
@@ -83,6 +88,8 @@ class _Schedule(object):
             }
             return True, result
         except Exception as e:
+            _logger.error(str(e))
+            traceback.print_exc()
             return False, {"exception": e}
 
     def find(self, uid: str) -> Tuple[bool, str]:
@@ -130,6 +137,8 @@ class _Schedule(object):
 
                 return True, "Cleared"
             except Exception as e:
+                _logger.error(str(e))
+                traceback.print_exc()
                 return False, str(e)
 
 

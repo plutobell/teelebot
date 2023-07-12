@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-15
+@last modification: 2023-07-12
 '''
 import io
 import json
+import traceback
 import requests
 
 from .logger import _logger
@@ -102,7 +103,8 @@ class _Request(object):
                 else:
                     return req.json().get("ok")
         except Exception as e:
-            print("Error:", str(e))
+            _logger.error(f"Error executing method {method_name}:", str(e))
+            traceback.print_exc()
             return False
 
 

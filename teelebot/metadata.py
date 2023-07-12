@@ -1,15 +1,17 @@
 '''
 @creation date: 2023-05-12
-@last modification: 2023-05-15
+@last modification: 2023-07-12
 '''
 import os
 import copy
 import inspect
+import traceback
 import threading
 
 from pathlib import Path
 from typing import Tuple, Union
 
+from .logger import _logger
 from .common import __metadata_templates__, __metadata_version_in_use__
 
 class _Metadata(object):
@@ -82,7 +84,8 @@ class _Metadata(object):
                         return True, metadata
         except Exception as e:
             os.system("")
-            print(f"\033[1;31mError to read metadata of {plugin_name} plugin:\033[0m {str(e)}")
+            _logger.error(f"\033[1;31mError to read metadata of {plugin_name} plugin:\033[0m {str(e)}")
+            traceback.print_exc()
             return False, "ReadMetadataError"
                 
     def write(self, metadata: dict,
@@ -147,7 +150,8 @@ class _Metadata(object):
             return True, ""
         except Exception as e:
             os.system("")
-            print(f"\033[1;31mError to write metadata of {plugin_name} plugin:\033[0m {str(e)}")
+            _logger.error(f"\033[1;31mError to write metadata of {plugin_name} plugin:\033[0m {str(e)}")
+            traceback.print_exc()
             return False, "WriteMetadataError"
         
     def template(self, version: str = None) -> Tuple[bool, Union[dict, str]]:
@@ -160,7 +164,8 @@ class _Metadata(object):
             return True, copy.deepcopy(__metadata_templates__[__metadata_version_in_use__])
         except Exception as e:
             os.system("")
-            print(f"\033[1;31mError to get metadata template:\033[0m {str(e)}")
+            _logger.error(f"\033[1;31mError to get metadata template:\033[0m {str(e)}")
+            traceback.print_exc()
             return False, "GetMetadataTemplateError"
 
 

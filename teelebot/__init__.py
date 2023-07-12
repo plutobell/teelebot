@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2023-05-15
+@last modification: 2023-07-12
 """
 import os
 import requests
@@ -9,6 +9,7 @@ import urllib3
 
 from .polling import _runUpdates
 from .webhook import _runWebhook
+from .logger import _logger
 from .bot import Bot
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -39,9 +40,9 @@ def main():
     if not req.json().get("ok"):
         if (req.json().get("error_code") == 401 and \
             req.json().get("description") == "Unauthorized"):
-            print("\nIf you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
+            _logger.warn("\nIf you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
         else:
-            print("\nFailed to get running mode!")
+            _logger.error("\nFailed to get running mode!")
         os._exit(0)
 
     status = req.json().get("result")
@@ -78,7 +79,7 @@ def main():
                 )
 
             if not status:
-                print("\nFailed to set Webhook!")
+                _logger.error("\nFailed to set Webhook!")
                 os._exit(0)
 
         print(" * The teelebot starts running",
@@ -93,7 +94,7 @@ def main():
         if status["url"] != "" or status["has_custom_certificate"]:
             status = bot.deleteWebhook()
             if not status:
-                print("\nFailed to set getUpdates!")
+                _logger.error("\nFailed to set getUpdates!")
                 os._exit(0)
 
         print(" * The teelebot starts running",

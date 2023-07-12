@@ -1,13 +1,15 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modification: 2023-05-03
+@last modification: 2023-07-12
 '''
 #from socketserver import ThreadingMixIn
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import os
 import json
+
+from .logger import _logger
 
 
 def __MakeRequestHandler(bot):
@@ -54,6 +56,8 @@ def __MakeRequestHandler(bot):
 
 
 def _runWebhook(bot, host, port):
+    _logger.info("Bot Start.")
+
     RequestHandler = __MakeRequestHandler(bot)
     if bot._local_address == "0.0.0.0":
         try:
@@ -65,7 +69,7 @@ def _runWebhook(bot, host, port):
             server.serve_forever()
         except KeyboardInterrupt:
             server.server_close()
-            print("Bot Exit.")
+            _logger.info("Bot Exit.")
             os._exit(0)
     else:
         try:
@@ -73,5 +77,5 @@ def _runWebhook(bot, host, port):
             server.serve_forever()
         except KeyboardInterrupt:
             server.server_close()
-            print("Bot Exit.")
+            _logger.info("Bot Exit.")
             os._exit(0)

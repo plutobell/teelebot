@@ -1,13 +1,17 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-06-23
-@last modification: 2023-05-14
+@last modification: 2023-07-12
 '''
 import os
 import signal
 
+from .logger import _logger
+
 
 def _runUpdates(bot):
+
+    _logger.info("Bot Start.")
 
     signal.signal(signal.SIGINT, __exit)
     while True:
@@ -25,7 +29,7 @@ def _runUpdates(bot):
 
 
 def __exit(signum, frame):
-    print("Bot Exit.")
+    _logger.info("Bot Exit.")
     os._exit(0)
 
 

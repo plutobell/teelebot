@@ -1,6 +1,6 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2023-05-14
+@last modification: 2023-07-12
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
@@ -15,10 +15,12 @@ except ImportError:
 
 import threading
 import inspect
+import traceback
 import os
 import copy
 
 from .metadata import _Metadata
+from .logger import _logger
 
 class _Buffer(object):
     """
@@ -57,6 +59,8 @@ class _Buffer(object):
             }
             return True, result
         except Exception as e:
+            _logger.error(e)
+            traceback.print_exc()
             return False, {"exception": e}
 
     def sizeof(self, plugin_name: str = None) -> Tuple[bool, Union[str, int]]:
@@ -186,7 +190,7 @@ class _Buffer(object):
             s = getsizeof(o, default_size)
 
             if verbose:
-                print(s, type(o), repr(o), file=stderr)
+                _logger.error(s, type(o), repr(o), file=stderr)
 
             for typ, handler in all_handlers.items():
                 if isinstance(o, typ):

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-05-29
+@last modification: 2023-07-12
 '''
 import configparser
 import argparse
@@ -10,10 +10,12 @@ import os
 import sys
 import copy
 import shutil
+import traceback
 import requests
 
 from pathlib import Path
 from .metadata import _Metadata
+from .logger import _logger
 from .version import __author__, __github__, __version__
 from .common import (
     __metadata_templates__,
@@ -74,12 +76,12 @@ def _config():
     (path, filename) = os.path.split(config_dir)
     (filename_, extension) = os.path.splitext(filename)
     if extension != ".cfg":
-        print("Only support configuration files with .cfg suffix.")
+        _logger.error("Only support configuration files with .cfg suffix.")
         os._exit(0)
     if not os.path.exists(str(Path(path))):
         os.makedirs(str(Path(path)))
     if not os.path.exists(str(Path(config_dir))):
-        print("The configuration file does not exist.")
+        _logger.error("The configuration file does not exist.")
         plugin_dir = ""
         if args.plugin:
             plugin_dir = args.plugin
@@ -111,10 +113,10 @@ def _config():
 
             conf_file.writelines(config_list)
             os.system("")
-            print("The configuration file has been created automatically.")
-            print(f"Configuration file path: \033[1;32m{str(config_dir)}\033[0m") # Green
+            _logger.info("The configuration file has been created automatically.")
+            _logger.info(f"Configuration file path: \033[1;32m{str(config_dir)}\033[0m") # Green
         if not args.key or not args.root:
-            print("Please modify the relevant parameters and restart the teelebot.")
+            _logger.warn("Please modify the relevant parameters and restart the teelebot.")
             os._exit(0)
         # else:
         #     print("\n")
@@ -141,7 +143,7 @@ def _config():
         default_args = ["plugin_dir", "key", "webhook", "root_id"]
     for default_arg in default_args:
         if default_arg not in options:
-            print("The configuration file is missing necessary parameters.",
+            _logger.error("The configuration file is missing necessary parameters.",
                 "\nnecessary parameters:", default_args)
             os._exit(0)
 
@@ -153,12 +155,12 @@ def _config():
         if config[default_arg] == "" or\
             config[default_arg] == None:
             none_count += 1
-            print(f"Field {default_arg} is not set in configuration file.")
+            _logger.error(f"Field {default_arg} is not set in configuration file.")
     if none_count != 0:
         os._exit(0)
 
     if any(["version" in config.keys(), "author" in config.keys()]):
-        print("Error in configuration file.")
+        _logger.error("Error in configuration file.")
         os._exit(0)
 
     if config["webhook"] == "True":
@@ -168,27 +170,27 @@ def _config():
                         "cert_pub", "cert_key"] # Optional: secret_token
         for w in webhook_args:
             if w not in config.keys():
-                print("Please check if the following fields exist in the configuration file: \n" +
+                _logger.error("Please check if the following fields exist in the configuration file: \n" +
                     "cert_pub cert_key self_signed server_address server_port local_address local_port")
                 os._exit(0)
         if "secret_token" in config.keys():
             if config["secret_token"] not in [None, "", " "]:
                 pattern = r"^[A-Za-z0-9_-]{1,256}$"
                 if not re.match(pattern, config["secret_token"]):
-                    print("The format of secret_token is wrong (1-256 characters, only characters A-Z, a-z, 0-9, _ and - are allowed).")
+                    _logger.error("The format of secret_token is wrong (1-256 characters, only characters A-Z, a-z, 0-9, _ and - are allowed).")
                     os._exit(0)
             
 
     plugin_dir_in_config = False
     if "plugin_dir" in config.keys():
         if config["plugin_dir"] == "" or config["plugin_dir"] == None:
-            print("Field plugin_dir is not set in configuration file.")
+            _logger.error("Field plugin_dir is not set in configuration file.")
             os._exit(0)
         else:
             plugin_dir = f'{str(Path(os.path.abspath(config["plugin_dir"])))}{os.sep}'
             plugin_dir_in_config = True
     else:
-        print("Field plugin_dir does not exist in configuration file.")
+        _logger.error("Field plugin_dir does not exist in configuration file.")
         os._exit(0)
 
     pycache_path = f'{os.path.dirname(os.path.abspath(__file__))}/__pycache__'
@@ -265,24 +267,24 @@ def _config():
 
                     meta.writelines(metadata_list)
 
-            print(f"Plugin {plugin_name} was created successfully.")
+            _logger.info(f"Plugin {plugin_name} was created successfully.")
         else:
-            print(f"Plugin {plugin_name} already exists.")
+            _logger.warn(f"Plugin {plugin_name} already exists.")
         os._exit(0)
     elif args.make_plugin and not plugin_dir_in_config:
-        print("The plugin_dir is not set in the configuration file.")
+        _logger.error("The plugin_dir is not set in the configuration file.")
         os._exit(0)
 
     if "pool_size" in config.keys():
         if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
-            print("Thread pool size is out of range (1-100).")
+            _logger.error("Thread pool size is out of range (1-100).")
             os._exit(0)
     else:
         config["pool_size"] = "40"
 
     if "buffer_size" in config.keys():
         if int(config["buffer_size"]) <= 0:
-            print("Data buffer_size is out of range (> 0 MiB).")
+            _logger.error("Data buffer_size is out of range (> 0 MiB).")
             os._exit(0)
     else:
         config["buffer_size"] = "16"
@@ -296,13 +298,13 @@ def _config():
             config["local_api_server"] = "False"
         else:
             if "https://" in local_api_server:
-                print("Local api server address not support https.")
+                _logger.error("Local api server address not support https.")
                 os._exit(0)
             if "http://" not in local_api_server:
-                print("Local api server address incorrect.")
+                _logger.error("Local api server address incorrect.")
                 os._exit(0)
             if "telegram.org" in local_api_server:
-                print("Local api server address incorrect.")
+                _logger.error("Local api server address incorrect.")
                 os._exit(0)
             if local_api_server[len(local_api_server)-1] != "/":
                 local_api_server += "/"
@@ -316,7 +318,7 @@ def _config():
         elif config["self_signed"] == "False":
             config["self_signed"] = False
         else:
-            print("The self_signed field value in the configuration file is wrong.")
+            _logger.error("The self_signed field value in the configuration file is wrong.")
             os._exit(0)
     else:
         config["self_signed"] = False
@@ -327,7 +329,7 @@ def _config():
         elif config["drop_pending_updates"] == "False":
             config["drop_pending_updates"] = False
         else:
-            print("The drop_pending_updates field value in the configuration file is wrong.")
+            _logger.error("The drop_pending_updates field value in the configuration file is wrong.")
             os._exit(0)
     else:
         config["drop_pending_updates"] = False
@@ -338,7 +340,7 @@ def _config():
         elif config["updates_chat_member"] == "False":
             config["updates_chat_member"] = False
         else:
-            print("The updates_chat_member field value in the configuration file is wrong.")
+            _logger.error("The updates_chat_member field value in the configuration file is wrong.")
             os._exit(0)
     else:
         config["updates_chat_member"] = False
@@ -348,7 +350,7 @@ def _config():
     elif config["debug"] == "False":
         config["debug"] = False
     else:
-        print("The debug field value in the configuration file is wrong.")
+        _logger.error("The debug field value in the configuration file is wrong.")
         os._exit(0)
 
     if config["webhook"] == "True":
@@ -356,7 +358,7 @@ def _config():
     elif config["webhook"] == "False":
         config["webhook"] = False
     else:
-        print("The webhook field value in the configuration file is wrong.")
+        _logger.error("The webhook field value in the configuration file is wrong.")
         os._exit(0)
 
     if "proxy" in config.keys():
@@ -414,8 +416,9 @@ def _bridge(plugin_dir):
                         entrance_count += content.count(f"def {plugi}(message,bot):")
             except Exception as e:
                 os.system("")
-                print("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
-
+                _logger.error("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
+                traceback.print_exc()
+                
             metadata_ok = False
             metadata = _Metadata(plugin_dir=plugin_dir)
             ok, metadata_data = metadata.read(plugin_name=plugi)
@@ -427,7 +430,7 @@ def _bridge(plugin_dir):
                         continue
             else:
                 os.system("")
-                print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{str(metadata_data)}")
+                _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{str(metadata_data)}")
 
             package_file_list = os.listdir(str(Path(f'{plugin_dir}{plugi}')))
             if plugi + ".py" in package_file_list and \
@@ -447,21 +450,21 @@ def _bridge(plugin_dir):
                     missing_files_count += 1
                 if missing_files_count != 0:
                     os.system("")
-                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
+                    _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
                 
                 if not entrance_exist:
                     error = f"plugin not found entrance function '{plugi}'"
                     os.system("")
-                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
+                    _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
                 elif entrance_exist and entrance_count != 1:
                     error = f"multiple entrance functions exist in plugin"
                     os.system("")
-                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
+                    _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
 
                 if not metadata_ok:
                     error = f"metadata format error"
                     os.system("")
-                    print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
+                    _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
 
     for plugin in plugin_list:
         metadata_data = {}
@@ -472,7 +475,7 @@ def _bridge(plugin_dir):
                 metadata_data = data
         else:
             os.system("")
-            print(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{data}")
+            _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{data}")
             continue
         
         if metadata_data["Command"] != common_pkg_prefix:  # Hidden plugin
@@ -505,7 +508,7 @@ def _plugin_info(plugin_list, plugin_dir):
 
 
 if args.close and args.logout:
-    print("Only one of logout and close can be used at the same time.")
+    _logger.error("Only one of logout and close can be used at the same time.")
     os._exit(0)
 
 elif args.logout and not args.close:
@@ -514,35 +517,35 @@ elif args.logout and not args.close:
     try:
         req = requests.post(url=logout_url, verify=False)
     except:
-        print("Error request the cloud Bot API server.")
+        _logger.error("Error request the cloud Bot API server.")
         os._exit(0)
     if req.json().get("ok"):
-        print("Successfully logout from the cloud Bot API server.")
+        _logger.info("Successfully logout from the cloud Bot API server.")
     elif not req.json().get("ok"):
-        print("Error logout from the cloud Bot API server.")
+        _logger.error("Error logout from the cloud Bot API server.")
         if (req.json().get("error_code") == 401 and
             req.json().get("description") == "Unauthorized"):
-            print("If you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
+            _logger.error("If you already logout the bot from the cloud Bot API server,please wait at least 10 minutes and try again.")
     os._exit(0)
 
 elif args.close and not args.logout:
     config = _config()
     if config["local_api_server"] == "False":
-        print("The close can only be used when local_api_server is configured.")
+        _logger.error("The close can only be used when local_api_server is configured.")
         os._exit(0)
 
     close_url = f'{config["local_api_server"]}bot{config["key"]}/close'
     try:
         req = requests.post(url=close_url, verify=False)
     except:
-        print("Error request the the local API server.")
+        _logger.error("Error request the the local API server.")
         os._exit(0)
     if req.json().get("ok"):
-        print("Successfully close from the local API server.")
+        _logger.info("Successfully close from the local API server.")
     elif not req.json().get("ok"):
-        print("Error close from the local API server.")
+        _logger.error("Error close from the local API server.")
         if req.json().get("error_code") == 429:
-            print(f'Too many requests, please retry after {str(req.json().get("parameters")["retry_after"])} seconds.')
+            _logger.error(f'Too many requests, please retry after {str(req.json().get("parameters")["retry_after"])} seconds.')
     os._exit(0)
 
 
