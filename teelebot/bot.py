@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-05-29
+@last modification: 2023-07-29
 @author: Pluto (github:plutobell)
 """
 import time
@@ -354,6 +354,7 @@ class Bot(object):
     def __logging_for_pluginRun(self, message, plugin):
         title = ""  # INFO Log
         user_name = ""
+        from_id = ""
 
         if message["chat"]["type"] == "private":
             if "first_name" in message["chat"].keys():
@@ -365,6 +366,7 @@ class Bot(object):
                     title += message["chat"]["last_name"]
         elif "title" in message["chat"].keys():
             title = message["chat"]["title"]
+
         if "reply_markup" in message.keys() and \
                 message["message_type"] == "callback_query_data":
             from_id = message["click_user"]["id"]
@@ -375,7 +377,7 @@ class Bot(object):
                     user_name += " " + message["click_user"]["last_name"]
                 else:
                     user_name += message["chat"]["last_name"]
-        else:
+        elif "from" in message.keys():
             from_id = message["from"]["id"]
             if "first_name" in message["from"].keys():
                 user_name += message["from"]["first_name"]

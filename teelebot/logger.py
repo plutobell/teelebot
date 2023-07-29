@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-05-03
+@last modification: 2023-07-29
 '''
 import logging
 
@@ -48,7 +48,8 @@ class ColoredLogger(logging.Logger):
     def __init__(self, name):
         logging.Logger.__init__(self, name, logging.INFO)
 
-        color_formatter = ColoredFormatter(self.COLOR_FORMAT)
+        color_format = formatter_message(self.COLOR_FORMAT, True)
+        color_formatter = ColoredFormatter(color_format)
 
         console = logging.StreamHandler()
         console.setFormatter(color_formatter)
