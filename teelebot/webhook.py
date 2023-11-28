@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modification: 2023-07-12
+@last modification: 2023-11-28
 '''
 #from socketserver import ThreadingMixIn
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -59,7 +59,7 @@ def _runWebhook(bot, host, port):
     _logger.info("Bot Start.")
 
     RequestHandler = __MakeRequestHandler(bot)
-    if bot._local_address == "0.0.0.0":
+    if bot._load_cert:
         try:
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             context.load_cert_chain(bot._cert_pub, bot._cert_key)

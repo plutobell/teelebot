@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-13
-@last modification: 2023-05-15
+@last modification: 2023-11-28
 '''
 
 __cloud_api_server__ = "https://api.telegram.org/"
@@ -57,6 +57,7 @@ __config_template__ = {
     "self_signed": "False",
     "cert_key": "",
     "cert_pub": "",
+    "load_cert": "False",
     "server_address": "",
     "server_port": "",
     "local_address": "",

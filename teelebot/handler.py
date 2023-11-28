@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-07-12
+@last modification: 2023-11-28
 '''
 import configparser
 import argparse
@@ -167,18 +167,27 @@ def _config():
         webhook_args = ["self_signed",
                         "server_address", "server_port",
                         "local_address", "local_port",
-                        "cert_pub", "cert_key"] # Optional: secret_token
+                        "cert_pub", "cert_key"] # Optional: secret_token, load_cert
         for w in webhook_args:
             if w not in config.keys():
                 _logger.error("Please check if the following fields exist in the configuration file: \n" +
                     "cert_pub cert_key self_signed server_address server_port local_address local_port")
                 os._exit(0)
-        if "secret_token" in config.keys():
-            if config["secret_token"] not in [None, "", " "]:
-                pattern = r"^[A-Za-z0-9_-]{1,256}$"
-                if not re.match(pattern, config["secret_token"]):
-                    _logger.error("The format of secret_token is wrong (1-256 characters, only characters A-Z, a-z, 0-9, _ and - are allowed).")
-                    os._exit(0)
+        if "secret_token" in config.keys() and config["secret_token"] not in [None, "", " "]:
+            pattern = r"^[A-Za-z0-9_-]{1,256}$"
+            if not re.match(pattern, config["secret_token"]):
+                _logger.error("The format of secret_token is wrong (1-256 characters, only characters A-Z, a-z, 0-9, _ and - are allowed).")
+                os._exit(0)
+        if "load_cert" in config.keys() and config["load_cert"] not in [None, "", " "]:
+            if config["load_cert"] == "True":
+                config["load_cert"] = True
+            elif config["load_cert"] == "False":
+                config["load_cert"] = False
+            else:
+                _logger.error("The load_cert field value in the configuration file is wrong.")
+                os._exit(0)
+        else:
+            config["load_cert"] = False
             
 
     plugin_dir_in_config = False
@@ -229,17 +238,17 @@ def _config():
                         "\n" + \
                         "    # proxies = bot.proxies\n" + \
                         "\n" + \
-                        '    chat_id = message["chat"]["id"]\n' + \
-                        '    user_id = message["from"]["id"]\n' + \
-                        '    message_id = message["message_id"]\n' + \
+                        '    chat_id = message.get("chat", {}).get("id")\n' + \
+                        '    user_id = message.get("from", {}).get("id")\n' + \
+                        '    message_id = message.get("message_id")\n' + \
                         "\n" + \
-                        '    message_type = message["message_type"]\n' + \
-                        '    chat_type = message["chat"]["type"]\n' + \
+                        '    message_type = message.get("message_type")\n' + \
+                        '    chat_type = message.get("chat", {}).get("type")\n' + \
                         "\n" + \
                         '    command = ""\n' + \
                         '    ok, metadata = bot.metadata.read()\n' + \
                         '    if ok:\n' + \
-                        '        command = metadata.get("Command", "")\n' + \
+                        '        command = metadata.get("Command")\n' + \
                         "\n\n" + \
                         "    # Write your plugin code below"
                     ])

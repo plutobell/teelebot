@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-07-29
+@last modification: 2023-11-28
 @author: Pluto (github:plutobell)
 """
 import time
@@ -62,6 +62,7 @@ class Bot(object):
             self._self_signed = config["self_signed"]
             self._cert_key = config["cert_key"]
             self._cert_pub = config["cert_pub"]
+            self._load_cert = config["load_cert"]
             self._server_address = config["server_address"]
             self._server_port = config["server_port"]
             self._local_address = config["local_address"]

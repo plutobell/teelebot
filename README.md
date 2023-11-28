@@ -182,6 +182,7 @@ webhook=True
 self_signed=False
 cert_key=your private cert path
 cert_pub=your public cert path
+load_cert=False
 server_address=your server ip address or domain
 server_port=your server port
 local_address=webhook local address
@@ -189,7 +190,7 @@ local_port=webhook local port
 secret_token=webhook secret token
 ```
 
-`self_signed` 用于设置是否使用自签名证书，而 `cert_key` 和 `cert_pub` 则是你的证书路径(绝对路径)，`server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口。
+`self_signed` 用于设置是否使用自签名证书，而 `cert_key` 和 `cert_pub` 是你的证书路径(绝对路径)，`load_cert` 则用于设置 Webhook 是否加载本地证书； `server_address` 为你的服务器公网IP, `server_port` 为服务器的端口(目前 telegram 官方仅支持 443,  80,  88,  8443)，`local_address` 为Webhook 本地监听地址， `local_port` 为 Webhook 本地运行的端口；`secret_token` 则用于设置 Webhook 的secret token。
 
 自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
 
@@ -276,6 +277,7 @@ webhook=False
 self_signed=False # Optional while webhook is False
 cert_key=your private cert path # Optional while webhook is False
 cert_pub=your public cert path # Optional while webhook is False
+load_cert=False # Optional while webhook is False
 server_ip=your server ip address # Optional while webhook is False
 server_port=your server port # Optional while webhook is False
 local_address=webhook local address # Optional while webhook is False
