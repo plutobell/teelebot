@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-13
-@last modification: 2023-11-28
+@last modification: 2023-12-08
 '''
 
 __cloud_api_server__ = "https://api.telegram.org/"
@@ -64,5 +64,7 @@ __config_template__ = {
     "local_port": "",
     "secret_token": ""
 }
+
+__plugin_init_func_name__ = "Init"
 
 

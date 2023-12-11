@@ -1,4 +1,4 @@
-# 插件开发指南 (以 Hello 插件为例) v1.4
+# 插件开发指南 (以 Hello 插件为例) v1.5
 
 #### 一、插件结构
 
@@ -31,6 +31,18 @@ def Hello(bot, message):
 ```
 
 函数 `Hello()` 即为插件的入口函数，参数 `bot` 为Bot接口库实例化对象，参数 `message` 用于接收消息数据。
+
+
+
+**在 `v2.4.0` 及以上版本，插件引入了初始化函数 `Init(bot)`** ，参数 `bot` 为Bot接口库实例化对象。该函数类似Python类的 `__init__` 方法，在框架运行后，无论插件是否被触发，都会执行一次。**另外，插件的重装和修改都会重新触发此函数的执行。**以插件 `Hello` 的初始化函数为例：
+
+```python
+# 该函数会在框架运行后，在控制台输出字符串： Hello World!
+def Init(bot):
+    print("Hello World!")
+```
+
+
 
 
 
@@ -165,7 +177,7 @@ Summary: InlineMode插件例子
 teelebot -p/--plugin <plugin name>
 ```
 
-* 1.14.1 以后的版本
+* **1.14.1 以后的版本**
 
 ```python
 teelebot -mp/--make_plugin <plugin name>

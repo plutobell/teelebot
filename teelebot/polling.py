@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-06-23
-@last modification: 2023-07-12
+@last modification: 2023-12-11
 '''
 import os
 import signal
@@ -12,6 +12,9 @@ from .logger import _logger
 def _runUpdates(bot):
 
     _logger.info("Bot Start.")
+
+    bot._update_plugins_init_status()
+    bot._plugins_init(bot)
 
     signal.signal(signal.SIGINT, __exit)
     while True:

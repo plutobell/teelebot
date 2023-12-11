@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-11-28
+@last modification: 2023-12-11
 @author: Pluto (github:plutobell)
 """
 import time
@@ -15,7 +15,9 @@ import random
 import shutil
 import inspect
 import traceback
+import threading
 import importlib
+import functools
 
 from pathlib import Path
 from typing import Union, Callable
@@ -27,6 +29,7 @@ from .schedule import _Schedule
 from .buffer import _Buffer
 from .request import _Request
 from .metadata import _Metadata
+from .common import __plugin_init_func_name__
 
 
 class Bot(object):
@@ -135,6 +138,11 @@ class Bot(object):
 
         self.__method_name = ""
 
+        self.__plugins_init_status_mutex = threading.Lock()
+        self.__plugins_init_status = {}
+        # self._update_plugins_init_status()
+        # self._plugins_init()
+
         del config
         del thread_pool_size
         del schedule_queue_size
@@ -146,6 +154,7 @@ class Bot(object):
         del self.schedule
         del self.buffer
         del self.metadata
+        del self.__plugins_init_status
 
     def __getattr__(self, method_name):
         self.__method_name = method_name
@@ -166,6 +175,61 @@ class Bot(object):
         """
         if fur.exception() is not None:
             _logger.debug(f"EXCEPTION - {str(fur.result())}")
+
+    def _plugins_init(self, bot):
+        """
+        Execute the init func of the plugins
+        """      
+        for plugin, _ in self.__plugin_bridge.items():
+            with self.__plugins_init_status_mutex:
+                if plugin not in list(self.__plugins_init_status.keys()):
+                    continue
+                elif self.__plugins_init_status[plugin] == True:
+                    continue
+
+            module = self.__import_module(plugin)
+            pluginInitFunc = getattr(module, __plugin_init_func_name__, None)
+
+            if pluginInitFunc != None:
+                def __threadpool_exception(fur, plugin_name, status=False):
+                    if fur.exception() is not None:
+                        _logger.error(f"The plugin {plugin} initialization error.")
+                        _logger.debug(f"EXCEPTION - {str(fur.result())}")
+                    else:
+                        self.__update_plugin_init_status(plugin_name=plugin_name, status=status)
+                        _logger.info(f"The plugin {plugin_name} initialization completed.")
+                
+                try:
+                    fur = self.__thread_pool.submit(pluginInitFunc, bot)
+                    callback_with_args = functools.partial(__threadpool_exception, plugin_name=plugin, status=True)
+                    fur.add_done_callback(callback_with_args)
+                except Exception as e:
+                    _logger.error(f"Failed to initialize plugin {plugin}: {str(e)}")
+                    traceback.print_exc()
+
+    def _update_plugins_init_status(self):
+        """
+        Update plugins init status
+        """
+        new_status_dict = {}
+
+        for plugin, _ in self.__plugin_bridge.items():
+            with self.__plugins_init_status_mutex:
+                if plugin in list(self.__plugins_init_status.keys()):
+                    new_status_dict[plugin] = self.__plugins_init_status[plugin]
+                else:
+                    new_status_dict[plugin] = False
+
+        with self.__plugins_init_status_mutex:
+            self.__plugins_init_status = new_status_dict
+    
+    def __update_plugin_init_status(self, plugin_name, status=False):
+        """
+        Update plugin init status by plugin_name
+        """
+        with self.__plugins_init_status_mutex:
+            if plugin_name in list(self.__plugins_init_status.keys()):
+                self.__plugins_init_status[plugin_name] = status
 
     def __import_module(self, plugin_name):
         """
@@ -199,7 +263,8 @@ class Bot(object):
             plugin_info[plugin_name] = now_mtime
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
-            _logger.info(f"The plugin {plugin_name} has been updated")
+            self.__update_plugin_init_status(plugin_name=plugin_name, status=False)
+            _logger.info(f"The plugin {plugin_name} has been updated.")
 
     def __load_plugin(self, now_plugin_info, as_plugin=True,
         now_plugin_bridge={}, now_non_plugin_list=[]):
@@ -209,11 +274,11 @@ class Bot(object):
         if as_plugin:
             for plugin in list(now_plugin_bridge.keys()): # Dynamic Loading Plugin
                 if plugin not in list(self.__plugin_bridge.keys()):
-                    _logger.info(f"The plugin {plugin} has been installed")
+                    _logger.info(f"The plugin {plugin} has been installed.")
                     self.__plugin_info[plugin] = now_plugin_info[plugin]
             for plugin in list(self.__plugin_bridge.keys()):
                 if plugin not in list(now_plugin_bridge.keys()):
-                    _logger.info(f"The plugin {plugin} has been uninstalled")
+                    _logger.info(f"The plugin {plugin} has been uninstalled.")
                     self.__plugin_info.pop(plugin)
 
                     if (f'{self.__plugin_dir}{plugin}') in sys.path:
@@ -441,6 +506,9 @@ class Bot(object):
             if len(self.__plugin_bridge) == 0:
                 os.system("")
                 _logger.warn("\033[1;31mNo plugins installed\033[0m")
+
+            self._update_plugins_init_status() # Update plugins init status
+            self._plugins_init(bot) 
 
             ok, buffer_status = self.buffer.status() # Buffer capacity monitoring
             if ok and buffer_status["used"] >= buffer_status["size"]:

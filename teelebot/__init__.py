@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 @creation date: 2019-08-23
-@last modification: 2023-07-12
+@last modification: 2023-12-08
 """
 import os
 import requests
@@ -29,11 +29,11 @@ else:
 
 def main():
     print(
-        "    __            __     __          __  " + "\n" + \
-        "   / /____  ___  / /__  / /_  ____  / /_ " + "\n" + \
-        "  / __/ _ \/ _ \/ / _ \/ __ \/ __ \/ __/ " + "\n" + \
-        " / /_/  __/  __/ /  __/ /_/ / /_/ / /_   " + "\n" + \
-        " \__/\___/\___/_/\___/_.___/\____/\__/   " + "\n"
+        "    __            __     __          __  \n" +
+        "   / /____  ___  / /__  / /_  ____  / /_ \n" +
+        "  / __/ _ \\/ _ \\/ / _ \\/ __ \\/ __ \\/ __/ \n" +
+        " / /_/  __/  __/ /  __/ /_/ / /_/ / /_   \n" +
+        " \\__/\\___/\\___/_/\\___/_.___/\\____/\\__/   \n"
     )
     print(" * Self-checking...", end="\r")
     req = requests.post(url=f'{bot._url}getWebhookInfo', verify=False, proxies=bot.proxies)

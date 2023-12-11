@@ -2,11 +2,11 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-11-15
-@last modification: 2023-11-28
+@last modification: 2023-12-11
 @author: Pluto (github:plutobell)
 """
 
-__version__ = "2.3.6"
+__version__ = "2.4.0"
 
 __author__ = "Pluto"
 __email__ = "hi@ojoll.com"

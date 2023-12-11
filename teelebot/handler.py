@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-11-28
+@last modification: 2023-12-08
 '''
 import configparser
 import argparse
@@ -23,7 +23,8 @@ from .common import (
     __cloud_api_server__,
     __common_pkg_prefix__,
     __inline_mode_prefix__,
-    __config_template__
+    __config_template__,
+    __plugin_init_func_name__
 )
 
 cloud_api_server = __cloud_api_server__
@@ -220,36 +221,39 @@ def _config():
                     enter.writelines([
                         "# -*- coding: utf-8 -*-\n",
                         "\n",
+                        "# def " + __plugin_init_func_name__ + "(bot):\n",
+                        "#     pass",
+                        "\n\n",
                         "def " + plugin_name + "(bot, message):\n",
-                        "\n" + \
-                        "    # root_id = bot.root_id\n" + \
-                        "    # bot_id = bot.bot_id\n" + \
-                        "\n" + \
-                        "    # author = bot.author\n" + \
-                        "    # version = bot.version\n" + \
-                        "\n" + \
-                        "    # plugin_dir = bot.plugin_dir\n" + \
-                        "    # plugin_bridge = bot.plugin_bridge\n" + \
-                        "\n" + \
-                        "    # uptime = bot.uptime\n" + \
-                        "    # response_times = bot.response_times\n" + \
-                        "    # response_chats = bot.response_chats\n" + \
-                        "    # response_users = bot.response_users\n" + \
-                        "\n" + \
-                        "    # proxies = bot.proxies\n" + \
-                        "\n" + \
-                        '    chat_id = message.get("chat", {}).get("id")\n' + \
-                        '    user_id = message.get("from", {}).get("id")\n' + \
-                        '    message_id = message.get("message_id")\n' + \
-                        "\n" + \
-                        '    message_type = message.get("message_type")\n' + \
-                        '    chat_type = message.get("chat", {}).get("type")\n' + \
-                        "\n" + \
-                        '    command = ""\n' + \
-                        '    ok, metadata = bot.metadata.read()\n' + \
-                        '    if ok:\n' + \
-                        '        command = metadata.get("Command")\n' + \
-                        "\n\n" + \
+                        "\n",
+                        "    # root_id = bot.root_id\n",
+                        "    # bot_id = bot.bot_id\n",
+                        "\n",
+                        "    # author = bot.author\n",
+                        "    # version = bot.version\n",
+                        "\n",
+                        "    # plugin_dir = bot.plugin_dir\n",
+                        "    # plugin_bridge = bot.plugin_bridge\n",
+                        "\n",
+                        "    # uptime = bot.uptime\n",
+                        "    # response_times = bot.response_times\n",
+                        "    # response_chats = bot.response_chats\n",
+                        "    # response_users = bot.response_users\n",
+                        "\n",
+                        "    # proxies = bot.proxies\n",
+                        "\n",
+                        '    chat_id = message.get("chat", {}).get("id")\n',
+                        '    user_id = message.get("from", {}).get("id")\n',
+                        '    message_id = message.get("message_id")\n',
+                        "\n",
+                        '    message_type = message.get("message_type")\n',
+                        '    chat_type = message.get("chat", {}).get("type")\n',
+                        "\n",
+                        '    command = ""\n',
+                        '    ok, metadata = bot.metadata.read()\n',
+                        '    if ok:\n',
+                        '        command = metadata.get("Command")\n',
+                        "\n\n",
                         "    # Write your plugin code below"
                     ])
             if not os.path.exists(str(Path(f'{plugin_dir}{plugin_name}{os.sep}README.md'))):
@@ -409,6 +413,8 @@ def _bridge(plugin_dir):
             
             entrance_exist = False
             entrance_count = 0
+            initfunc_exist = False
+            initfunc_count = 0
             try:
                 with open(str(Path(f"{plugin_dir}{plugi}{os.sep}{plugi}.py")), "r", encoding="utf-8") as e:
                     content = e.read()
@@ -417,12 +423,20 @@ def _bridge(plugin_dir):
                         f"def {plugi}(bot,message):" in content or \
                         f"def {plugi}(message,bot):" in content:
                         entrance_exist = True
-
                     if entrance_exist:
                         entrance_count += content.count(f"def {plugi}(bot, message):")
                         entrance_count += content.count(f"def {plugi}(message, bot):")
                         entrance_count += content.count(f"def {plugi}(bot,message):")
                         entrance_count += content.count(f"def {plugi}(message,bot):")
+
+                    if f"def {__plugin_init_func_name__}(bot):" in content or \
+                        f"def {__plugin_init_func_name__}(bot,):" in content or \
+                        f"def {__plugin_init_func_name__}(bot, ):" in content:
+                        initfunc_exist = True
+                    if initfunc_exist:
+                        initfunc_count += content.count(f"def {__plugin_init_func_name__}(bot):")
+                        initfunc_count += content.count(f"def {__plugin_init_func_name__}(bot,):")
+                        initfunc_count += content.count(f"def {__plugin_init_func_name__}(bot, ):")
             except Exception as e:
                 os.system("")
                 _logger.error("\033[1;31mThe " + plugi + " plugin is corrupted: " + "\033[0m" + str(e))
@@ -444,7 +458,8 @@ def _bridge(plugin_dir):
             package_file_list = os.listdir(str(Path(f'{plugin_dir}{plugi}')))
             if plugi + ".py" in package_file_list and \
                 "METADATA" in package_file_list and \
-                entrance_exist and entrance_count == 1 and metadata_ok:
+                entrance_exist and entrance_count == 1 and \
+                initfunc_count <= 1 and metadata_ok:
                 plugin_list.append(plugi)
             else:
                 corrupted_plugin_list.append(plugi)
@@ -469,6 +484,12 @@ def _bridge(plugin_dir):
                     error = f"multiple entrance functions exist in plugin"
                     os.system("")
                     _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
+                
+                if initfunc_exist and initfunc_count != 1:
+                    error = f"multiple {__plugin_init_func_name__} functions exist in plugin"
+                    os.system("")
+                    _logger.error(f"\033[1;31mThe {plugi} plugin is corrupted: \033[0m{error}")
+
 
                 if not metadata_ok:
                     error = f"metadata format error"

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-6-12
-@last modification: 2023-11-28
+@last modification: 2023-12-11
 '''
 #from socketserver import ThreadingMixIn
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -57,6 +57,9 @@ def __MakeRequestHandler(bot):
 
 def _runWebhook(bot, host, port):
     _logger.info("Bot Start.")
+
+    bot._update_plugins_init_status()
+    bot._plugins_init(bot)
 
     RequestHandler = __MakeRequestHandler(bot)
     if bot._load_cert:
