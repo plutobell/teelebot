@@ -232,7 +232,7 @@ plugin_dir=your plugin dir
   
   ```bash
   usage: -m [-h] [-c CONFIG] [-k KEY] [-r ROOT] [-p PLUGIN] [-mp MAKE_PLUGIN]
-            [-L] [-C] [-d] [-v]
+            [-L] [-C] [-hi] [-d] [-v]
   
   teelebot console command list
   
@@ -246,10 +246,11 @@ plugin_dir=your plugin dir
                           specify the plugin path
     -mp MAKE_PLUGIN, --make_plugin MAKE_PLUGIN
                           create a plugin template
-    -L, --logout          use it to log out from the cloud Bot API server before
-                          launching the bot locally
-    -C, --close           use it to close the bot instance before moving it from
-                          one local server to another
+    -L, --logout          log out from the cloud Bot API server before running
+                          the bot locally
+    -C, --close           close the bot instance before transferring it between
+                          local servers
+    -hi, --hide_info      hide plugin info-level console logs
     -d, --debug           run teelebot in debug mode
     -v, --version         show the current version of teelebot
   ```
@@ -284,6 +285,7 @@ local_address=webhook local address # Optional while webhook is False
 local_port=webhook local port # Optional while webhook is False
 secret_token=webhook secret token
 debug=False
+hide_info=False
 drop_pending_updates=False
 local_api_server=local api server address # [Optional]
 updates_chat_member=False # [Optional]

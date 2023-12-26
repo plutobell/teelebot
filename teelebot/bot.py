@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-12-11
+@last modification: 2023-12-26
 @author: Pluto (github:plutobell)
 """
 import time
@@ -78,7 +78,7 @@ class Bot(object):
             else:
                 self._secret_token = self.__make_token()
         self._offset = 0
-        self._timeout = 60
+        self._timeout = 0
         self._pool_size = config["pool_size"]
         self._buffer_size = config["buffer_size"]
         self._drop_pending_updates = config["drop_pending_updates"]
@@ -137,6 +137,7 @@ class Bot(object):
         self.__non_plugin_info = config["non_plugin_info"]
 
         self.__method_name = ""
+        self.__hide_info = config["hide_info"]
 
         self.__plugins_init_status_mutex = threading.Lock()
         self.__plugins_init_status = {}
@@ -197,7 +198,8 @@ class Bot(object):
                         _logger.debug(f"EXCEPTION - {str(fur.result())}")
                     else:
                         self.__update_plugin_init_status(plugin_name=plugin_name, status=status)
-                        _logger.info(f"The plugin {plugin_name} initialization completed.")
+                        if not self.__hide_info:
+                            _logger.info(f"The plugin {plugin_name} initialization completed.")
                 
                 try:
                     fur = self.__thread_pool.submit(pluginInitFunc, bot)
@@ -264,7 +266,8 @@ class Bot(object):
             Module = self.__import_module(plugin_name)
             importlib.reload(Module)
             self.__update_plugin_init_status(plugin_name=plugin_name, status=False)
-            _logger.info(f"The plugin {plugin_name} has been updated.")
+            if not self.__hide_info:
+                _logger.info(f"The plugin {plugin_name} has been updated.")
 
     def __load_plugin(self, now_plugin_info, as_plugin=True,
         now_plugin_bridge={}, now_non_plugin_list=[]):
@@ -274,11 +277,13 @@ class Bot(object):
         if as_plugin:
             for plugin in list(now_plugin_bridge.keys()): # Dynamic Loading Plugin
                 if plugin not in list(self.__plugin_bridge.keys()):
-                    _logger.info(f"The plugin {plugin} has been installed.")
+                    if not self.__hide_info:
+                        _logger.info(f"The plugin {plugin} has been installed.")
                     self.__plugin_info[plugin] = now_plugin_info[plugin]
             for plugin in list(self.__plugin_bridge.keys()):
                 if plugin not in list(now_plugin_bridge.keys()):
-                    _logger.info(f"The plugin {plugin} has been uninstalled.")
+                    if not self.__hide_info:
+                        _logger.info(f"The plugin {plugin} has been uninstalled.")
                     self.__plugin_info.pop(plugin)
 
                     if (f'{self.__plugin_dir}{plugin}') in sys.path:
@@ -293,7 +298,8 @@ class Bot(object):
         else:
             for plugin in list(now_non_plugin_list): # Dynamically loading non-plugin packages
                 if plugin not in list(self.__non_plugin_list):
-                    _logger.info(f"The plugin {plugin} has been installed")
+                    if not self.__hide_info:
+                        _logger.info(f"The plugin {plugin} has been installed")
                     self.__non_plugin_info[plugin] = now_plugin_info[plugin]
 
                     if (f'{self.__plugin_dir}{plugin}') not in sys.path:
@@ -301,7 +307,8 @@ class Bot(object):
 
             for plugin in list(self.__non_plugin_list):
                 if plugin not in list(now_non_plugin_list):
-                    _logger.info(f"The plugin {plugin} has been uninstalled")
+                    if not self.__hide_info:
+                        _logger.info(f"The plugin {plugin} has been uninstalled")
                     self.__non_plugin_info.pop(plugin)
 
                     if (f'{self.__plugin_dir}{plugin}') in sys.path:
@@ -454,17 +461,19 @@ class Bot(object):
                     user_name += message["from"]["last_name"]
 
         if message["message_type"] == "unknown":
-            _logger.info(
-                "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
-                "User:" + user_name + "(" + str(from_id) + ") - " + \
-                "Plugin:" + "" + " - " + \
-                "Type:" + message["message_type"])
+            if not self.__hide_info:
+                _logger.info(
+                    "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
+                    "User:" + user_name + "(" + str(from_id) + ") - " + \
+                    "Plugin:" + "" + " - " + \
+                    "Type:" + message["message_type"])
         else:
-            _logger.info(
-                "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
-                "User:" + user_name + "(" + str(from_id) + ") - " + \
-                "Plugin:" + str(plugin) + " - " + \
-                "Type:" + message["message_type"])
+            if not self.__hide_info:
+                _logger.info(
+                    "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
+                    "User:" + user_name + "(" + str(from_id) + ") - " + \
+                    "Plugin:" + str(plugin) + " - " + \
+                    "Type:" + message["message_type"])
 
     def __make_token(self, len=64):
         """

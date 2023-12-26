@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-12-08
+@last modification: 2023-12-25
 '''
 import configparser
 import argparse
@@ -45,11 +45,13 @@ parser.add_argument("-p", "--plugin", type=str,
 parser.add_argument("-mp", "--make_plugin", type=str,
                     help="create a plugin template")
 parser.add_argument("-L", "--logout",
-                    help="use it to log out from the cloud Bot API server before launching the bot locally",
+                    help="log out from the cloud Bot API server before running the bot locally",
                     action="store_true")
 parser.add_argument("-C", "--close",
-                    help="use it to close the bot instance before moving it from one local server to another",
+                    help="close the bot instance before transferring it between local servers",
                     action="store_true")
+parser.add_argument(
+    "-hi", "--hide_info", help="hide plugin info-level console logs", action="store_true")
 parser.add_argument(
     "-d", "--debug", help="run teelebot in debug mode", action="store_true")
 parser.add_argument(
@@ -134,6 +136,9 @@ def _config():
         conf.set("config", "key", str(args.key))
     if args.root:
         conf.set("config", "root_id", str(args.root))
+    if args.hide_info:
+        conf.set("config", "hide_info", str(True))
+
 
     with open(config_dir, 'w', encoding="utf-8") as configfile:
         conf.write(configfile)
@@ -357,6 +362,17 @@ def _config():
             os._exit(0)
     else:
         config["updates_chat_member"] = False
+    
+    if "hide_info" in config.keys():
+        if config["hide_info"] == "True":
+            config["hide_info"] = True
+        elif config["hide_info"] == "False":
+            config["hide_info"] = False
+        else:
+            _logger.error("The hide_info field value in the configuration file is wrong.")
+            os._exit(0)
+    else:
+        config["hide_info"] = False
 
     if config["debug"] == "True":
         config["debug"] = True
