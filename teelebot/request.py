@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-07-12
+@last modification: 2024-02-26
 '''
 import io
 import json
@@ -85,6 +85,8 @@ class _Request(object):
                 pass
             elif is_inputmedia and key == inputmedia_param_name:
                 files = value
+            elif isinstance(value, tuple):
+                files[key] = value
             elif isinstance(value, bytes):
                 files[key] = value
             elif isinstance(value, dict):

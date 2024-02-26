@@ -379,4 +379,18 @@ results = {
 # req = bot.getMyShortDescription()
 # print(req)
 
+# req = bot.sendDocument(
+#     chat_id=root,
+#     document=("test.txt", open('./test.txt', 'rb')),
+#     thumbnail=("test.jpg", open('./test.jpg', 'rb')),
+#     caption="caption text"
+# )
+# print(req)
+
+# req = bot.sendVideo(
+#     chat_id=root,
+#     video=("test.mp4", open('./test.mp4', 'rb')),
+#     caption="caption text"
+# )
+# print(req)
 
