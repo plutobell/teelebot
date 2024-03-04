@@ -1,5 +1,22 @@
 # Changelog
 
+#### 2024-03-04
+
+* v2.5.0
+  * BREAKING CHANGE: buffer 移除方法 read()
+  * BREAKING CHANGE: buffer 移除方法 write()
+  * 新增 buffer 方法 create()
+  * 新增 buffer 方法 drop()
+  * 新增 buffer 方法 show()
+  * 新增 buffer 方法 insert()
+  * 新增 buffer 方法 delete()
+  * 新增 buffer 方法 select()
+  * 新增 buffer 方法 update()
+  * 新增 buffer 方法 clear()
+  * 修复插件初始化方法 Init 的 bug
+  * 调整配置文件中 pool_size 字段的最大值
+  * 细节调整
+
 #### 2024-02-26
 
 * v2.4.2

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-07-12
+@last modification: 2024-02-28
 '''
 import threading
 import traceback
@@ -17,7 +17,7 @@ class _Schedule(object):
     """
     def __init__(self, queue_size):
         self.__queue_size = queue_size
-        self.__queue_mutex = threading.Lock()
+        self.__queue_mutex = threading.RLock()
         self.__queue = {}
 
     def __del__(self):

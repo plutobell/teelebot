@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-12
-@last modification: 2023-07-12
+@last modification: 2024-02-28
 '''
 import os
 import copy
@@ -20,7 +20,7 @@ class _Metadata(object):
     """
     def __init__(self, plugin_dir):
         self.__plugin_dir = plugin_dir
-        self.__metadata_mutex = threading.Lock()
+        self.__metadata_mutex = threading.RLock()
         self.__metadata_template = __metadata_templates__[__metadata_version_in_use__]
 
     def __del__(self):

@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2023-12-26
+@last modification: 2024-02-29
 @author: Pluto (github:plutobell)
 """
 import time
@@ -21,7 +21,7 @@ import functools
 
 from pathlib import Path
 from typing import Union, Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 
 from .handler import _config, _bridge, _plugin_info
 from .logger import _logger
@@ -29,7 +29,11 @@ from .schedule import _Schedule
 from .buffer import _Buffer
 from .request import _Request
 from .metadata import _Metadata
-from .common import __plugin_init_func_name__
+from .common import (
+    __plugin_init_func_name__,
+    __plugin_control_plugin_name__,
+    __plugin_control_plugin_command__
+    )
 
 
 class Bot(object):
@@ -132,6 +136,8 @@ class Bot(object):
             max_workers=thread_pool_size)
         self.__timer_thread_pool = ThreadPoolExecutor(
             max_workers=int(self._pool_size) * 5)
+        self.__plugin_init_pool = ThreadPoolExecutor(
+            max_workers=round(int(self._pool_size) / 3))
 
         self.__plugin_info = config["plugin_info"]
         self.__non_plugin_info = config["non_plugin_info"]
@@ -139,10 +145,10 @@ class Bot(object):
         self.__method_name = ""
         self.__hide_info = config["hide_info"]
 
-        self.__plugins_init_status_mutex = threading.Lock()
+        self.__plugins_init_status_mutex = threading.RLock()
         self.__plugins_init_status = {}
-        # self._update_plugins_init_status()
-        # self._plugins_init()
+        self.__plugin_init_furs_mutex = threading.RLock()
+        self.__plugin_init_furs = {}
 
         del config
         del thread_pool_size
@@ -156,6 +162,7 @@ class Bot(object):
         del self.buffer
         del self.metadata
         del self.__plugins_init_status
+        del self.__plugin_init_furs
 
     def __getattr__(self, method_name):
         self.__method_name = method_name
@@ -187,6 +194,12 @@ class Bot(object):
                     continue
                 elif self.__plugins_init_status[plugin] == True:
                     continue
+                elif self.__plugins_init_status[plugin] == False:
+                    with self.__plugin_init_furs_mutex:
+                        if isinstance(self.__plugin_init_furs[plugin], Future):
+                            if not self.__plugin_init_furs[plugin].done():
+                                _logger.warn(f"The plugin {plugin} is still initializing...")
+                                continue
 
             module = self.__import_module(plugin)
             pluginInitFunc = getattr(module, __plugin_init_func_name__, None)
@@ -200,11 +213,19 @@ class Bot(object):
                         self.__update_plugin_init_status(plugin_name=plugin_name, status=status)
                         if not self.__hide_info:
                             _logger.info(f"The plugin {plugin_name} initialization completed.")
-                
+
                 try:
-                    fur = self.__thread_pool.submit(pluginInitFunc, bot)
+                    fur = self.__plugin_init_pool.submit(pluginInitFunc, bot)
                     callback_with_args = functools.partial(__threadpool_exception, plugin_name=plugin, status=True)
                     fur.add_done_callback(callback_with_args)
+
+                    with self.__plugin_init_furs_mutex:
+                        if plugin in list(self.__plugin_init_furs.keys()):
+                            if isinstance(self.__plugin_init_furs[plugin], Future):
+                                if not self.__plugin_init_furs[plugin].done():
+                                    self.__plugin_init_furs[plugin].cancel()
+                            self.__plugin_init_furs[plugin] = fur
+
                 except Exception as e:
                     _logger.error(f"Failed to initialize plugin {plugin}: {str(e)}")
                     traceback.print_exc()
@@ -215,16 +236,28 @@ class Bot(object):
         """
         new_status_dict = {}
 
-        for plugin, _ in self.__plugin_bridge.items():
-            with self.__plugins_init_status_mutex:
-                if plugin in list(self.__plugins_init_status.keys()):
-                    new_status_dict[plugin] = self.__plugins_init_status[plugin]
-                else:
-                    new_status_dict[plugin] = False
-
         with self.__plugins_init_status_mutex:
+            for plugin, _ in self.__plugin_bridge.items():
+                with self.__plugins_init_status_mutex:
+                    if plugin in list(self.__plugins_init_status.keys()):
+                        new_status_dict[plugin] = self.__plugins_init_status[plugin]
+                    else:
+                        new_status_dict[plugin] = False
+
             self.__plugins_init_status = new_status_dict
-    
+
+        new_plugin_init_furs_dict = {}
+        with self.__plugin_init_furs_mutex:
+            merge_plugin_list = list(set(list(self.__plugin_bridge.keys()) + list(self.__plugin_init_furs.keys())))
+            for plugin in merge_plugin_list:
+                new_plugin_init_furs_dict[plugin] = None
+                if plugin in list(self.__plugin_init_furs.keys()):
+                    if isinstance(self.__plugin_init_furs[plugin], Future):
+                        if not self.__plugin_init_furs[plugin].done():
+                            new_plugin_init_furs_dict[plugin] = self.__plugin_init_furs[plugin]
+
+            self.__plugin_init_furs = new_plugin_init_furs_dict
+
     def __update_plugin_init_status(self, plugin_name, status=False):
         """
         Update plugin init status by plugin_name
@@ -232,6 +265,11 @@ class Bot(object):
         with self.__plugins_init_status_mutex:
             if plugin_name in list(self.__plugins_init_status.keys()):
                 self.__plugins_init_status[plugin_name] = status
+                if not status:
+                    with self.__plugin_init_furs_mutex:
+                        if isinstance(self.__plugin_init_furs[plugin_name], Future):
+                            if not self.__plugin_init_furs[plugin_name].done():
+                                self.__plugin_init_furs[plugin_name].cancel()
 
     def __import_module(self, plugin_name):
         """
@@ -319,10 +357,13 @@ class Bot(object):
             self.__non_plugin_list = now_non_plugin_list
 
     def __control_plugin(self, plugin_bridge, chat_type, chat_id):
-        if chat_type != "private" and "PluginCTL" in plugin_bridge.keys() \
-                and plugin_bridge["PluginCTL"] == "/pluginctl":
-            if os.path.exists(self.path_converter(f'{self.__plugin_dir}PluginCTL/db/{str(chat_id)}.db')):
-                with open(self.path_converter(f'{self.__plugin_dir}PluginCTL/db/{str(chat_id)}.db'), "r") as f:
+        control_plugin = __plugin_control_plugin_name__
+        control_plugin_command = __plugin_control_plugin_command__
+
+        if chat_type != "private" and control_plugin in plugin_bridge.keys() \
+                and plugin_bridge[control_plugin] == control_plugin_command:
+            if os.path.exists(self.path_converter(f'{self.__plugin_dir}{control_plugin}/db/{str(chat_id)}.db')):
+                with open(self.path_converter(f'{self.__plugin_dir}{control_plugin}/db/{str(chat_id)}.db'), "r") as f:
                     plugin_setting = f.read().strip()
                 plugin_list_off = plugin_setting.split(',')
                 plugin_bridge_temp = {}
@@ -517,7 +558,7 @@ class Bot(object):
                 _logger.warn("\033[1;31mNo plugins installed\033[0m")
 
             self._update_plugins_init_status() # Update plugins init status
-            self._plugins_init(bot) 
+            self._plugins_init(bot)
 
             ok, buffer_status = self.buffer.status() # Buffer capacity monitoring
             if ok and buffer_status["used"] >= buffer_status["size"]:

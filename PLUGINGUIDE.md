@@ -1,4 +1,4 @@
-# 插件开发指南 (以 Hello 插件为例) v1.5
+# 插件开发指南 (以 Hello 插件为例) v1.6
 
 #### 一、插件结构
 
@@ -34,7 +34,7 @@ def Hello(bot, message):
 
 
 
-**在 `v2.4.0` 及以上版本，插件引入了初始化函数 `Init(bot)`** ，参数 `bot` 为Bot接口库实例化对象。该函数类似Python类的 `__init__` 方法，在框架运行后，无论插件是否被触发，都会执行一次。**另外，插件的重装和修改都会重新触发此函数的执行**。以插件 `Hello` 的初始化函数为例：
+**在 `v2.4.0` 及以上版本，插件引入了初始化函数 `Init(bot)`** ，参数 `bot` 为Bot接口库实例化对象。该函数类似Python类的 `__init__` 方法，在框架运行后，无论插件是否被触发，都会执行一次。**另外，插件的重装和修改都会重新触发此函数的执行（函数仍在执行的时候除外）**。以插件 `Hello` 的初始化函数为例：
 
 ```python
 # 该函数会在框架运行后，在控制台输出字符串： Hello World!
@@ -215,22 +215,34 @@ ok, uid = bot.schedule.status()
 
 #### 六、数据暂存器
 
-在 `v1.16.0` 及以上版本，每个插件将拥有一个用于**临时存储数据**的暂存区，可通过以下方法对暂存区进行操作。
+在 `v1.16.0` 及以上版本，每个插件将拥有用于**临时存储数据**的暂存区，可通过以下方法对暂存区进行操作。（**请注意：数据暂存区中的数据在框架退出后将被清空**）
 
 可获得的方法:
 
 * **buffer.status** : 获取数据暂存区的使用情况， 单位为字节
 * **buffer.sizeof** : 获取单个插件数据暂存区占用内存大小，单位为字节
-* **buffer.read** : 从暂存区读取数据，返回的数据类型为字典
-* **buffer.write** : 写入数据到暂存区，写入的数据类型为字典
+* **buffer.create** : 创建数据暂存区
+* **buffer.drop** : 删除数据暂存区
+* **buffer.show** : 获取数据暂存区列表
+* **buffer.insert** : 在数据暂存区内插入一条数据
+* **buffer.delete** : 在数据暂存区内删除数据
+* **buffer.update** : 在数据暂存区内更新数据
+* **buffer.select** : 在数据暂存区内查询数据
+* **buffer.clear** : 清空指定数据暂存区内的数据
 
 例：
 
 ```python
 ok, buf = bot.buffer.status()
-ok, buf = bot.buffer.sizeof(plugin_name="")
-ok, buf = bot.buffer.read(plugin_name="")
-ok, buf = bot.buffer.write(buffer=buf, plugin_name="")
+ok, buf = bot.buffer.sizeof(plugin_name=None)
+ok, buf = bot.buffer.create(plugin_name=None, buffer_name="default")
+ok, buf = bot.buffer.drop(plugin_name=None, buffer_name="default")
+ok, buf = bot.buffer.show(plugin_name=None)
+ok, buf = bot.buffer.insert(plugin_name=None, buffer_name="default", data={})
+ok, buf = bot.buffer.delete(plugin_name=None, buffer_name="default", idx=None, conditions={})
+ok, buf = bot.buffer.update(plugin_name=None, buffer_name="default", idx=None, conditions={}, data={})
+ok, buf = bot.buffer.select(plugin_name=None, buffer_name="default", idx=None, conditions={})
+ok, buf = bot.buffer.clear(plugin_name=None, buffer_name=None)
 ```
 
 **所有方法的参数 `plugin_name` 为可选参数，默认为调用插件的名字**

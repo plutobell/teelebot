@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-13
-@last modification: 2023-12-25
+@last modification: 2024-02-29
 '''
 
 __cloud_api_server__ = "https://api.telegram.org/"
@@ -67,5 +67,8 @@ __config_template__ = {
 }
 
 __plugin_init_func_name__ = "Init"
+
+__plugin_control_plugin_name__ = "PluginCTL"
+__plugin_control_plugin_command__ = "/pluginctl"
 
 

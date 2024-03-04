@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2023-12-25
+@last modification: 2024-02-28
 '''
 import configparser
 import argparse
@@ -294,8 +294,8 @@ def _config():
         os._exit(0)
 
     if "pool_size" in config.keys():
-        if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 100:
-            _logger.error("Thread pool size is out of range (1-100).")
+        if int(config["pool_size"]) < 1 or int(config["pool_size"]) > 150:
+            _logger.error("Thread pool size is out of range (1-150).")
             os._exit(0)
     else:
         config["pool_size"] = "40"

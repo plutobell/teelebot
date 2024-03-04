@@ -1,4 +1,4 @@
-# Function (teelebot version >= v2.3.1)
+# Function (teelebot version >= v2.5.0)
 
 #### bot API methods
 
@@ -32,8 +32,14 @@
 * bot.schedule.clear() -> Tuple[bool, str]
 * bot.buffer.status() -> Tuple[bool, dict]
 * bot.buffer.sizeof(*plugin_name*: str = None) -> Tuple[bool, Union[str, int]]
-* bot.buffer.read(*plugin_name*: str = None) -> Tuple[bool, Union[str, tuple, any]]
-* bot.buffer.write(*buffer*: any, *plugin_name*: str = None) -> Tuple[bool, Union[str, tuple]]
+* bot.buffer.create(*self*, *plugin_name*: str = None, *buffer_name*: str = "default") -> Tuple[bool, Union[str, tuple, any]]
+* bot.buffer.drop(*self*, *plugin_name*: str = None, *buffer_name*: str = None) -> Tuple[bool, Union[str, tuple, any]]
+* bot.buffer.show(*self*, *plugin_name*: str = None) -> Tuple[bool, Union[str, tuple, dict]]
+* bot.buffer.insert(*self*, *plugin_name*: str = None, *buffer_name*: str = "default", *data*: dict = {}) -> Tuple[bool, Union[str, tuple]]
+* bot.buffer.delete(*self*, *plugin_name*: str = None, *buffer_name*: str = "default", *idx*: int = None, *conditions*: dict = {}) -> Tuple[bool, Union[str, tuple, any]]
+* bot.buffer.update(*self*, *plugin_name*: str = None, *buffer_name*: str = "default", *idx*: int = None, *conditions*: dict = {}, *data*: dict = {}) -> Tuple[bool, Union[str, tuple, any]]
+* bot.buffer.select(*self*, *plugin_name*: str = None, *buffer_name*: str = "default", *idx*: int = None, *conditions*: dict = {}) -> Tuple[bool, Union[str, tuple, dict, any]]
+* bot.buffer.clear(*self*, *plugin_name*: str = None, *buffer_name*: str = None) -> Tuple[bool, Union[str, tuple, any]]
 * bot.metadata.read(*plugin_name*: str = None, *plugin_dir*: str = None) -> Tuple[bool, Union[dict, str]]
 * bot.metadata.write(*metadata*: dict, *plugin_name*: str = None, *plugin_dir*: str = None) -> Tuple[bool, Union[dict, str]]
 * bot.metadata.template(*version*: str = None) -> Tuple[bool, Union[dict, str]]
