@@ -1,6 +1,6 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2024-03-04
+@last modification: 2024-04-14
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
@@ -267,7 +267,7 @@ class _Buffer(object):
 
                     for id_x in selected_logs_idx:
                         changed_size += self.__total_size(self.__buffer[plugin_name][buffer_name][id_x])
-                        self.__buffer[plugin_name].pop(id_x)
+                        self.__buffer[plugin_name][buffer_name].pop(id_x)
                     
                 return True, str(changed_size)
             except Exception as e:
