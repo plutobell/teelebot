@@ -18,14 +18,14 @@
 #### teelebot methods
 
 * bot.message_deletor(*time_gap*: int, *chat_id*: str, *message_id*: str) -> str
-* bot.timer(*time_gap*: int, *func*: Callable[..., None], *args*: tuple) -> str
+* bot.timer(*time_gap*: int, *func*: Callable[..., None], **args*: tuple) -> str
 * bot.path_converter(*path*: str) -> str
 * bot.join_plugin_path(*path*: str, *plugin_name*: str = None) -> str
 * bot.getChatCreator(*chat_id*: str) -> Union[bool, dict]
 * bot.getChatMemberStatus(*chat_id*: str, *user_id*: str) -> Union[bool, str]
 * bot.getFileDownloadPath(*file_id*: str) -> Union[bool, str]
 * bot.getChatAdminsUseridList(*chat_id*, *skip_bot*: bool = True, *privilege_users*: list = None) -> Union[bool, list]
-* bot.schedule.add(*gap*: int, *func*: Callable[..., None], *args*: tuple) -> Tuple[bool, str]
+* bot.schedule.add(*gap*: int, *func*: Callable[..., None], **args*: tuple) -> Tuple[bool, str]
 * bot.schedule.status() -> Tuple[bool, dict]
 * bot.schedule.find(*uid*: str) -> Tuple[bool, str]
 * bot.schedule.delete(*uid*: str) -> Tuple[bool, str]

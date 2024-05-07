@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2024-02-29
+@last modification: 2024-05-06
 @author: Pluto (github:plutobell)
 """
 import time
@@ -124,8 +124,12 @@ class Bot(object):
         self.__response_chats = []
         self.__response_users = []
 
-        thread_pool_size = round(int(self._pool_size) * 2 / 3)
-        schedule_queue_size = int(self._pool_size) - thread_pool_size
+        thread_pool_size = int(self._pool_size)
+        if int(self._pool_size) >= 3:
+            thread_pool_size = round(int(self._pool_size) * 2 / 3)
+        schedule_queue_size = round(int(self._pool_size) - thread_pool_size)
+        if schedule_queue_size == 0: schedule_queue_size = int(self._pool_size)
+
         self.request = _Request(thread_pool_size, self._url, self._debug, self.__proxies)
         self.schedule = _Schedule(schedule_queue_size)
         self.buffer = _Buffer(int(self._buffer_size) * 1024 * 1024,
@@ -136,8 +140,11 @@ class Bot(object):
             max_workers=thread_pool_size)
         self.__timer_thread_pool = ThreadPoolExecutor(
             max_workers=int(self._pool_size) * 5)
+        plugin_init_pool_size = int(self._pool_size)
+        if int(self._pool_size) >= 3:
+            plugin_init_pool_size = round(int(self._pool_size) / 3)
         self.__plugin_init_pool = ThreadPoolExecutor(
-            max_workers=round(int(self._pool_size) / 3))
+            max_workers=plugin_init_pool_size)
 
         self.__plugin_info = config["plugin_info"]
         self.__non_plugin_info = config["non_plugin_info"]
@@ -151,12 +158,13 @@ class Bot(object):
         self.__plugin_init_furs = {}
 
         del config
-        del thread_pool_size
         del schedule_queue_size
+        del plugin_init_pool_size
 
     def __del__(self):
         self.__thread_pool.shutdown(wait=True)
         self.__timer_thread_pool.shutdown(wait=True)
+        self.__plugin_init_pool.shutdown(wait=True)
         del self.request
         del self.schedule
         del self.buffer
@@ -189,32 +197,39 @@ class Bot(object):
         Execute the init func of the plugins
         """      
         for plugin, _ in self.__plugin_bridge.items():
-            with self.__plugins_init_status_mutex:
-                if plugin not in list(self.__plugins_init_status.keys()):
-                    continue
-                elif self.__plugins_init_status[plugin] == True:
-                    continue
-                elif self.__plugins_init_status[plugin] == False:
-                    with self.__plugin_init_furs_mutex:
-                        if isinstance(self.__plugin_init_furs[plugin], Future):
-                            if not self.__plugin_init_furs[plugin].done():
-                                _logger.warn(f"The plugin {plugin} is still initializing...")
+            try:
+                with self.__plugins_init_status_mutex:
+                    if plugin not in list(self.__plugins_init_status.keys()):
+                        continue
+                    elif self.__plugins_init_status[plugin] == True:
+                        continue
+                    elif self.__plugins_init_status[plugin] == False:
+                        with self.__plugin_init_furs_mutex:
+                            if isinstance(self.__plugin_init_furs[plugin], Future):
+                                if self.__plugin_init_furs[plugin].running():
+                                    _logger.warn(f"The plugin {plugin} is still initializing...")
+                                elif not self.__plugin_init_furs[plugin].done():
+                                    if not self.__hide_info:
+                                        _logger.info(f"Delay initialize {plugin} plugin: until a thread pool slot is available.")
                                 continue
 
-            module = self.__import_module(plugin)
-            pluginInitFunc = getattr(module, __plugin_init_func_name__, None)
+                module = self.__import_module(plugin)
+                pluginInitFunc = getattr(module, __plugin_init_func_name__, None)
 
-            if pluginInitFunc != None:
-                def __threadpool_exception(fur, plugin_name, status=False):
-                    if fur.exception() is not None:
-                        _logger.error(f"The plugin {plugin} initialization error.")
-                        _logger.debug(f"EXCEPTION - {str(fur.result())}")
-                    else:
-                        self.__update_plugin_init_status(plugin_name=plugin_name, status=status)
+                if pluginInitFunc != None:
+                    def __threadpool_exception(fur, plugin_name, status=False):
+                        if fur.exception() is not None:
+                            _logger.error(f"The plugin {plugin} initialization error.")
+                            _logger.debug(f"EXCEPTION - {str(fur.result())}")
+                        else:
+                            self.__update_plugin_init_status(plugin_name=plugin_name, status=status)
+                            if not self.__hide_info:
+                                _logger.info(f"The plugin {plugin_name} initialization completed.")
+
+                    if self.__plugin_init_pool._work_queue.qsize() >= self.__plugin_init_pool._max_workers:
                         if not self.__hide_info:
-                            _logger.info(f"The plugin {plugin_name} initialization completed.")
+                            _logger.info(f"Delay initialize {plugin} plugin: until a thread pool slot is available.")
 
-                try:
                     fur = self.__plugin_init_pool.submit(pluginInitFunc, bot)
                     callback_with_args = functools.partial(__threadpool_exception, plugin_name=plugin, status=True)
                     fur.add_done_callback(callback_with_args)
@@ -226,9 +241,9 @@ class Bot(object):
                                     self.__plugin_init_furs[plugin].cancel()
                             self.__plugin_init_furs[plugin] = fur
 
-                except Exception as e:
-                    _logger.error(f"Failed to initialize plugin {plugin}: {str(e)}")
-                    traceback.print_exc()
+            except Exception as e:
+                _logger.error(f"Failed to initialize plugin {plugin}: {str(e)}")
+                traceback.print_exc()
 
     def _update_plugins_init_status(self):
         """
@@ -288,24 +303,31 @@ class Bot(object):
         Hot update plugin
         """
 
-        if as_plugin:
-            plugin_info = self.__plugin_info
-        else:
-            plugin_info = self.__non_plugin_info
+        try:
+            if as_plugin:
+                plugin_info = self.__plugin_info
+            else:
+                plugin_info = self.__non_plugin_info
 
-        plugin_uri = self.path_converter(
-            f'{self.__plugin_dir}{plugin_name}{os.sep}{plugin_name}.py')
-        now_mtime = os.stat(plugin_uri).st_mtime
-        # print(now_mtime, self.__plugin_info[plugin_name])
-        if now_mtime != plugin_info[plugin_name]:  # Plugin hot update
-            if os.path.exists(self.path_converter(f'{self.__plugin_dir}{plugin_name}{os.sep}__pycache__')):
-                shutil.rmtree(self.path_converter(f'{self.__plugin_dir}{plugin_name}{os.sep}__pycache__'))
-            plugin_info[plugin_name] = now_mtime
-            Module = self.__import_module(plugin_name)
-            importlib.reload(Module)
-            self.__update_plugin_init_status(plugin_name=plugin_name, status=False)
-            if not self.__hide_info:
-                _logger.info(f"The plugin {plugin_name} has been updated.")
+            plugin_uri = self.path_converter(
+                f'{self.__plugin_dir}{plugin_name}{os.sep}{plugin_name}.py')
+            now_mtime = os.stat(plugin_uri).st_mtime
+            # print(now_mtime, self.__plugin_info[plugin_name])
+            if now_mtime != plugin_info[plugin_name]:  # Plugin hot update
+                if os.path.exists(self.path_converter(f'{self.__plugin_dir}{plugin_name}{os.sep}__pycache__')):
+                    shutil.rmtree(self.path_converter(f'{self.__plugin_dir}{plugin_name}{os.sep}__pycache__'))
+                plugin_info[plugin_name] = now_mtime
+
+                Module = self.__import_module(plugin_name)
+                importlib.reload(Module)
+
+                self.__update_plugin_init_status(plugin_name=plugin_name, status=False)
+                if not self.__hide_info:
+                    _logger.info(f"The plugin {plugin_name} has been updated.")
+
+        except Exception as e:
+            _logger.error(f"Failed to update plugin {plugin_name}: {str(e)}")
+            traceback.print_exc()
 
     def __load_plugin(self, now_plugin_info, as_plugin=True,
         now_plugin_bridge={}, now_non_plugin_list=[]):
@@ -465,7 +487,7 @@ class Bot(object):
 
         return message_type, message
 
-    def __logging_for_pluginRun(self, message, plugin):
+    def __logging_for_pluginRun(self, message, plugin, update_id):
         title = ""  # INFO Log
         user_name = ""
         from_id = ""
@@ -504,6 +526,7 @@ class Bot(object):
         if message["message_type"] == "unknown":
             if not self.__hide_info:
                 _logger.info(
+                    f"[{update_id}]" + \
                     "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
                     "User:" + user_name + "(" + str(from_id) + ") - " + \
                     "Plugin:" + "" + " - " + \
@@ -511,6 +534,7 @@ class Bot(object):
         else:
             if not self.__hide_info:
                 _logger.info(
+                    f"[{update_id}] " + \
                     "From:" + title + "(" + str(message["chat"]["id"]) + ") - " + \
                     "User:" + user_name + "(" + str(from_id) + ") - " + \
                     "Plugin:" + str(plugin) + " - " + \
@@ -572,11 +596,11 @@ class Bot(object):
             message_type, message = self.__mark_message_for_pluginRun(message) # Category tagging messages
 
             if message_type == "unknown":
-                self.__logging_for_pluginRun(message, "unknown")
+                self.__logging_for_pluginRun(message, "unknown", message["update_id"])
                 return
 
         except Exception as e:
-            _logger.error(f"Run plugin error: {e}")
+            _logger.error(f"[{message['update_id']}] Run plugin error: {e}")
             traceback.print_exc()
             return
 
@@ -593,29 +617,32 @@ class Bot(object):
                         plugin_requires_version = data.get("Requires-teelebot", {})
                         plugin_requires_version = plugin_requires_version.replace(">", "").replace("<", "").replace("=", "")
                         if plugin_requires_version in [None, "", " "]:
-                            _logger.warn(f"Skip run {plugin} plugin: failed to get the version of the plugin")
+                            _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: failed to get the version of the plugin")
                             continue
                     else:
-                        _logger.warn(f"Skip run {plugin} plugin: failed to get information about the plugin (error: {data})")
+                        _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: failed to get information about the plugin (error: {data})")
                         continue
                     if plugin_requires_version > self.version:
-                        _logger.warn(f"Skip run {plugin} plugin: the plugin requires teelebot version >= {plugin_requires_version}")
+                        _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: the plugin requires teelebot version >= {plugin_requires_version}")
                         continue
 
                     no_plugin_path = f'{self.__plugin_dir}{plugin}.py'
                     if os.path.exists(no_plugin_path):
-                        _logger.warn(f"Skip run {plugin} plugin: there is a module named '{plugin}.py' under the plugin dir with the same name as plugin {plugin} ({no_plugin_path})")
+                        _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: there is a module named '{plugin}.py' under the plugin dir with the same name as plugin {plugin} ({no_plugin_path})")
                         continue
 
-                    try:
+                    def pluginFuncWrap(bot, message, plugin):
                         module = self.__import_module(plugin)
                         pluginFunc = getattr(module, plugin)
-                        fur = self.__thread_pool.submit(pluginFunc, bot, message)
-                        fur.add_done_callback(self.__threadpool_exception)
-                    except Exception as e:
-                        _logger.error(f"Run {plugin} plugin error: {str(e)}")
-                        traceback.print_exc()
+                        self.__logging_for_pluginRun(message, plugin, message["update_id"])
+                        pluginFunc(bot, message)
+                    fur = self.__thread_pool.submit(pluginFuncWrap, bot, message, plugin)
+                    fur.add_done_callback(self.__threadpool_exception)
 
+                    if self.__thread_pool._work_queue.qsize() >= self.__thread_pool._max_workers:
+                        if not self.__hide_info:
+                            _logger.info(f"[{message['update_id']}] Delay run {plugin} plugin: until a thread pool slot is available.")
+            
                     self.__response_times += 1
 
                     if message["chat"]["type"] != "private" and \
@@ -625,12 +652,9 @@ class Bot(object):
                         if not message["from"]["is_bot"]:
                             self.__response_users.append(message["from"]["id"])
 
-                    self.__logging_for_pluginRun(message, plugin)
-
             except Exception as e:
-                _logger.error(f"Run {plugin} plugin error: {e}")
+                _logger.error(f"[{message['update_id']}] Run {plugin} plugin error: {e}")
                 traceback.print_exc()
-                continue
 
     def _washUpdates(self, results):
         """
@@ -646,7 +670,7 @@ class Bot(object):
         for result in results:
             if "update_id" not in result.keys():
                 return None
-            update_ids.append(result["update_id"])
+            update_ids.append(result.get("update_id"))
             query_or_message = ""
             if result.get("inline_query"):
                 query_or_message = "inline_query"
@@ -662,10 +686,10 @@ class Bot(object):
                 query_or_message = "edited_message"
             elif result.get("message"):
                 query_or_message = "message"
-            update_ids.append(result.get("update_id"))
 
             if query_or_message == "inline_query":
                 inline_query = result.get(query_or_message)
+                inline_query["update_id"] = result["update_id"]
                 inline_query["message_id"] = result["update_id"]
                 inline_query["chat"] = inline_query.get("from")
                 inline_query["chat"].pop("language_code")
@@ -676,6 +700,7 @@ class Bot(object):
                 messages.append(inline_query)
             elif query_or_message == "callback_query":
                 callback_query = result.get(query_or_message).get("message")
+                callback_query["update_id"] = result["update_id"]
                 callback_query["click_user"] = result.get(query_or_message)[
                     "from"]
                 callback_query["callback_query_id"] = result.get(
@@ -685,21 +710,26 @@ class Bot(object):
                 messages.append(callback_query)
             elif query_or_message == "my_chat_member":
                 my_chat_member = result.get(query_or_message)
+                my_chat_member["update_id"] = result["update_id"]
                 my_chat_member["message_id"] = result.get("update_id")
                 my_chat_member["my_chat_member_id"] = result.get("update_id")
                 messages.append(my_chat_member)
             elif query_or_message == "chat_member":
                 chat_member = result.get(query_or_message)
+                chat_member["update_id"] = result["update_id"]
                 chat_member["message_id"] = result.get("update_id")
                 chat_member["chat_member_id"] = result.get("update_id")
                 messages.append(chat_member)
             elif query_or_message == "chat_join_request":
                 chat_join_request = result.get(query_or_message)
+                chat_join_request["update_id"] = result["update_id"]
                 chat_join_request["message_id"] = result.get("update_id")
                 chat_join_request["chat_join_request_id"] = result.get("update_id")
                 messages.append(chat_join_request)
             else:
-                messages.append(result.get(query_or_message))
+                message_dict = result.get(query_or_message)
+                message_dict["update_id"] = result["update_id"]
+                messages.append(message_dict)
 
         if len(update_ids) >= 1:
             self._offset = max(update_ids) + 1
@@ -716,36 +746,73 @@ class Bot(object):
             return "time_gap_error"
         else:
             def message_deletor_func(time_gap, chat_id, message_id):
+                if not self.__hide_info:
+                    _logger.info(f"[{chat_id}:{message_id}][{time_gap}s] Message deleting...")
+
                 time.sleep(int(time_gap))
-                self.deleteMessage(chat_id=chat_id, message_id=message_id)
+                ok = self.deleteMessage(chat_id=chat_id, message_id=message_id)
+                
+                if ok:
+                    if not self.__hide_info:
+                        _logger.info(f"[{chat_id}:{message_id}][{time_gap}s] Message deleted.")
+                else:
+                    _logger.error(f"[{chat_id}:{message_id}][{time_gap}s] Message deletion error.")
 
             if time_gap == 0:
                 message_deletor_func(chat_id, message_id)
             else:
+                if self.__timer_thread_pool._work_queue.qsize() >= self.__timer_thread_pool._max_workers:
+                    if not self.__hide_info:
+                        _logger.info(f"[{chat_id}:{message_id}][{time_gap}s] Delay delete message: until a thread pool slot is available.")
+
                 fur = self.__timer_thread_pool.submit(
                     message_deletor_func, time_gap, chat_id, message_id)
                 fur.add_done_callback(self.__threadpool_exception)
 
             return "ok"
 
-    def timer(self, time_gap: int, func: Callable[..., None], args: tuple) -> str:
+    def timer(self, time_gap: int, func: Callable[..., None], *args: tuple) -> str:
         """
         Single timer, time range: [0, 900], unit seconds
         """
         if time_gap < 0 or time_gap > 900:
             return "time_gap_error"
-        elif type(args) is not tuple:
-            return "args_must_be_tuple"
         else:
-            def timer_func(time_gap, func, args):
+            def timer_func(time_gap, func, *args):
+                if not self.__hide_info:
+                    _logger.info(f"[{id(timer_func)}][{time_gap}s] Timer executing...")
+
                 time.sleep(int(time_gap))
-                func(*args)
+                try:
+                    func(*args)
+
+                    if not self.__hide_info:
+                        _logger.info(f"[{id(timer_func)}][{time_gap}s] Timer executed.")
+                except Exception as e:
+                    _logger.error(f"[{id(timer_func)}][{time_gap}s] Timer execution error: {e}")
+                    traceback.print_exc()
+
+            if len(args) == 1 and isinstance(args[0], tuple):
+                args = args[0]
 
             if time_gap == 0:
-                func(args)
+                if not self.__hide_info:
+                    _logger.info(f"[{id(timer_func)}][{time_gap}s] Timer executing...")
+                try:
+                    func(*args)
+
+                    if not self.__hide_info:
+                        _logger.info(f"[{id(timer_func)}][{time_gap}s] Timer executed.")
+                except Exception as e:
+                    _logger.error(f"[{id(timer_func)}][{time_gap}s] Timer execution error: {e}")
+                    traceback.print_exc()
             else:
+                if self.__timer_thread_pool._work_queue.qsize() >= self.__timer_thread_pool._max_workers:
+                    if not self.__hide_info:
+                        _logger.info(f"[{id(timer_func)}][{time_gap}s] Delay execution timer: until a thread pool slot is available.")
+
                 fur = self.__timer_thread_pool.submit(
-                    timer_func, time_gap, func, args)
+                    timer_func, time_gap, func, *args)
                 fur.add_done_callback(self.__threadpool_exception)
 
             return "ok"

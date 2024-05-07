@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2024-02-28
+@last modification: 2024-05-06
 '''
 import threading
 import traceback
@@ -23,13 +23,16 @@ class _Schedule(object):
     def __del__(self):
         del self.__queue
 
-    def __create(self, gap, func, args):
+    def __create(self, gap, func, *args):
         class RepeatingTimer(threading.Timer):
             def run(self):
                 while not self.finished.is_set():
                     self.function(*self.args, **self.kwargs)
                     self.finished.wait(self.interval)
         try:
+            if len(args) == 1 and isinstance(args[0], tuple):
+                args = args[0]
+
             t = RepeatingTimer(gap, func, args)
             t.setDaemon(True)
             return True, t
@@ -38,7 +41,7 @@ class _Schedule(object):
             traceback.print_exc()
             return False, str(e)
 
-    def add(self, gap: int, func: Callable[..., None], args: tuple) -> Tuple[bool, str]:
+    def add(self, gap: int, func: Callable[..., None], *args: tuple) -> Tuple[bool, str]:
         """
         Add schedule task
         """
@@ -60,7 +63,7 @@ class _Schedule(object):
         if len(self.__queue) == self.__queue_size:
             return False, "Full"
 
-        ok, t = self.__create(gap, func, args)
+        ok, t = self.__create(gap, func, *args)
         if ok:
             t.start()
             uid = __short_uuid()
