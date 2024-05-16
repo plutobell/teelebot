@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2024-05-06
+@last modification: 2024-05-16
 @author: Pluto (github:plutobell)
 """
 import time
@@ -130,7 +130,8 @@ class Bot(object):
         schedule_queue_size = round(int(self._pool_size) - thread_pool_size)
         if schedule_queue_size == 0: schedule_queue_size = int(self._pool_size)
 
-        self.request = _Request(thread_pool_size, self._url, self._debug, self.__proxies)
+        self.request = _Request(
+            thread_pool_size, self._url, self.message_deletor, config["hide_info"], self._debug, self.__proxies)
         self.schedule = _Schedule(schedule_queue_size)
         self.buffer = _Buffer(int(self._buffer_size) * 1024 * 1024,
             self.__plugin_bridge.keys(), self.__plugin_dir)
@@ -631,6 +632,10 @@ class Bot(object):
                         _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: there is a module named '{plugin}.py' under the plugin dir with the same name as plugin {plugin} ({no_plugin_path})")
                         continue
 
+                    if self.__thread_pool._work_queue.qsize() >= self.__thread_pool._max_workers:
+                        if not self.__hide_info:
+                            _logger.info(f"[{message['update_id']}] Delay run {plugin} plugin: until a thread pool slot is available.")
+
                     def pluginFuncWrap(bot, message, plugin):
                         module = self.__import_module(plugin)
                         pluginFunc = getattr(module, plugin)
@@ -638,10 +643,6 @@ class Bot(object):
                         pluginFunc(bot, message)
                     fur = self.__thread_pool.submit(pluginFuncWrap, bot, message, plugin)
                     fur.add_done_callback(self.__threadpool_exception)
-
-                    if self.__thread_pool._work_queue.qsize() >= self.__thread_pool._max_workers:
-                        if not self.__hide_info:
-                            _logger.info(f"[{message['update_id']}] Delay run {plugin} plugin: until a thread pool slot is available.")
             
                     self.__response_times += 1
 
@@ -728,7 +729,8 @@ class Bot(object):
                 messages.append(chat_join_request)
             else:
                 message_dict = result.get(query_or_message)
-                message_dict["update_id"] = result["update_id"]
+                if isinstance(message_dict, dict):
+                    message_dict["update_id"] = result["update_id"]
                 messages.append(message_dict)
 
         if len(update_ids) >= 1:
@@ -743,13 +745,15 @@ class Bot(object):
         Timed deletion of a message, time range: [0, 900], in seconds
         """
         if time_gap < 0 or time_gap > 900:
+            _logger.error(f"[{chat_id}:{message_id}][{time_gap}s] Message deletion error: parameter time_gap is out of range.")
             return "time_gap_error"
         else:
             def message_deletor_func(time_gap, chat_id, message_id):
                 if not self.__hide_info:
                     _logger.info(f"[{chat_id}:{message_id}][{time_gap}s] Message deleting...")
 
-                time.sleep(int(time_gap))
+                if time_gap > 0:
+                    time.sleep(int(time_gap))
                 ok = self.deleteMessage(chat_id=chat_id, message_id=message_id)
                 
                 if ok:
@@ -759,7 +763,7 @@ class Bot(object):
                     _logger.error(f"[{chat_id}:{message_id}][{time_gap}s] Message deletion error.")
 
             if time_gap == 0:
-                message_deletor_func(chat_id, message_id)
+                message_deletor_func(time_gap, chat_id, message_id)
             else:
                 if self.__timer_thread_pool._work_queue.qsize() >= self.__timer_thread_pool._max_workers:
                     if not self.__hide_info:

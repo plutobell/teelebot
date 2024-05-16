@@ -1,4 +1,4 @@
-# Function (teelebot version >= v2.5.0)
+# Function (teelebot version >= v2.5.3)
 
 #### bot API methods
 
@@ -6,12 +6,24 @@
 
 
 
-*特殊情况：*
+***特殊情况：***
+
+1.Media相关方法
 
 * *bot.sendMediaGroup*()
 * *bot.editMessageMedia*()
 
 *使用以上两个方法上传本地文件时，请使用参数 `files` ，格式请参考 [inputmedia](https://core.telegram.org/bots/api#inputmedia)*
+
+2.消息发送类型方法
+
+当使用消息发送类型方法发送消息后，若需要定时删除消息，可使用参数 `del_msg_after` ，范围为0~900。比如，当 `del_msg_after=3` 时，消息将在3秒后被删除。
+
+3.以多线程方式执行方法
+
+若需要不阻塞地调用方法，请使用参数 `run_in_thread` ，该参数默认值为`False` 。比如，当 `run_in_thread=True` 时，方法将在线程池中执行。
+
+**注意**：若方法在线程池中执行，将不返回Telegram官方接口的响应数据。
 
 
 

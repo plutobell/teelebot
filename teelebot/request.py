@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2024-02-26
+@last modification: 2024-05-16
 '''
 import io
 import json
@@ -10,23 +10,30 @@ import requests
 
 from .logger import _logger
 from traceback import extract_stack
+from concurrent.futures import ThreadPoolExecutor, Future
 
 
 class _Request(object):
     """
     Request Class
     """
-    def __init__(self, thread_pool_size, url, debug=False, proxies={"all": None}):
+    def __init__(self, thread_pool_size, url, message_deletor, hide_info, debug=False, proxies={"all": None}):
         self.__url = url
+        self.__message_deletor = message_deletor
+        self.__hide_info = hide_info
         self.__debug = debug
         self.__proxies = proxies
+
         self.__session = self.__connection_session(
             pool_connections=thread_pool_size,
             pool_maxsize=thread_pool_size * 2
         )
+        self.__thread_pool = ThreadPoolExecutor(
+            max_workers=thread_pool_size * 2)
 
     def __del__(self):
         self.__session.close()
+        self.__thread_pool.shutdown(wait=True)
 
     def __connection_session(self, pool_connections=10, pool_maxsize=10, max_retries=5):
         """
@@ -76,6 +83,20 @@ class _Request(object):
         if method_name in inputmedia_methods:
             is_inputmedia = True
 
+        run_in_thread = False
+        run_in_thread_param_name = "run_in_thread"
+        if run_in_thread_param_name in list(kwargs.keys()):
+            value = kwargs.get(run_in_thread_param_name, False)
+            if isinstance(value, bool):
+                run_in_thread = value
+
+        del_msg_after = -1
+        del_msg_after_param_name = "del_msg_after"
+        if del_msg_after_param_name in list(kwargs.keys()):
+            value = kwargs.get(del_msg_after_param_name, False)
+            if isinstance(value, int):
+                del_msg_after = value
+
         data, files = {}, {}
         for key, value in kwargs.items():
             if isinstance(value, io.BufferedReader):
@@ -97,16 +118,64 @@ class _Request(object):
                 data[key] = value
 
         # print(data, "\n", files)
+        url = f'{self.__url}{method_name}'
+        if run_in_thread:
+            try:
+                if self.__thread_pool._work_queue.qsize() >= self.__thread_pool._max_workers:
+                    if not self.__hide_info:
+                        _logger.info(f"[{id(self.postEverything)}] Delay run {method_name} method: until a thread pool slot is available.")
+
+                fur = self.__thread_pool.submit(
+                    self.__requestFunc, method_name, url, data, files, del_msg_after)
+                fur.add_done_callback(self.__threadpool_exception)
+
+                return True
+            except Exception as e:
+                _logger.error(f"Error executing method {method_name}:", str(e))
+                traceback.print_exc()
+
+                return False
+        else:
+            return self.__requestFunc(
+                method_name=method_name,
+                url=url,
+                data=data,
+                files=files,
+                del_msg_after=del_msg_after
+            )
+
+    def __requestFunc(self, method_name, url, data, files, del_msg_after):
         try:
-            with self.__session.post(url=f'{self.__url}{method_name}', data=data, files=files) as req:
-                self.__debug_info(method_name, req.json())
-                if req.json().get("ok", False):
-                    return req.json().get("result")
+            with self.__session.post(url=url, data=data, files=files) as req:
+                data = req.json()
+                self.__debug_info(method_name, data)
+                if data.get("ok", False):
+                    result = data.get("result")
+
+                    if del_msg_after >= 0:
+                        if isinstance(result, dict) \
+                            and "chat" in result.keys() \
+                            and "id" in result.get("chat").keys() \
+                            and "message_id" in result.keys():
+
+                            chat_id = result.get("chat").get("id")
+                            message_id = result.get("message_id")
+                            self.__message_deletor(
+                                time_gap=del_msg_after,
+                                chat_id=chat_id,
+                                message_id=message_id
+                            )
+
+                    return result
                 else:
-                    return req.json().get("ok")
+                    return data.get("ok")
         except Exception as e:
             _logger.error(f"Error executing method {method_name}:", str(e))
             traceback.print_exc()
             return False
+
+    def __threadpool_exception(self, fur):
+        if fur.exception() is not None:
+            _logger.debug(f"EXCEPTION - {str(fur.result())}")
 
 
