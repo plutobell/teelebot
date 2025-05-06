@@ -13,18 +13,11 @@
   / __/ _ \/ _ \/ / _ \/ __ \/ __ \/ __/
  / /_/  __/  __/ /  __/ /_/ / /_/ / /_
  \__/\___/\___/_/\___/_.___/\____/\__/
-
 ```
-
-
-
-
 
 ## 说明
 
 **teelebot** 是Python编写的Telegram Bot框架。**teelebot** 具有**插件系统**，Bot功能以插件的形式组织，你只需要实现具有特定功能的插件，其余细节交给 **teelebot** 框架处理，极大地提高了Bot的开发部署效率。**你可以自由地组合插件，来搭建具有特定功能的Bot**。
-
-
 
 **插件请前往：[官方插件仓库](https://github.com/plutobell/teelebot-plugins)**
 
@@ -38,31 +31,19 @@
 
 * **PluginManagementTools** - 插件包管理工具
 
-* **Guard** - 广告过滤， 使用 DFA 对消息进行过滤；入群验证码人机检测
-
-  
-
-
-
-
+* **Guard** - 垃圾消息过滤，入群验证码人机检测
 
 ## 更新日志
 
 * **[更新日志](./CHANGELOG.md)**
 
-
-
 ## 方法列表
 
 * **[方法列表](./FUNCTION.md)**
 
-
-
 ## 插件开发指南
 
 * **[插件开发指南](./PLUGINGUIDE.md)**
-
-
 
 ## Demo
 
@@ -71,12 +52,6 @@
 * ~~Telegram Group： [teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
 * ~~Bot : [teelebot](http://t.me/teelebot)（t.me/teelebot）~~
 
-
-
-
-
-
-
 ## 环境要求
 
 ### Python版本
@@ -84,10 +59,6 @@
 teelebot 只支持 Python3.x，不支持Python2.x。
 
 本项目在 Python 3.6 及以上版本测试通过。
-
-
-
-
 
 ## 安装
 
@@ -99,38 +70,30 @@ pip install teelebot
 
 **此方式推荐使用Python虚拟环境安装**
 
-
-
 **2.Docker**
 
 ```bash
 # 无代理
 docker run -it \
-	--name teelebot \
-	--restart always \
-	-v /path/to/teelebot/config:/config \
-	-v /path/to/teelebot/plugins:/plugins \
-	ghcr.io/plutobell/teelebot:latest
-	
+    --name teelebot \
+    --restart always \
+    -v /path/to/teelebot/config:/config \
+    -v /path/to/teelebot/plugins:/plugins \
+    ghcr.io/plutobell/teelebot:latest
+
 # 有代理
 docker run -it \
-	--name teelebot \
-	--restart always \
-	--network host \
-	-e http_proxy="http://ip:port" \
-	-e https_proxy="http://ip:port" \
-	-v /path/to/teelebot/config:/config \
-	-v /path/to/teelebot/plugins:/plugins \
-	ghcr.io/plutobell/teelebot:latest
+    --name teelebot \
+    --restart always \
+    --network host \
+    -e http_proxy="http://ip:port" \
+    -e https_proxy="http://ip:port" \
+    -v /path/to/teelebot/config:/config \
+    -v /path/to/teelebot/plugins:/plugins \
+    ghcr.io/plutobell/teelebot:latest
 ```
 
 **Tip: 容器创建后请完善配置文件参数，然后重启容器**
-
-
-
-
-
-
 
 ## 升级
 
@@ -148,10 +111,6 @@ pip install teelebot --upgrade
 
 另外，可通过 `exec` 指令在容器中执行命令 `pip install teelebot --upgrade` 进行升级
 
-
-
-
-
 ## 使用
 
 #### 一行命令启动 (Polling Mode)
@@ -164,13 +123,9 @@ teelebot -c/--config <config file path> -p/--plugin <plugin path> -k/--key <bot 
 
 **此命令会自动生成在Polling模式下适用的配置文件，并且，-c/--config 参数可以省略(省略将使用默认配置文件路径)。**
 
-
-
 #### 一、运行模式
 
 `teelebot` 支持以 `Webhook` 模式和 `Polling` 模式运行。生产环境推荐使用 `Webhook` 模式，而 `Polling` 则仅用于开发环境。
-
-
 
 ##### 1、Webhook 模式
 
@@ -194,8 +149,6 @@ secret_token=webhook secret token
 
 自签名证书生成请参考：[Generating a self-signed certificate pair (PEM)](https://core.telegram.org/bots/self-signed#generating-a-self-signed-certificate-pair-pem)
 
-
-
 ##### 2、Polling 模式
 
 要以 Polling 模式运行，只需要保证配置文件 `webhook` 字段为 `False` 即可。此模式最基本的配置文件如下:
@@ -210,22 +163,16 @@ debug=False
 plugin_dir=your plugin dir
 ```
 
-
-
-
-
-
-
 #### 二、运行
 
 任意路径打开终端，输入以下命令：
 
 - 对于使用程序配置文件默认路径的：
-
+  
   输入`teelebot` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
 
 - 对于命令行手动指定配置文件路径的：
-
+  
   输入`teelebot -c/--config <configure file path>` 回车,正常情况下你应该能看见屏幕提示机器人开始运行。
   
   **更多指令请通过 `-h/--help` 查看：**
@@ -254,14 +201,6 @@ plugin_dir=your plugin dir
     -d, --debug           run teelebot in debug mode
     -v, --version         show the current version of teelebot
   ```
-  
-  
-
-
-
-
-
-
 
 #### 三、配置文件
 
@@ -310,8 +249,6 @@ teelebot -c/--config <configure file path>
 
 路径必须为绝对路径，并且配置文件名也应当包含在路径内，此情况下会在指定的配置文件不存在时自动生成配置文件 。
 
-
-
 #### 四、导入使用
 
 ```python
@@ -330,10 +267,6 @@ bot.sendMessage(chat_id="chat_id", text="Hello World!")
 
 **Tip: 导入使用时需要确保默认配置文件路径中存在配置文件,并且必须的字段已经填写**
 
-
-
-
-
 ## 联系我
 
 * Email：hi#ojoll.com ( # == @ )
@@ -341,10 +274,3 @@ bot.sendMessage(chat_id="chat_id", text="Hello World!")
 * Telegram Group：[teelebot official](https://t.me/teelebot_official)（t.me/teelebot_official）
 * ~~Telegram Group：[teelebot体验群](http://t.me/teelebot_chat)（t.me/teelebot_chat）~~
 * 其他：本repo 的 Issue
-
-
-
-
-
-
-
