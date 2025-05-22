@@ -25,7 +25,7 @@
 
 * **Menu** - 自动生成的插件菜单
 
-* **Uptime** - 获取Bot运行状态
+* **Uptime** - 获取Bot运行状态，监控Bot运行状态
 
 * **PluginCTL** - 插件分群开关控制
 
