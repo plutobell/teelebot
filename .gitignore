@@ -11,3 +11,4 @@ dist/
 *.egg-info/
 TODO.md
 build.sh
+*.service
