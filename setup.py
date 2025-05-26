@@ -1,9 +1,5 @@
-import sys
-sys.path.append("./teelebot")
-
-from setuptools import setup, find_packages, Extension
-from distutils.core import setup, Extension
-from version import(
+from setuptools import setup, find_packages
+from teelebot.version import (
     __author__,
     __email__,
     __blog__,
@@ -37,13 +33,13 @@ setup(
     license='GPLv3',
     packages=find_packages(exclude=['plugins', 'plugins.*', 'test', 'test.*']),
     package_data={
-        'teelebot':['README.md'],
-        'teelebot':['LICENSE'],
-		'teelebot':[
+        'teelebot': [
+            'README.md',
+            'LICENSE',
             'plugins/Chat/hello.ogg',
             'plugins/Hello/helloworld.png',
-            'plugins/About/icon.png'
-		],
+            'plugins/About/icon.png',
+        ],
     },
     python_requires='>=3.6',
     install_requires=['requests[socks]'],
