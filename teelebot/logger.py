@@ -1,65 +1,103 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2023-07-29
+@last modification: 2025-05-26
 '''
+import sys
+import inspect
 import logging
+import threading
+from pathlib import Path
+from logging.handlers import RotatingFileHandler
 
+_logger = None
+_logger_lock = threading.Lock()
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 
 RESET_SEQ = "\033[0m"
 COLOR_SEQ = "\033[1;%dm"
-BOLD_SEQ = "\033[1m"
 
 COLORS = {
     'WARNING': YELLOW,
     'INFO': CYAN,
     'DEBUG': BLUE,
-    'CRITICAL': YELLOW,
+    'CRITICAL': MAGENTA,
     'ERROR': RED
 }
 
-def formatter_message(message, use_color = True):
-    if use_color:
-        message = message.replace("$RESET", RESET_SEQ).replace("$BOLD", BOLD_SEQ)
-    else:
-        message = message.replace("$RESET", "").replace("$BOLD", "")
-    return message
-
-
-class ColoredFormatter(logging.Formatter):
-    def __init__(self, msg, use_color = True):
-        logging.Formatter.__init__(self, msg)
-        self.use_color = use_color
-        self.datefmt = "%Y/%m/%d %H:%M:%S"
+class SequenceFormatter(logging.Formatter):
+    _lock = threading.Lock()
+    _counter = 0
 
     def format(self, record):
-        levelname = record.levelname
-        if self.use_color and levelname in COLORS:
-            levelname_color = COLOR_SEQ % (30 + COLORS[levelname]) + levelname + RESET_SEQ
-            record.levelname = levelname_color
-        return logging.Formatter.format(self, record)
+        with self._lock:
+            SequenceFormatter._counter += 1
+            seq = SequenceFormatter._counter
+        record.seq = seq
+        return super().format(record)
 
+class ColoredFormatter(SequenceFormatter):
+    def __init__(self, fmt, use_color=True):
+        super().__init__(fmt, datefmt="%Y/%m/%d %H:%M:%S")
+        self.use_color = use_color
 
-class ColoredLogger(logging.Logger):
-    FORMAT = "[$BOLD%(asctime)s][$RESET%(levelname)s] %(message)s"
-    COLOR_FORMAT = formatter_message(FORMAT, True)
-    def __init__(self, name):
-        logging.Logger.__init__(self, name, logging.INFO)
+    def format(self, record):
+        if self.use_color and record.levelname in COLORS:
+            color_seq = COLOR_SEQ % (30 + COLORS[record.levelname])
+            original_levelname = record.levelname
+            record.levelname = f"{color_seq}{original_levelname}{RESET_SEQ}"
+            formatted = super().format(record)
+            record.levelname = original_levelname
+            return formatted
+        else:
+            return super().format(record)
 
-        color_format = formatter_message(self.COLOR_FORMAT, True)
-        color_formatter = ColoredFormatter(color_format)
+def _init_logger(file_log=False, file_log_dir=None):
+    global _logger
 
-        console = logging.StreamHandler()
-        console.setFormatter(color_formatter)
+    logger = logging.getLogger("teelebot")
+    logger.setLevel(logging.DEBUG)
 
-        self.addHandler(console)
-        return
+    caller_name = inspect.stack()[1].function
+    if caller_name == "main":
+        logger.handlers.clear()
+        _logger = None
+    elif _logger is not None:
+        return _logger
 
+    use_color = sys.stdout.isatty()
+    format_str = "[%(seq)07d][%(asctime)s][%(levelname)s] %(message)s"
 
-logging.setLoggerClass(ColoredLogger)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+    color_formatter = ColoredFormatter(format_str, use_color=use_color)
+    file_formatter = logging.Formatter(format_str, datefmt="%Y/%m/%d %H:%M:%S")
 
-_logger = logging.getLogger(__name__)
-_logger.setLevel(logging.DEBUG)
+    console = logging.StreamHandler()
+    console.setFormatter(color_formatter)
+    logger.addHandler(console)
+
+    if file_log and file_log_dir:
+        log_dir = Path(file_log_dir)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "teelebot.log"
+
+        file_handler = RotatingFileHandler(
+            filename=log_file,
+            mode="a",
+            maxBytes=10 * 1024 * 1024,
+            backupCount=10,
+            encoding="utf-8"
+        )
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+
+    _logger = logger
+    return logger
+
+def get_logger():
+    global _logger
+    if _logger is None:
+        with _logger_lock:
+            if _logger is None:
+                _init_logger()
+    return _logger

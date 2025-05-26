@@ -229,6 +229,8 @@ drop_pending_updates=False
 local_api_server=local api server address # [Optional]
 updates_chat_member=False # [Optional]
 proxy=socks5h://user:pass@host:port # [Optional]
+file_log=True # [Optional]
+file_log_dir = path to log file directory # [Optional]
 ```
 
 **在 `1.13.0` 及以上版本，支持自动生成配置文件。（默认为Polling模式）**
@@ -248,6 +250,18 @@ teelebot -c/--config <configure file path>
 ```
 
 路径必须为绝对路径，并且配置文件名也应当包含在路径内，此情况下会在指定的配置文件不存在时自动生成配置文件 。
+
+**在 `2.6.0` 及以上版本，支持将日志保存到文件，涉及配置文件字段:**
+
+```python
+# 设置是否将日志保存到文件，默认为 False
+file_log=True
+
+# 设置日志文件的保存路径，默认为 用户目录/.teelebot/logs/
+file_log_dir = path to log file directory 
+```
+
+
 
 #### 四、导入使用
 

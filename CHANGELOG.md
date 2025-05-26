@@ -1,5 +1,33 @@
 # Changelog
 
+#### 2025-05-26
+
+* v2.6.0
+  
+  * 改进 proxy 设置
+  
+  * 启动消息新增 Proxy 状态显示
+  
+  * 增强日志
+    
+    * 新增日志序号
+    
+    * 新增本地日志文件
+    
+    * 配置文件新增字段 file_log
+    
+    * 配置文件新增字段 file_log_dir
+    
+    * 启动消息新增 Logs 路径显示
+    
+    * 细节调整
+  
+  * 启动消息新增 Config 地址显示
+  
+  * 启动消息新增 Plugin 路径显示
+  
+  * 细节调整
+
 #### 2024-05-16
 
 * v2.5.3
@@ -83,10 +111,12 @@
 #### 2023-05-15
 
 * v2.3.2
+  
   * 配置文件新增参数 secret_token
   * 修复 webhook 的 bug
 
 * v2.3.1
+  
   * 完善 Metadata 类
 
 #### 2023-05-14
@@ -137,9 +167,11 @@
 #### 2023-05-04
 
 * v2.0.1
+  
   * 修复bug
 
 * v2.0.0
+  
   * 重构、精简代码
   * 其他优化
 
@@ -229,7 +261,7 @@
 #### 2022-08-14
 
 * v1.20.0
-
+  
   * 升级至 Bot API 6.2
     * 方法 createNewStickerSet 新增参数 sticker_type
     * 新增方法 getCustomEmojiStickers
@@ -238,7 +270,7 @@
     * 方法 setWebhook 新增参数 secret_token 
   * 升级至 Bot API 6.0
     * 重命名方法 promoteChatMember 的参数 can_manage_voice_chats 到 can_manage_video_chats
-    *  新增方法 setChatMenuButton
+    * 新增方法 setChatMenuButton
     * 新增方法 getChatMenuButton
     * 新增方法 setMyDefaultAdministratorRights
     * 新增方法 getMyDefaultAdministratorRights
@@ -437,10 +469,12 @@
 #### 2020-11-13
 
 * v1.11.5 : 
+  
   * 修复 _pluginRun 的bug
   * 完善消息类型识别
 
 * v1.11.4 : 
+  
   * 调整消息发送类型函数的默认编码
   * 调整方法 add_schedule 的返回值
   * 新增方法 find_schedule，用于查找任务
@@ -448,10 +482,12 @@
 #### 2020-11-12
 
 * v1.11.3 :
+  
   * 重构 _pluginRun 方法
   * 修复插件 热更新 和 热装载 的bug
 
 * v1.11.2 :
+  
   * 修复 drop_pending_updates 开启后在 Polling 模式下的bug
   * 修复方法 add_schedule 的bug
   * 移除方法 dropPendingUpdates
@@ -629,6 +665,7 @@
 #### 2020-6-23
 
 * v1.8.0 : 
+  
   * 框架重构，增强性能，提升速度，进一步封装
   * 插件入口函数新增参数 `bot` ，Bot类不再需要手动导入
   * 分离 `polling` 运行模式
@@ -688,10 +725,13 @@
 #### 2020-6-10
 
 * v1.5.2 : 修复媒体文件类发送函数发送本地文件时被识别为 file_id 类型的bug；修复插件 Sticker 的bug；完善插件 IPinfo 的地址格式检查
+
 * v1.5.1 : 删除函数 downloadFile，新增函数 getFileDownloadPath；新增插件 Sticker
+
 * v1.5.0 : 媒体文件类发送函数新增通过 file_id 发送文件；新增插件 About
 
 * v1.4.9 : 新增插件 IPinfo; 调整 ID插件消息文案
+
 * v1.4.8 : 修复插件 Guard 验证码选项显示不全的bug；ID 插件新增查询其他用户ID的功能
 
 * v1.4.7 : 重构插件 Guard 的 captcha，调整人机验证方式

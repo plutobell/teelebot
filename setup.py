@@ -46,10 +46,10 @@ setup(
 		],
     },
     python_requires='>=3.6',
-    install_requires=['requests'],
+    install_requires=['requests[socks]'],
     entry_points={
         'console_scripts': [
-            'teelebot=teelebot:main',
+            'teelebot=teelebot.main:main',
         ]
     },
     zip_safe=True

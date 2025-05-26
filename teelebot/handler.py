@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-08-23
-@last modification: 2024-02-28
+@last modification: 2025-05-26
 '''
 import configparser
 import argparse
@@ -15,7 +15,7 @@ import requests
 
 from pathlib import Path
 from .metadata import _Metadata
-from .logger import _logger
+from .logger import  get_logger
 from .version import __author__, __github__, __version__
 from .common import (
     __metadata_templates__,
@@ -26,6 +26,7 @@ from .common import (
     __config_template__,
     __plugin_init_func_name__
 )
+_logger = get_logger()
 
 cloud_api_server = __cloud_api_server__
 common_pkg_prefix = __common_pkg_prefix__
@@ -119,7 +120,7 @@ def _config():
             _logger.info("The configuration file has been created automatically.")
             _logger.info(f"Configuration file path: \033[1;32m{str(config_dir)}\033[0m") # Green
         if not args.key or not args.root:
-            _logger.warn("Please modify the relevant parameters and restart the teelebot.")
+            _logger.warning("Please modify the relevant parameters and restart the teelebot.")
             os._exit(0)
         # else:
         #     print("\n")
@@ -127,6 +128,8 @@ def _config():
     conf = configparser.ConfigParser()
     conf.read(config_dir)
     options = conf.options("config")
+
+    config["config_dir"] = config_dir
 
     if args.debug:
         conf.set("config", "debug", str(True))
@@ -287,7 +290,7 @@ def _config():
 
             _logger.info(f"Plugin {plugin_name} was created successfully.")
         else:
-            _logger.warn(f"Plugin {plugin_name} already exists.")
+            _logger.warning(f"Plugin {plugin_name} already exists.")
         os._exit(0)
     elif args.make_plugin and not plugin_dir_in_config:
         _logger.error("The plugin_dir is not set in the configuration file.")
@@ -391,13 +394,35 @@ def _config():
         os._exit(0)
 
     if "proxy" in config.keys():
-        if str(config["proxy"]).strip() == "" or str(config["proxy"]).strip() == None:
+        if str(config["proxy"]).strip() == "" or config["proxy"] == None:
             config["proxies"] = {"all": None}
         else:
             config["proxies"] = {"all": str(config["proxy"]).strip()}
         config.pop("proxy")
     else:
         config["proxies"] = {"all": None}
+
+    if "file_log" in config.keys():
+        if str(config["file_log"]).strip() == "" or config["file_log"] == None:
+            config["file_log"] = False
+        elif config["file_log"] == "True":
+            config["file_log"] = True
+        elif config["file_log"] == "False":
+            config["file_log"] = False
+        else:
+            _logger.error("The file_log field value in the configuration file is wrong.")
+            os._exit(0)
+    else:
+        config["file_log"] = False
+
+    if config["file_log"] == True:
+        if "file_log_dir" in config.keys():
+            if str(config["file_log_dir"]).strip() == "" or config["file_log_dir"] == None:
+                config["file_log_dir"] = Path.home() / ".teelebot" / "logs"
+        else:
+            config["file_log_dir"] = Path.home() / ".teelebot" / "logs"
+    else:
+        config["file_log_dir"] = None
 
     config["author"] = __author__
     config["version"] = __version__

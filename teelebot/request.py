@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2024-05-16
+@last modification: 2025-05-26
 '''
 import io
 import json
 import traceback
 import requests
 
-from .logger import _logger
+from .logger import get_logger
 from traceback import extract_stack
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import ThreadPoolExecutor
+_logger = get_logger()
 
 
 class _Request(object):
@@ -41,9 +42,11 @@ class _Request(object):
         """
         session = requests.Session()
         session.verify = False
-        # session.trust_env = False
-        session.proxies.update(self.__proxies)
-        
+
+        if isinstance(self.__proxies, dict):
+            if self.__proxies and self.__proxies != {"all": None}:
+                session.trust_env = False
+                session.proxies.update(self.__proxies)
 
         adapter = requests.adapters.HTTPAdapter(pool_connections=pool_connections,
                                                 pool_maxsize=pool_maxsize, max_retries=max_retries)

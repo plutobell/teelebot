@@ -1,6 +1,6 @@
 '''
 @creation date: 2021-04-25
-@last modification: 2024-04-14
+@last modification: 2025-05-26
 '''
 from __future__ import print_function
 from sys import getsizeof, stderr
@@ -20,7 +20,8 @@ import os
 import copy
 
 from .metadata import _Metadata
-from .logger import _logger
+from .logger import get_logger
+_logger = get_logger()
 
 class _Buffer(object):
     """

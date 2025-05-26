@@ -12,3 +12,4 @@ dist/
 TODO.md
 build.sh
 *.service
+logs/

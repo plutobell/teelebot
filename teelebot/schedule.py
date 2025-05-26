@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2019-11-15
-@last modification: 2024-05-06
+@last modification: 2025-05-26
 '''
 import threading
 import traceback
@@ -9,7 +9,8 @@ import traceback
 from uuid import uuid4
 from typing import Tuple, Callable
 
-from .logger import _logger
+from .logger import get_logger
+_logger = get_logger()
 
 class _Schedule(object):
     """

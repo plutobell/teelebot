@@ -2,7 +2,7 @@
 """
 @description: A Python-based Telegram Bot framework
 @creation date: 2019-08-13
-@last modification: 2024-05-16
+@last modification: 2025-05-26
 @author: Pluto (github:plutobell)
 """
 import time
@@ -24,7 +24,7 @@ from typing import Union, Callable
 from concurrent.futures import ThreadPoolExecutor, Future
 
 from .handler import _config, _bridge, _plugin_info
-from .logger import _logger
+from .logger import get_logger
 from .schedule import _Schedule
 from .buffer import _Buffer
 from .request import _Request
@@ -34,7 +34,7 @@ from .common import (
     __plugin_control_plugin_name__,
     __plugin_control_plugin_command__
     )
-
+_logger = get_logger()
 
 class Bot(object):
     """
@@ -44,17 +44,21 @@ class Bot(object):
     def __init__(self, key: str = None, debug: bool = False, proxies: dict = None):
         config = _config()
 
+        self._config_dir = config["config_dir"]
+        self._file_log = config["file_log"]
+        self._file_log_dir = config["file_log_dir"]
+
         if key not in [None, "", " "]:
             self._key = key
             self._debug = debug
             if proxies is not None:
-                self.__proxies = proxies
+                self._proxies = proxies
             else:
-                self.__proxies = config["proxies"]
+                self._proxies = config["proxies"]
         else:
             self._key = config["key"]
             self._debug = config["debug"]
-            self.__proxies = config["proxies"]
+            self._proxies = config["proxies"]
 
         self._cloud_api_server = config["cloud_api_server"]
         self._local_api_server = config["local_api_server"]
@@ -131,7 +135,7 @@ class Bot(object):
         if schedule_queue_size == 0: schedule_queue_size = int(self._pool_size)
 
         self.request = _Request(
-            thread_pool_size, self._url, self.message_deletor, config["hide_info"], self._debug, self.__proxies)
+            thread_pool_size, self._url, self.message_deletor, config["hide_info"], self._debug, self._proxies)
         self.schedule = _Schedule(schedule_queue_size)
         self.buffer = _Buffer(int(self._buffer_size) * 1024 * 1024,
             self.__plugin_bridge.keys(), self.__plugin_dir)
@@ -208,7 +212,7 @@ class Bot(object):
                         with self.__plugin_init_furs_mutex:
                             if isinstance(self.__plugin_init_furs[plugin], Future):
                                 if self.__plugin_init_furs[plugin].running():
-                                    _logger.warn(f"The plugin {plugin} is still initializing...")
+                                    _logger.warning(f"The plugin {plugin} is still initializing...")
                                 elif not self.__plugin_init_furs[plugin].done():
                                     if not self.__hide_info:
                                         _logger.info(f"Delay initialize {plugin} plugin: until a thread pool slot is available.")
@@ -580,7 +584,7 @@ class Bot(object):
 
             if len(self.__plugin_bridge) == 0:
                 os.system("")
-                _logger.warn("\033[1;31mNo plugins installed\033[0m")
+                _logger.warning("\033[1;31mNo plugins installed\033[0m")
 
             self._update_plugins_init_status() # Update plugins init status
             self._plugins_init(bot)
@@ -588,7 +592,7 @@ class Bot(object):
             ok, buffer_status = self.buffer.status() # Buffer capacity monitoring
             if ok and buffer_status["used"] >= buffer_status["size"]:
                 os.system("")
-                _logger.warn("\033[1;31mThe data buffer area is full \033[0m")
+                _logger.warning("\033[1;31mThe data buffer area is full \033[0m")
 
             plugin_bridge = self.__control_plugin( # pluginctl control
                 self.__plugin_bridge, message["chat"]["type"], message["chat"]["id"])
@@ -618,18 +622,18 @@ class Bot(object):
                         plugin_requires_version = data.get("Requires-teelebot", {})
                         plugin_requires_version = plugin_requires_version.replace(">", "").replace("<", "").replace("=", "")
                         if plugin_requires_version in [None, "", " "]:
-                            _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: failed to get the version of the plugin")
+                            _logger.warning(f"[{message['update_id']}] Skip run {plugin} plugin: failed to get the version of the plugin")
                             continue
                     else:
-                        _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: failed to get information about the plugin (error: {data})")
+                        _logger.warning(f"[{message['update_id']}] Skip run {plugin} plugin: failed to get information about the plugin (error: {data})")
                         continue
                     if plugin_requires_version > self.version:
-                        _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: the plugin requires teelebot version >= {plugin_requires_version}")
+                        _logger.warning(f"[{message['update_id']}] Skip run {plugin} plugin: the plugin requires teelebot version >= {plugin_requires_version}")
                         continue
 
                     no_plugin_path = f'{self.__plugin_dir}{plugin}.py'
                     if os.path.exists(no_plugin_path):
-                        _logger.warn(f"[{message['update_id']}] Skip run {plugin} plugin: there is a module named '{plugin}.py' under the plugin dir with the same name as plugin {plugin} ({no_plugin_path})")
+                        _logger.warning(f"[{message['update_id']}] Skip run {plugin} plugin: there is a module named '{plugin}.py' under the plugin dir with the same name as plugin {plugin} ({no_plugin_path})")
                         continue
 
                     if self.__thread_pool._work_queue.qsize() >= self.__thread_pool._max_workers:
@@ -1003,7 +1007,7 @@ class Bot(object):
         """
         Get proxy information
         """
-        return copy.deepcopy(self.__proxies)
+        return copy.deepcopy(self._proxies)
 
 
 class MethodPositionalArgumentError(Exception):

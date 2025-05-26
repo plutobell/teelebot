@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 '''
 @creation date: 2020-06-23
-@last modification: 2023-12-26
+@last modification: 2025-05-26
 '''
 import os
 
-from .logger import _logger
+from .logger import get_logger
+_logger = get_logger()
 
 
 def _runUpdates(bot):

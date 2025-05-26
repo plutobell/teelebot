@@ -1,6 +1,6 @@
 '''
 @creation date: 2023-05-12
-@last modification: 2024-02-28
+@last modification: 2025-05-26
 '''
 import os
 import copy
@@ -11,8 +11,9 @@ import threading
 from pathlib import Path
 from typing import Tuple, Union
 
-from .logger import _logger
+from .logger import get_logger
 from .common import __metadata_templates__, __metadata_version_in_use__
+_logger = get_logger()
 
 class _Metadata(object):
     """
